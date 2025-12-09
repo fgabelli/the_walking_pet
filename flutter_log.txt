@@ -1,0 +1,571 @@
+Resolving dependencies...
+Downloading packages...
+  _flutterfire_internals 1.3.59 (1.3.64 available)
+  characters 1.4.0 (1.4.1 available)
+  cloud_firestore 5.6.12 (6.1.0 available)
+  cloud_firestore_platform_interface 6.6.12 (7.0.4 available)
+  cloud_firestore_web 4.4.12 (5.1.0 available)
+  emoji_picker_flutter 3.1.0 (4.4.0 available)
+  firebase_auth 5.7.0 (6.1.2 available)
+  firebase_auth_platform_interface 7.7.3 (8.1.4 available)
+  firebase_auth_web 5.15.3 (6.1.0 available)
+  firebase_core 3.15.2 (4.2.1 available)
+  firebase_core_web 2.24.1 (3.3.0 available)
+  firebase_database 11.3.10 (12.1.0 available)
+  firebase_database_platform_interface 0.2.6+10 (0.3.0 available)
+  firebase_database_web 0.2.6+16 (0.2.7+1 available)
+  firebase_messaging 15.2.10 (16.0.4 available)
+  firebase_messaging_platform_interface 4.6.10 (4.7.4 available)
+  firebase_messaging_web 3.10.10 (4.1.0 available)
+  firebase_storage 12.4.10 (13.0.4 available)
+  firebase_storage_platform_interface 5.2.10 (5.2.15 available)
+  firebase_storage_web 3.10.17 (3.11.0 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_riverpod 2.6.1 (3.0.3 available)
+  geocoding 3.0.0 (4.0.0 available)
+  geocoding_android 3.3.1 (4.0.1 available)
+  geocoding_platform_interface 3.2.0 (5.0.0 available)
+  geoflutterfire_plus 0.0.32 (0.0.33 available)
+  geolocator 13.0.4 (14.0.2 available)
+  geolocator_android 4.6.2 (5.0.2 available)
+  google_fonts 6.3.2 (6.3.3 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.7 available)
+  google_sign_in_ios 5.9.0 (6.2.4 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.0 available)
+  image_cropper 8.1.0 (11.0.0 available)
+  image_cropper_for_web 6.1.0 (7.0.0 available)
+  image_cropper_platform_interface 7.2.0 (8.0.0 available)
+  image_picker_ios 0.8.13+2 (0.8.13+3 available)
+  lints 5.1.1 (6.0.0 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  riverpod 2.6.1 (3.0.3 available)
+  share_plus 10.1.4 (12.0.1 available)
+  share_plus_platform_interface 5.0.2 (6.1.0 available)
+  shared_preferences_android 2.4.17 (2.4.18 available)
+  sign_in_with_apple 6.1.4 (7.0.1 available)
+  sign_in_with_apple_platform_interface 1.1.0 (2.0.0 available)
+  sign_in_with_apple_web 2.1.1 (3.0.0 available)
+  test_api 0.7.7 (0.7.8 available)
+Got dependencies!
+51 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on sdk gphone64 x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                             12,3s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...        2.446ms
+D/FlutterJNI(17001): Beginning load of flutter...
+D/FlutterJNI(17001): flutter (null) was loaded normally!
+I/flutter (17001): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+D/FlutterGeolocator(17001): Attaching Geolocator to activity
+Syncing files to device sdk gphone64 x86 64...                     115ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on sdk gphone64 x86 64 is available at: http://127.0.0.1:65519/tHiksZhaaK0=/
+The Flutter DevTools debugger and profiler on sdk gphone64 x86 64 is available at: http://127.0.0.1:65519/tHiksZhaaK0=/devtools/?uri=ws://127.0.0.1:65519/tHiksZhaaK0=/ws
+D/FlutterGeolocator(17001): Creating service.
+D/FlutterGeolocator(17001): Binding to location service.
+I/Choreographer(17001): Skipped 45 frames!  The application may be doing too much work on its main thread.
+D/WindowOnBackDispatcher(17001): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@709ebb5
+I/WindowExtensionsImpl(17001): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/VRI[MainActivity](17001): WindowInsets changed: 1080x2400 statusBars:[0,136,0,0] navigationBars:[0,0,0,63] mandatorySystemGestures:[0,168,0,84] 
+I/the_walking_pet(17001): Compiler allocated 5087KB to compile void android.view.ViewRootImpl.performTraversals()
+D/FlutterGeolocator(17001): Geolocator foreground service connected
+D/FlutterGeolocator(17001): Initializing Geolocator services
+D/FlutterGeolocator(17001): Flutter engine connected. Connected engine count 1
+I/Choreographer(17001): Skipped 75 frames!  The application may be doing too much work on its main thread.
+I/HWUI    (17001): Using FreeType backend (prop=Auto)
+D/WindowLayoutComponentImpl(17001): Register WindowLayoutInfoListener on Context=com.thewalkingpet.the_walking_pet.MainActivity@520459e, of which baseContext=android.app.ContextImpl@4eeac68
+D/ProfileInstaller(17001): Installing profile for com.thewalkingpet.the_walking_pet
+D/FirebaseAuth(17001): Notifying id token listeners about user ( ooWcWWf3S2giS3klZhxUkMDNPrT2 ).
+I/Choreographer(17001): Skipped 168 frames!  The application may be doing too much work on its main thread.
+W/the_walking_pet(17001): userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+I/the_walking_pet(17001): Background concurrent mark compact GC freed 5830KB AllocSpace bytes, 20(540KB) LOS objects, 49% free, 3717KB/7435KB, paused 593us,5.940ms total 119.916ms
+W/DynamiteModule(17001): Local module descriptor class for com.google.android.gms.providerinstaller.dynamite not found.
+I/DynamiteModule(17001): Considering local module com.google.android.gms.providerinstaller.dynamite:0 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/ProviderInstaller(17001): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+D/ApplicationLoaders(17001): Returning zygote-cached class loader: /system/framework/org.apache.http.legacy.jar
+D/ApplicationLoaders(17001): Returning zygote-cached class loader: /system/framework/com.android.media.remotedisplay.jar
+D/ApplicationLoaders(17001): Returning zygote-cached class loader: /system/framework/com.android.location.provider.jar
+D/ApplicationLoaders(17001): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+D/ApplicationLoaders(17001): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+D/InsetsController(17001): hide(ime())
+W/the_walking_pet(17001): Loading /data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/oat/x86_64/base.odex non-executable as it requires an image which we failed to load
+I/ImeTracker(17001): com.thewalkingpet.the_walking_pet:3158fb02: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/nativeloader(17001): Configuring clns-10 for other apk /data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/lib/x86_64:/data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+W/ProviderInstaller(17001): Failed to report request stats: com.google.android.gms.common.security.ProviderInstallerImpl.reportRequestStats [class android.content.Context, long, long]
+I/the_walking_pet(17001): hiddenapi: Accessing hidden method Ldalvik/system/VMStack;->getStackClass2()Ljava/lang/Class; (runtime_flags=0, domain=core-platform, api=unsupported) from Lgmrt; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/fuov    (17001): Unable to retrieve flag snapshot for com.google.android.gms.providerinstaller#com.thewalkingpet.the_walking_pet, using defaults.
+E/GoogleApiManager(17001): Failed to get service from broker. 
+E/GoogleApiManager(17001): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+E/GoogleApiManager(17001): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3373)
+E/GoogleApiManager(17001): 	at android.os.Parcel.createException(Parcel.java:3357)
+E/GoogleApiManager(17001): 	at android.os.Parcel.readException(Parcel.java:3340)
+E/GoogleApiManager(17001): 	at android.os.Parcel.readException(Parcel.java:3282)
+E/GoogleApiManager(17001): 	at bcvk.a(:com.google.android.gms@254534038@25.45.34 (260800-831602148):36)
+E/GoogleApiManager(17001): 	at bctl.z(:com.google.android.gms@254534038@25.45.34 (260800-831602148):143)
+E/GoogleApiManager(17001): 	at bbzv.run(:com.google.android.gms@254534038@25.45.34 (260800-831602148):42)
+E/GoogleApiManager(17001): 	at android.os.Handler.handleCallback(Handler.java:1070)
+E/GoogleApiManager(17001): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+E/GoogleApiManager(17001): 	at cphh.ms(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+E/GoogleApiManager(17001): 	at cphh.dispatchMessage(:com.google.android.gms@254534038@25.45.34 (260800-831602148):5)
+E/GoogleApiManager(17001): 	at android.os.Looper.dispatchMessage(Looper.java:333)
+E/GoogleApiManager(17001): 	at android.os.Looper.loopOnce(Looper.java:263)
+E/GoogleApiManager(17001): 	at android.os.Looper.loop(Looper.java:367)
+E/GoogleApiManager(17001): 	at android.os.HandlerThread.run(HandlerThread.java:139)
+W/GoogleApiManager(17001): Not showing notification since connectionResult is not user-facing: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(17001): Failed to register com.google.android.gms.providerinstaller#com.thewalkingpet.the_walking_pet
+W/FlagRegistrar(17001): fuph: 17: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(17001): 	at fupj.a(:com.google.android.gms@254534038@25.45.34 (260800-831602148):13)
+W/FlagRegistrar(17001): 	at grxv.d(:com.google.android.gms@254534038@25.45.34 (260800-831602148):3)
+W/FlagRegistrar(17001): 	at grxx.run(:com.google.android.gms@254534038@25.45.34 (260800-831602148):130)
+W/FlagRegistrar(17001): 	at gsae.execute(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+W/FlagRegistrar(17001): 	at gryf.f(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+W/FlagRegistrar(17001): 	at gryf.m(:com.google.android.gms@254534038@25.45.34 (260800-831602148):99)
+W/FlagRegistrar(17001): 	at gryf.r(:com.google.android.gms@254534038@25.45.34 (260800-831602148):17)
+W/FlagRegistrar(17001): 	at fngm.hz(:com.google.android.gms@254534038@25.45.34 (260800-831602148):35)
+W/FlagRegistrar(17001): 	at favt.run(:com.google.android.gms@254534038@25.45.34 (260800-831602148):12)
+W/FlagRegistrar(17001): 	at gsae.execute(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+W/FlagRegistrar(17001): 	at favu.b(:com.google.android.gms@254534038@25.45.34 (260800-831602148):18)
+W/FlagRegistrar(17001): 	at fawj.b(:com.google.android.gms@254534038@25.45.34 (260800-831602148):36)
+W/FlagRegistrar(17001): 	at fawl.d(:com.google.android.gms@254534038@25.45.34 (260800-831602148):25)
+W/FlagRegistrar(17001): 	at bbxe.c(:com.google.android.gms@254534038@25.45.34 (260800-831602148):9)
+W/FlagRegistrar(17001): 	at bbzt.q(:com.google.android.gms@254534038@25.45.34 (260800-831602148):48)
+W/FlagRegistrar(17001): 	at bbzt.d(:com.google.android.gms@254534038@25.45.34 (260800-831602148):10)
+W/FlagRegistrar(17001): 	at bbzt.g(:com.google.android.gms@254534038@25.45.34 (260800-831602148):185)
+W/FlagRegistrar(17001): 	at bbzt.onConnectionFailed(:com.google.android.gms@254534038@25.45.34 (260800-831602148):2)
+W/FlagRegistrar(17001): 	at bbzv.run(:com.google.android.gms@254534038@25.45.34 (260800-831602148):70)
+W/FlagRegistrar(17001): 	at android.os.Handler.handleCallback(Handler.java:1070)
+W/FlagRegistrar(17001): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+W/FlagRegistrar(17001): 	at cphh.ms(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+W/FlagRegistrar(17001): 	at cphh.dispatchMessage(:com.google.android.gms@254534038@25.45.34 (260800-831602148):5)
+W/FlagRegistrar(17001): 	at android.os.Looper.dispatchMessage(Looper.java:333)
+W/FlagRegistrar(17001): 	at android.os.Looper.loopOnce(Looper.java:263)
+W/FlagRegistrar(17001): 	at android.os.Looper.loop(Looper.java:367)
+W/FlagRegistrar(17001): 	at android.os.HandlerThread.run(HandlerThread.java:139)
+W/FlagRegistrar(17001): Caused by: bbvl: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(17001): 	at bcsx.a(:com.google.android.gms@254534038@25.45.34 (260800-831602148):15)
+W/FlagRegistrar(17001): 	at bbxh.a(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+W/FlagRegistrar(17001): 	at bbxe.c(:com.google.android.gms@254534038@25.45.34 (260800-831602148):5)
+W/FlagRegistrar(17001): 	... 13 more
+D/nativeloader(17001): Load /data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/base.apk!/lib/x86_64/libconscrypt_gmscore_jni.so using class loader ns clns-10 (caller=/data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/base.apk): ok
+V/NativeCrypto(17001): Registering com/google/android/gms/org/conscrypt/NativeCrypto's 328 native methods...
+I/the_walking_pet(17001): Background young concurrent mark compact GC freed 2273KB AllocSpace bytes, 1(544KB) LOS objects, 38% free, 4557KB/7435KB, paused 639us,8.400ms total 79.147ms
+I/the_walking_pet(17001): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->getCurveName()Ljava/lang/String; (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/ProviderInstaller(17001): Installed default security provider GmsCore_OpenSSL
+I/the_walking_pet(17001): hiddenapi: Accessing hidden field Ljava/net/Socket;->impl:Ljava/net/SocketImpl; (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/the_walking_pet(17001): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->setCurveName(Ljava/lang/String;)V (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/the_walking_pet(17001): Background concurrent mark compact GC freed 2061KB AllocSpace bytes, 0(0B) LOS objects, 49% free, 5427KB/10MB, paused 3.476ms,3.265ms total 150.866ms
+E/FlutterGeolocator(17001): Geolocator position updates started
+D/MapsInitializer(17001): preferredRenderer: null
+D/zzcc    (17001): preferredRenderer: null
+I/zzcc    (17001): Making Creator dynamically
+W/the_walking_pet(17001): ClassLoaderContext classpath size mismatch. expected=1, found=0 (DLC[];PCL[base.apk*2461803241]{PCL[/system/framework/org.apache.http.legacy.jar*1269945583]#PCL[/system/framework/com.android.media.remotedisplay.jar*1296079867]#PCL[/system/framework/com.android.location.provider.jar*1489720897]#PCL[/system_ext/framework/androidx.window.extensions.jar*1272918975]#PCL[/system_ext/framework/androidx.window.sidecar.jar*3267387525]} | DLC[];PCL[])
+I/DynamiteModule(17001): Considering local module com.google.android.gms.maps_core_dynamite:0 and remote module com.google.android.gms.maps_core_dynamite:254125200
+I/DynamiteModule(17001): Selected remote version of com.google.android.gms.maps_core_dynamite, version >= 254125200
+V/DynamiteModule(17001): Dynamite loader version >= 2, using loadModule2NoCrashUtils
+W/System  (17001): ClassLoader referenced unknown path: 
+D/nativeloader(17001): Configuring clns-11 for other apk . target_sdk_version=36, uses_libraries=, library_path=/data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/lib/x86_64:/data/app/~~r5DEqb8wt4ccfdRkzZbcrg==/com.google.android.gms-iEGzvkBGZjD0r-2T6PfXKA==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+D/zzcc    (17001): early loading native code
+W/NativeHelper(17001): Loading native library 'gmm-jni' on thread main
+D/nativeloader(17001): Configuring clns-12 for other apk . target_sdk_version=36, uses_libraries=ALL, library_path=/data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-MapsCoreDynamite.integ_254125200100800.apk!/lib/x86_64:/data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-MapsCoreDynamite.integ_254125200100800.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+D/nativeloader(17001): Load /data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-MapsCoreDynamite.integ_254125200100800.apk!/lib/x86_64/libgmm-jni.so using isolated ns clns-12 (caller=/data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-MapsCoreDynamite.integ_254125200100800.apk): ok
+I/native  (17001): I0000 00:00:1765125273.119341   17001 jni_init.cc:30] Initializing JNI...
+I/NativeHelper(17001): JNI initialized.
+I/Google Android Maps SDK(17001): Google Play services client version: 19020000
+D/bo      (17001): SDK type: 1, version: 254125200
+D/hp      (17001): maps_core_dynamite module version in use (0 represents standalone library): 254125200
+D/hp      (17001): Added event: 109
+D/hp      (17001): Added event: 112
+D/MapsInitializer(17001): loadedRenderer: LATEST
+D/zzcc    (17001): preferredRenderer: null
+D/bo      (17001): SDK type: 1, version: 254125200
+I/Google Android Maps SDK(17001): Google Play services package version: 254534038
+I/Google Android Maps SDK(17001): Google Play services maps renderer version(maps_core): 254125200
+D/bo      (17001): SDK type: 1, version: 254125200
+D/de      (17001): about to start loading native library asynchronously
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskReadViolation
+I/o       (17001): Using GMM server: https://clients4.google.com/glm/mmap
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskReadViolation
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskWriteViolation
+D/o       (17001): Using Non-null serverVersionMetadataManager to load previous metadata.
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskReadViolation
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskWriteViolation
+W/x       (17001): Suppressed StrictMode policy violation: StrictModeDiskReadViolation
+I/m140.bov(17001): getExecutor  CREATED  bol@ec8f4b9[main]
+I/m140.bov(17001): getExecutor  CREATED  ScheduledThreadPoolExecutor@d260aac[Scheduler]
+I/m140.bov(17001): getExecutor  CREATED  boo@d3f2598[Lite]
+I/m140.bov(17001): getExecutor  CREATED  boo@ccd0344[Background]
+I/m140.bov(17001): getExecutor  CREATED  boo@f50c16b[Blocking]
+I/m140.cag(17001): marker files=[]
+I/m140.bov(17001): getExecutor  CREATED  boo@c144f0c[TilePrep]
+I/m140.bmy(17001): No cached client parameters found
+I/m140.bnl(17001): finishInitialization ClientParametersManager.
+I/m140.bmj(17001): start()  account=Account {name=signedout@, type=com.google.android.apps.maps}  locale=en_US
+I/m140.bmj(17001): P/H: Scheduling next update in 0.000000 seconds: initial refresh (forced by: NOT FORCED)
+I/m140.bmj(17001): P/H: Running update task for account Account {name=signedout@, type=com.google.android.apps.maps} , locale en_US
+I/m140.bmj(17001): P/H: Running update task via GWS.
+I/m140.cei(17001): FpsProfiler MAIN created on main
+I/m140.bov(17001): getExecutor  CREATED  boo@5ee6a42[Picker]
+I/m140.ent(17001): Found 0 zoom mappings
+I/m140.ent(17001): Zoom tables loaded
+W/m140.fdr(17001): No current context - attempting to create off-screen context
+I/m140.byw(17001): Requested experimentIds= []
+I/m140.blq(17001): Fetching new client parameters: Account {name=signedout@, type=com.google.android.apps.maps}  en_US
+I/m140.bov(17001): getExecutor  CREATED  boo@c7cf4ec[Network]
+W/GMM-SatelliteConnectivity(17001): WIFI  isActiveNetworkSatellite: false
+I/m140.bov(17001): getExecutor  CREATED  boo@64ef584[LocFresh]
+W/JavaCronetEngine(17001): using the fallback Cronet Engine implementation. Performance will suffer and many HTTP client features, including caching, will not work.
+I/m140.fdr(17001): Created GlConstants: fdq{gpuVendor=Google (ATI Technologies Inc.), glVersion=OpenGL ES 3.0 (4.1 ATI-7.0.24), glRenderer=Android Emulator OpenGL ES Translator (AMD Radeon Pro 560X OpenGL Engine), maxTextureSize=16384, maxVertexTextureImageUnits=16, maxVertexUniformVectors=1024, maxSupportedLineWidth=1, maxVertexAttribs=16, nonPowerOfTwoTextureSupport=FULL}
+I/m140.byv(17001): Using Paint server URL: https://www.google.com/maps/vt
+I/m140.byi(17001): PaintParametersListeningServerChannelManager got a client parameters update event.
+I/m140.btu(17001): Updating the server URL. Old URL: https://www.google.com/maps/vt New URL: https://www.google.com/maps/vt
+I/m140.btu(17001): Creating a new server channel with URL: https://www.google.com/maps/vt, server channel factory class: class m140.btr
+I/the_walking_pet(17001): Background young concurrent mark compact GC freed 3093KB AllocSpace bytes, 8(240KB) LOS objects, 26% free, 7998KB/10MB, paused 4.276ms,6.996ms total 98.152ms
+I/m140.duh(17001): Map using legacy labeler
+I/m140.evd(17001): Create or open database: /storage/emulated/0/Android/data/com.thewalkingpet.the_walking_pet/cache/diskcache; secure file path: /data/user/0/com.thewalkingpet.the_walking_pet/app_/testdata
+I/m140.dtc(17001): Network fetching: false
+I/m140.evh(17001): Database cache size: 53248 bytes
+I/m140.fhp(17001): Model SDK_GPHONE64_X86_64, Product name SDK_GPHONE64_X86_64, Board name GOLDFISH_X86_64, Manufacturer GOOGLE
+W/m140.fhp(17001): Model is not recognized, and therefore using default settings.
+I/m140.evh(17001): Deleted 0 entries from the disk cache in 7 ms
+I/m140.evh(17001): Deleting expired tiles and resources took 7 ms
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): Network fetching: true
+I/m140.ent(17001): Found 0 zoom mappings
+I/m140.ent(17001): Zoom tables loaded
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/PlatformViewsController(17001): Hosting view in view hierarchy for platform view: 0
+I/PlatformViewsController(17001): PlatformView is using SurfaceProducer backend
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/GoogleMapController(17001): Installing custom TextureView driven invalidator.
+W/m140.dof(17001): ClientArea created with texture coordinates, but has a non-textured style.
+W/m140.deh(17001): ScreenPixelGeometryUnpacker int[] getVertices not supported; float-precision would be lost.
+I/the_walking_pet(17001): Background concurrent mark compact GC freed 1609KB AllocSpace bytes, 2(104KB) LOS objects, 49% free, 8933KB/17MB, paused 1.039ms,3.775ms total 171.109ms
+E/Google Android Maps SDK(17001): Authorization failure.  Please see https://developers.google.com/maps/documentation/android-sdk/start for how to correctly set up the map.
+E/Google Android Maps SDK(17001): In the Google Developer Console (https://console.developers.google.com)
+E/Google Android Maps SDK(17001): Ensure that the "Maps SDK for Android" is enabled.
+E/Google Android Maps SDK(17001): Ensure that the following Android Key exists:
+E/Google Android Maps SDK(17001): 	API Key: AIzaSyDlt8WMBv9PjgwCO8RqxVZAmlmwSIdZyic
+E/Google Android Maps SDK(17001): 	Android Application (<cert_fingerprint>;<package_name>): F7:0E:69:2F:F9:AF:E7:E7:CA:6A:B2:7A:FA:FC:31:CC:3D:07:14:1B;com.thewalkingpet.the_walking_pet
+W/Firestore(17001): (25.1.4) [Firestore]: Listen for Query(target=Query(walks where status==upcoming and date>time(1765125274,594000000) order by date, __name__);limitType=LIMIT_TO_FIRST) failed: Status{code=FAILED_PRECONDITION, description=The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ, cause=null}
+W/Firestore(17001): (25.1.4) [Firestore]: Listen for Query(target=Query(walks where status==upcoming and date>time(1765125274,777000000) order by date, __name__);limitType=LIMIT_TO_FIRST) failed: Status{code=FAILED_PRECONDITION, description=The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ, cause=null}
+I/flutter (17001): Error fetching walks for map: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ
+I/flutter (17001): Error fetching walks for map: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ
+W/DynamiteModule(17001): Local module descriptor class for com.google.android.gms.googlecertificates not found.
+I/DynamiteModule(17001): Considering local module com.google.android.gms.googlecertificates:0 and remote module com.google.android.gms.googlecertificates:7
+I/DynamiteModule(17001): Selected remote version of com.google.android.gms.googlecertificates, version >= 7
+W/the_walking_pet(17001): ClassLoaderContext classpath element checksum mismatch. expected=2461803241, found=566792523 (DLC[];PCL[base.apk*2461803241]{PCL[/system/framework/org.apache.http.legacy.jar*1269945583]#PCL[/system/framework/com.android.media.remotedisplay.jar*1296079867]#PCL[/system/framework/com.android.location.provider.jar*1489720897]#PCL[/system_ext/framework/androidx.window.extensions.jar*1272918975]#PCL[/system_ext/framework/androidx.window.sidecar.jar*3267387525]} | DLC[];PCL[/data/app/~~V1QUPmyMkoR50Xmq4N62aQ==/com.thewalkingpet.the_walking_pet-0PuzG_vUEWqiOrRxJ2EOIg==/base.apk*566792523]{PCL[/system/framework/org.apache.http.legacy.jar*1269945583]#PCL[/system_ext/framework/androidx.window.extensions.jar*1272918975]#PCL[/system_ext/framework/androidx.window.sidecar.jar*3267387525]})
+W/Firestore(17001): (25.1.4) [Firestore]: Listen for Query(target=Query(walks where status==upcoming and date>time(1765125275,60000000) order by date, __name__);limitType=LIMIT_TO_FIRST) failed: Status{code=FAILED_PRECONDITION, description=The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ, cause=null}
+I/flutter (17001): Error fetching walks for map: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ
+E/GoogleApiManager(17001): Failed to get service from broker. 
+E/GoogleApiManager(17001): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+E/GoogleApiManager(17001): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3373)
+E/GoogleApiManager(17001): 	at android.os.Parcel.createException(Parcel.java:3357)
+E/GoogleApiManager(17001): 	at android.os.Parcel.readException(Parcel.java:3340)
+E/GoogleApiManager(17001): 	at android.os.Parcel.readException(Parcel.java:3282)
+E/GoogleApiManager(17001): 	at bcvk.a(:com.google.android.gms@254534038@25.45.34 (260800-831602148):36)
+E/GoogleApiManager(17001): 	at bctl.z(:com.google.android.gms@254534038@25.45.34 (260800-831602148):143)
+E/GoogleApiManager(17001): 	at bbzv.run(:com.google.android.gms@254534038@25.45.34 (260800-831602148):42)
+E/GoogleApiManager(17001): 	at android.os.Handler.handleCallback(Handler.java:1070)
+E/GoogleApiManager(17001): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+E/GoogleApiManager(17001): 	at cphh.ms(:com.google.android.gms@254534038@25.45.34 (260800-831602148):1)
+E/GoogleApiManager(17001): 	at cphh.dispatchMessage(:com.google.android.gms@254534038@25.45.34 (260800-831602148):5)
+E/GoogleApiManager(17001): 	at android.os.Looper.dispatchMessage(Looper.java:333)
+E/GoogleApiManager(17001): 	at android.os.Looper.loopOnce(Looper.java:263)
+E/GoogleApiManager(17001): 	at android.os.Looper.loop(Looper.java:367)
+E/GoogleApiManager(17001): 	at android.os.HandlerThread.run(HandlerThread.java:139)
+W/GoogleApiManager(17001): Not showing notification since connectionResult is not user-facing: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+I/the_walking_pet(17001): Compiler allocated 5620KB to compile void m140.era.o()
+W/m140.fdm(17001): Destroying egl surface
+D/Google Android Maps SDK(17001): For capability in capabilities, log:
+D/Google Android Maps SDK(17001): "AdvancedMarkers: false: Capabilities unavailable without a Map ID."Data-driven styling: false
+W/m140.fdm(17001): Destroying egl context
+W/m140.ffv(17001): Shutting down renderer while it's not idle - phase is INVALID
+I/m140.bcu(17001): Trimming OTHER: LabelSourceOp's current size 2 to 0.00000, or 0
+W/Firestore(17001): (25.1.4) [Firestore]: Listen for Query(target=Query(chats where participantsarray_containsooWcWWf3S2giS3klZhxUkMDNPrT2 order by -updatedAt, -__name__);limitType=LIMIT_TO_FIRST) failed: Status{code=FAILED_PRECONDITION, description=The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jaGF0cy9pbmRleGVzL18QARoQCgxwYXJ0aWNpcGFudHMYARoNCgl1cGRhdGVkQXQQAhoMCghfX25hbWVfXxAC, cause=null}
+W/Firestore(17001): (25.1.4) [Firestore]: Listen for Query(target=Query(walks where status==upcoming and date>time(1765125306,547000000) order by date, __name__);limitType=LIMIT_TO_FIRST) failed: Status{code=FAILED_PRECONDITION, description=The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/thewalkingpet-a1578/firestore/indexes?create_composite=ClFwcm9qZWN0cy90aGV3YWxraW5ncGV0LWExNTc4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy93YWxrcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoICgRkYXRlEAEaDAoIX19uYW1lX18QAQ, cause=null}
+I/Choreographer(17001): Skipped 36 frames!  The application may be doing too much work on its main thread.
+I/m140.bsj(17001): Request m140.iwe failed with Status bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+I/m140.bsj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+I/m140.bsj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+I/m140.bsj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+I/m140.bsj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+I/m140.bsj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+I/m140.bsj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+I/m140.bsj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+I/m140.bsj(17001): Caused by: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+I/m140.bsj(17001): , errorDetails=} , attempts 2
+W/m140.blq(17001): Failed client parameters RPC response.  failure=bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+W/m140.blq(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.blq(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.blq(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.blq(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.blq(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.blq(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.blq(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.blq(17001): Caused by: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+W/m140.blq(17001): , errorDetails=}
+I/m140.bmj(17001): Got failed parameters response!
+W/m140.bmj(17001): Failed to get a successful parameters response, bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+W/m140.bmj(17001): , errorDetails=}
+W/m140.bmj(17001): m140.gxh: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out: m140.hem@22c3668[status=PENDING, info=[inputFuture=[m140.hen@1d70a81[status=PENDING, info=[inputFuture=[m140.hfb@e88f726[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@902ff67[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@c25114[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@e8cdbd]]]], function=[m140.bsa@efd5fb2]]]
+I/m140.bmj(17001): P/H: Scheduling next update in 10.000000 seconds: retry (forced by: NOT FORCED)
+I/m140.bmj(17001): P/H: Running update task for account Account {name=signedout@, type=com.google.android.apps.maps} , locale en_US
+I/m140.bmj(17001): P/H: Running update task via GWS.
+I/m140.byw(17001): Requested experimentIds= []
+I/m140.blq(17001): Fetching new client parameters: Account {name=signedout@, type=com.google.android.apps.maps}  en_US
+I/m140.bsj(17001): Request m140.iwe failed with Status bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+I/m140.bsj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+I/m140.bsj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+I/m140.bsj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+I/m140.bsj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+I/m140.bsj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+I/m140.bsj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+I/m140.bsj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+I/m140.bsj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+I/m140.bsj(17001): , errorDetails=} , attempts 2
+W/m140.blq(17001): Failed client parameters RPC response.  failure=bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+W/m140.blq(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.blq(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.blq(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.blq(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.blq(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.blq(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.blq(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.blq(17001): Caused by: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+W/m140.blq(17001): , errorDetails=}
+I/m140.bmj(17001): Got failed parameters response!
+W/m140.bmj(17001): Failed to get a successful parameters response, bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+W/m140.bmj(17001): , errorDetails=}
+W/m140.bmj(17001): m140.gxh: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 54 ms after scheduled time): m140.hem@45ba041[status=PENDING, info=[inputFuture=[m140.hen@91d39e6[status=PENDING, info=[inputFuture=[m140.hfb@6f9eb27[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@53931d4[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@480ff7d[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@730e72]]]], function=[m140.bsa@d9012c3]]]
+I/m140.bmj(17001): P/H: Scheduling next update in 10.000000 seconds: retry (forced by: NOT FORCED)
+I/m140.bmj(17001): P/H: Running update task for account Account {name=signedout@, type=com.google.android.apps.maps} , locale en_US
+I/m140.bmj(17001): P/H: Running update task via GWS.
+I/m140.byw(17001): Requested experimentIds= []
+I/m140.blq(17001): Fetching new client parameters: Account {name=signedout@, type=com.google.android.apps.maps}  en_US
+D/MapsInitializer(17001): preferredRenderer: null
+D/zzcc    (17001): preferredRenderer: null
+I/Google Android Maps SDK(17001): Google Play services package version: 254534038
+I/Google Android Maps SDK(17001): Google Play services maps renderer version(maps_core): 254125200
+I/m140.cei(17001): FpsProfiler MAIN created on main
+I/m140.duh(17001): Map using legacy labeler
+I/m140.dtc(17001): Network fetching: false
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): Network fetching: true
+I/m140.ent(17001): Found 0 zoom mappings
+I/m140.ent(17001): Zoom tables loaded
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/PlatformViewsController(17001): Hosting view in view hierarchy for platform view: 1
+I/PlatformViewsController(17001): PlatformView is using SurfaceProducer backend
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/m140.dtc(17001): requestDrawingConfig for epoch -1 legend ROADMAP
+W/m140.etp(17001): urls for epoch -1 not available.
+I/m140.dtc(17001): requestLegend unsuccessful for epoch -1 legend ROADMAP
+I/GoogleMapController(17001): Installing custom TextureView driven invalidator.
+W/m140.dof(17001): ClientArea created with texture coordinates, but has a non-textured style.
+W/m140.deh(17001): ScreenPixelGeometryUnpacker int[] getVertices not supported; float-precision would be lost.
+I/the_walking_pet(17001): Background young concurrent mark compact GC freed 6895KB AllocSpace bytes, 2(104KB) LOS objects, 39% free, 10MB/17MB, paused 752us,6.206ms total 107.718ms
+W/m140.fdm(17001): Destroying egl surface
+D/Google Android Maps SDK(17001): For capability in capabilities, log:
+D/Google Android Maps SDK(17001): "AdvancedMarkers: false: Capabilities unavailable without a Map ID."Data-driven styling: false
+W/m140.fdm(17001): Destroying egl context
+W/m140.ffv(17001): Shutting down renderer while it's not idle - phase is INVALID
+I/m140.bcu(17001): Trimming OTHER: LabelSourceOp's current size 2 to 0.00000, or 0
+I/m140.bsj(17001): Request m140.iwe failed with Status bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+I/m140.bsj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+I/m140.bsj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+I/m140.bsj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+I/m140.bsj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+I/m140.bsj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+I/m140.bsj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+I/m140.bsj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+I/m140.bsj(17001): Caused by: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+I/m140.bsj(17001): , errorDetails=} , attempts 2
+W/m140.blq(17001): Failed client parameters RPC response.  failure=bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+W/m140.blq(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.blq(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.blq(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.blq(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.blq(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.blq(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.blq(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.blq(17001): Caused by: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+W/m140.blq(17001): , errorDetails=}
+I/m140.bmj(17001): Got failed parameters response!
+W/m140.bmj(17001): Failed to get a successful parameters response, bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+W/m140.bmj(17001): , errorDetails=}
+W/m140.bmj(17001): m140.gxh: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out: m140.hem@6924c5b[status=PENDING, info=[inputFuture=[m140.hen@8f06cf8[status=PENDING, info=[inputFuture=[m140.hfb@f6225d1[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@4f5f836[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e1f5337[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@23b60a4]]]], function=[m140.bsa@d924e0d]]]
+I/m140.bmj(17001): P/H: Scheduling next update in 10.000000 seconds: retry (forced by: NOT FORCED)
+I/m140.bmj(17001): P/H: Running update task for account Account {name=signedout@, type=com.google.android.apps.maps} , locale en_US
+I/m140.bmj(17001): P/H: Running update task via GWS.
+I/m140.byw(17001): Requested experimentIds= []
+I/m140.blq(17001): Fetching new client parameters: Account {name=signedout@, type=com.google.android.apps.maps}  en_US
+I/m140.bsj(17001): Request m140.iwe failed with Status bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+I/m140.bsj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+I/m140.bsj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+I/m140.bsj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+I/m140.bsj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+I/m140.bsj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+I/m140.bsj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+I/m140.bsj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+I/m140.bsj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+I/m140.bsj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+I/m140.bsj(17001): , errorDetails=} , attempts 2
+W/m140.blq(17001): Failed client parameters RPC response.  failure=bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+W/m140.blq(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.blq(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.blq(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.blq(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.blq(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.blq(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.blq(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.blq(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.blq(17001): Caused by: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+W/m140.blq(17001): , errorDetails=}
+I/m140.bmj(17001): Got failed parameters response!
+W/m140.bmj(17001): Failed to get a successful parameters response, bwy{errorCode=REQUEST_TIMEOUT, description=last attempt state: REQUIREMENT_START, cause=m140.gxh: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+W/m140.bmj(17001): , errorDetails=}
+W/m140.bmj(17001): m140.gxh: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+W/m140.bmj(17001): 	at m140.gxo.a(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:189)
+W/m140.bmj(17001): 	at m140.hed.d(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:3)
+W/m140.bmj(17001): 	at m140.hef.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:130)
+W/m140.bmj(17001): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+W/m140.bmj(17001): 	at m140.bnr$a.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:14)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/m140.bmj(17001): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/m140.bmj(17001): 	at m140.bog.run(:com.google.android.gms.policy_maps_core_dynamite@254125201@254125200032.815771884.815771884:40)
+W/m140.bmj(17001): 	at java.lang.Thread.run(Thread.java:1563)
+W/m140.bmj(17001): Caused by: m140.hhc: Timed out (timeout delayed by 1095 ms after scheduled time): m140.hem@ed7d1b8[status=PENDING, info=[inputFuture=[m140.hen@1a8b91[status=PENDING, info=[inputFuture=[m140.hfb@4f9caf6[status=PENDING, info=[futures=[m140.hgy@2315c20[status=SUCCESS, result=[m140.bwp@9d629d9]], m140.hge@a768ef7[status=SUCCESS, result=[{connectivity, true}]], m140.hfz@e145164[status=PENDING, info=[delegate=[m140.hgy@5f097aa[status=PENDING]]]]]]]], function=[m140.bwd@6cb4fcd]]]], function=[m140.bsa@c6fa082]]]
+I/m140.bmj(17001): P/H: Scheduling next update in 10.000000 seconds: retry (forced by: NOT FORCED)
+I/m140.bmj(17001): P/H: Running update task for account Account {name=signedout@, type=com.google.android.apps.maps} , locale en_US
+I/m140.bmj(17001): P/H: Running update task via GWS.
+I/m140.byw(17001): Requested experimentIds= []
+I/m140.blq(17001): Fetching new client parameters: Account {name=signedout@, type=com.google.android.apps.maps}  en_US
+D/WindowOnBackDispatcher(17001): setTopOnBackInvokedCallback (unwrapped): null
+D/FlutterGeolocator(17001): Detaching Geolocator from activity
+E/FlutterGeolocator(17001): Geolocator position updates stopped
+E/FlutterGeolocator(17001): There is still another flutter engine connected, not stopping location service
+D/FlutterGeolocator(17001): Flutter engine disconnected. Connected engine count 0
+D/FlutterGeolocator(17001): Disposing Geolocator services
+D/FlutterGeolocator(17001): Tried to stop listening when no MethodChannel had been initialized.
+D/ViewRootImpl(17001): Skipping stats log for color mode
+Lost connection to device.
