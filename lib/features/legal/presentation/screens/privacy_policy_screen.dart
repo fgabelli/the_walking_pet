@@ -42,7 +42,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '5. I Tuoi Diritti\n'
               'Hai il diritto di accedere, correggere o cancellare le tue informazioni personali in qualsiasi momento attraverso le impostazioni dell\'app.\n\n'
               'Contattaci\n'
-              'Se hai domande su questa Informativa sulla Privacy, contattaci all\'indirizzo support@thewalkingpet.com.',
+              'Se hai domande su questa Informativa sulla Privacy, contattaci all\'indirizzo support@thewalkingpet.it.',
               style: TextStyle(height: 1.5),
             ),
           ],

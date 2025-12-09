@@ -42,7 +42,7 @@ class TermsConditionsScreen extends StatelessWidget {
               '6. Modifiche ai Termini\n'
               'Ci riserviamo il diritto di modificare o sostituire questi Termini in qualsiasi momento. Continuando ad accedere o utilizzare il nostro servizio dopo che tali revisioni diventano effettive, accetti di essere vincolato dai termini modificati.\n\n'
               'Contattaci\n'
-              'Se hai domande su questi Termini, contattaci all\'indirizzo support@thewalkingpet.com.',
+              'Se hai domande su questi Termini e Condizioni, contattaci all\'indirizzo support@thewalkingpet.it.',
               style: TextStyle(height: 1.5),
             ),
           ],
