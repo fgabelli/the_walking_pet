@@ -17,6 +17,7 @@ class WalkService {
 
   // Get upcoming walks stream
   Stream<List<WalkModel>> getUpcomingWalks() {
+    return _firestore
         .collection(_collection)
         .where('date', isGreaterThan: DateTime.now())
         .orderBy('date')
