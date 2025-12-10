@@ -9,7 +9,8 @@ import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/services/friend_service.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
-import '../../notifications/presentation/screens/notifications_screen.dart'; // Import NotificationsScreen and provider
+import '../../../notifications/presentation/screens/notifications_screen.dart'; // Corrected import
+import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
