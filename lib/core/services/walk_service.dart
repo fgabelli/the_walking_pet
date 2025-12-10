@@ -17,14 +17,14 @@ class WalkService {
 
   // Get upcoming walks stream
   Stream<List<WalkModel>> getUpcomingWalks() {
-    return _firestore
         .collection(_collection)
-        .where('status', isEqualTo: WalkStatus.upcoming.name)
         .where('date', isGreaterThan: DateTime.now())
         .orderBy('date')
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => WalkModel.fromFirestore(doc)).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => WalkModel.fromFirestore(doc))
+            .where((walk) => walk.status == WalkStatus.upcoming)
+            .toList());
   }
 
   // Get walk by ID
