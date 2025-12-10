@@ -389,7 +389,30 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       Navigator.pop(context); // Close bottom sheet
                       
                       final chatController = ref.read(chatControllerProvider.notifier);
-                      final chatId = await chatController.createChat(user.uid);
+                      
+                      // Check if already friends to decide status
+                      final currentUser = ref.read(authServiceProvider).currentUser;
+                      // We need to re-verify friendship status because 'user' might be stale OR 
+                      // we need to check 'my' friends list properly.
+                      // Ideally we have the 'isFriend' logic calculated above available here.
+                      // Let's re-calculate efficiently or assume the previously calculated 'isFriend' is valid?
+                      // The 'isFriend' variable is inside Consumer builder above, not accessible here directly 
+                      // unless we move this logic inside a Consumer too.
+                      // Actually, this ElevatedButton IS inside the Row children, but the Consumer was only around the "Add Friend" button.
+                      // This "Messaggio" button is sibling to that Consumer.
+                      
+                      // Let's implement the check here.
+                      final myUid = currentUser?.uid;
+                      final isFriend = myUid != null && user.friends.contains(myUid);
+                      // Note: verifying 'user.friends.contains(myUid)' is checking if THEY consider ME a friend.
+                      // Which is correct for bi-directional friendship. 
+                      
+                      final status = isFriend ? ChatStatus.accepted : ChatStatus.pending;
+                      
+                      final chatId = await chatController.createChat(
+                        user.uid, 
+                        initialStatus: status,
+                      );
                       
                       if (chatId != null && context.mounted) {
                         Navigator.push(

@@ -40,7 +40,7 @@ class ChatController extends StateNotifier<ChatState> {
 
   ChatController(this._chatService, this._ref) : super(ChatState());
 
-  Future<String?> createChat(String otherUserId) async {
+  Future<String?> createChat(String otherUserId, {ChatStatus initialStatus = ChatStatus.pending}) async {
     state = ChatState(isLoading: true);
     try {
       final currentUser = _ref.read(authServiceProvider).currentUser;
@@ -49,6 +49,7 @@ class ChatController extends StateNotifier<ChatState> {
       final chatId = await _chatService.createChat(
         [currentUser.uid, otherUserId],
         currentUser.uid, // Initiator
+        initialStatus: initialStatus,
       );
       state = ChatState(isLoading: false);
       return chatId;

@@ -6,7 +6,7 @@ class ChatService {
   final String _collection = 'chats';
 
   // Create or get existing chat
-  Future<String> createChat(List<String> userIds, String initiatorId) async {
+  Future<String> createChat(List<String> userIds, String initiatorId, {ChatStatus initialStatus = ChatStatus.pending}) async {
     try {
       userIds.sort();
       final chatId = userIds.join('_');
@@ -17,7 +17,7 @@ class ChatService {
         await _firestore.collection(_collection).doc(chatId).set({
           'participants': userIds,
           'updatedAt': FieldValue.serverTimestamp(),
-          'status': ChatStatus.pending.name,
+          'status': initialStatus.name,
           'initiatorId': initiatorId,
         });
       }
