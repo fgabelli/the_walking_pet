@@ -412,28 +412,32 @@ class MapStateController extends StateNotifier<MapState> {
   }
   Future<bool> _tryFallbackToUserAddress() async {
     try {
-      final user = _ref.read(authServiceProvider).currentUser;
-      if (user != null && user.address != null && user.address!.isNotEmpty) {
-        print('Attempting to geocode address: ${user.address}');
-        final locations = await locationFromAddress(user.address!);
-        if (locations.isNotEmpty) {
-          final loc = locations.first;
-          final position = Position(
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            timestamp: DateTime.now(),
-            accuracy: 0,
-            altitude: 0,
-            heading: 0,
-            speed: 0,
-            speedAccuracy: 0,
-            altitudeAccuracy: 0, 
-            headingAccuracy: 0,
-            floor: null,
-            isMocked: true,
-          );
-          _updatePosition(position);
-          return true;
+      final firebaseUser = _ref.read(authServiceProvider).currentUser;
+      if (firebaseUser != null) {
+        final userModel = await _userService.getUserById(firebaseUser.uid);
+        
+        if (userModel != null && userModel.address != null && userModel.address!.isNotEmpty) {
+          print('Attempting to geocode address: ${userModel.address}');
+          final locations = await locationFromAddress(userModel.address!);
+          if (locations.isNotEmpty) {
+            final loc = locations.first;
+            final position = Position(
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              timestamp: DateTime.now(),
+              accuracy: 0,
+              altitude: 0,
+              heading: 0,
+              speed: 0,
+              speedAccuracy: 0,
+              altitudeAccuracy: 0, 
+              headingAccuracy: 0,
+              floor: null,
+              isMocked: true,
+            );
+            _updatePosition(position);
+            return true;
+          }
         }
       }
     } catch (e) {
