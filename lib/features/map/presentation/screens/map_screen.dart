@@ -75,7 +75,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ],
                 ),
               ],
-            )
             ),
           
           if (mapState.isLoading)
