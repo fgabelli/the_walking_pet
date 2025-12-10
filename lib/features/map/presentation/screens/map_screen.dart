@@ -37,10 +37,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                initialCenter: LatLng(
-                  mapState.currentPosition!.latitude,
-                  mapState.currentPosition!.longitude,
-                ),
+                initialCenter: mapState.currentPosition != null 
+                    ? LatLng(
+                        mapState.currentPosition!.latitude,
+                        mapState.currentPosition!.longitude,
+                      )
+                    : const LatLng(41.9028, 12.4964), // Default to Rome
                 initialZoom: 15.0,
                 onTap: (_, __) {
                   ref.read(mapControllerProvider.notifier).clearSelectedUser();
@@ -53,20 +55,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
                 MarkerLayer(
                   markers: [
-                    // Current Position Marker
-                    Marker(
-                      point: LatLng(
-                        mapState.currentPosition!.latitude,
-                        mapState.currentPosition!.longitude,
+                    // Current Position Marker only if we have it
+                    if (mapState.currentPosition != null)
+                      Marker(
+                        point: LatLng(
+                          mapState.currentPosition!.latitude,
+                          mapState.currentPosition!.longitude,
+                        ),
+                        width: 50,
+                        height: 50,
+                        child: const Icon(
+                          Icons.my_location,
+                          color: Colors.blue,
+                          size: 30,
+                        ),
                       ),
-                      width: 50,
-                      height: 50,
-                      child: const Icon(
-                        Icons.my_location,
-                        color: Colors.blue,
-                        size: 30,
-                      ),
-                    ),
                     // Other Markers
                     ...mapState.markers,
                   ],

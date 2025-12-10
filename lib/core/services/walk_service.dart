@@ -17,10 +17,7 @@ class WalkService {
 
   // Get upcoming walks stream
   Stream<List<WalkModel>> getUpcomingWalks() {
-    return _firestore
         .collection(_collection)
-        .where('date', isGreaterThan: DateTime.now())
-        .orderBy('date')
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => WalkModel.fromFirestore(doc))
