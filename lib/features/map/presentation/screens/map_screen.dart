@@ -6,7 +6,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/map_provider.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/services/friend_service.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../notifications/presentation/screens/notifications_screen.dart'; // Import NotificationsScreen and provider
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -120,34 +123,93 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Search Bar / Filter Bar Placeholder
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: TextField(
-                      onChanged: (value) {
-                        ref.read(mapControllerProvider.notifier).setSearchQuery(value);
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Cerca passeggiate o amici...',
-                        hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
+                  // Search Bar & Notifications
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: TextField(
+                            onChanged: (value) {
+                              ref.read(mapControllerProvider.notifier).setSearchQuery(value);
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Cerca passeggiate o amici...',
+                              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                              prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                              suffixIcon: mapState.searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                                      onPressed: () {
+                                        ref.read(mapControllerProvider.notifier).setSearchQuery('');
+                                      },
+                                    )
+                                  : const Icon(Icons.tune, color: AppColors.primary),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                        suffixIcon: mapState.searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear, color: AppColors.textSecondary),
-                                onPressed: () {
-                                  ref.read(mapControllerProvider.notifier).setSearchQuery('');
-                                },
-                              )
-                            : const Icon(Icons.tune, color: AppColors.primary),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      // Notifications Button
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final requestsAsync = ref.watch(friendRequestsProvider);
+                          final hasNotifications = requestsAsync.maybeWhen(
+                            data: (data) => data.isNotEmpty,
+                            orElse: () => false,
+                          );
+
+                          return Stack(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const NotificationsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.notifications_outlined, color: AppColors.primary),
+                                ),
+                              ),
+                              if (hasNotifications)
+                                Positioned(
+                                  right: 8,
+                                  top: 8,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.error,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -245,12 +307,78 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // TODO: Navigate to full profile
-                      Navigator.pop(context);
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final currentUser = ref.watch(authServiceProvider).currentUser;
+                      // Logic to determine button state
+                      // We need to know if they are already friends, or if a request is pending.
+                      // Since we don't have the FULL currentUser model here with 'friends' list up-to-date locally 
+                      // (unless we assume authProvider holds it, but authProvider usually holds Firebase User),
+                      // we might need to fetch it or pass it. 
+                      // Wait, mapState has markers, but not the current user's full profile with friends list?
+                      // Actually, let's look at how we get currentUser.
+                      // ref.watch(authServiceProvider).currentUser is Firebase User.
+                      // We need the UserModel of the logged-in user to check the 'friends' list.
+                      // We can get it from a userProvider if we have one, or fetch it.
+                      // For now, let's assumed we can get it or we will fetch it.
+                      // A better approach: The 'user' passed to this method is the OTHER user.
+                      // Does IT have 'friends'? Yes. 
+                      // If 'user.friends' contains me, we are friends.
+                      // If 'user.friendRequests' contains me, I sent a request.
+                      
+                      final myUid = currentUser?.uid;
+                      final isMe = myUid == user.uid;
+                      final isFriend = myUid != null && user.friends.contains(myUid);
+                      final isRequestSent = myUid != null && user.friendRequests.contains(myUid);
+                      final hasIncomingRequest = myUid != null && (user.friends.contains(myUid) == false) && (
+                          // logic for incoming not easily checked via 'user' unless we check my own profile
+                          // For now let's focus on "Add Friend" vs "Request Sent" vs "Friend"
+                          false // Placeholder for incoming check
+                      );
+
+                      if (isMe) return const SizedBox(); // Don't show add friend for self
+
+                      if (isFriend) {
+                         return OutlinedButton.icon(
+                          onPressed: () {
+                            // Already friends (maybe show 'Remove' in a submenu?)
+                          },
+                          icon: const Icon(Icons.check),
+                          label: const Text('Amici'),
+                        );
+                      }
+
+                      if (isRequestSent) {
+                         return OutlinedButton.icon(
+                          onPressed: null, // Disable
+                          icon: const Icon(Icons.hourglass_empty),
+                          label: const Text('Richiesta inviata'),
+                        );
+                      }
+
+                      return OutlinedButton.icon(
+                        onPressed: () async {
+                           try {
+                             await FriendService().sendFriendRequest(user.uid);
+                             // Force close or show snackbar
+                             if (context.mounted) {
+                               Navigator.pop(context);
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 const SnackBar(content: Text('Richiesta di amicizia inviata!')),
+                               );
+                             }
+                           } catch (e) {
+                             if (context.mounted) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 SnackBar(content: Text('Errore: $e')),
+                               );
+                             }
+                           }
+                        },
+                        icon: const Icon(Icons.person_add),
+                        label: const Text('Aggiungi'),
+                      );
                     },
-                    child: const Text('Vedi Profilo'),
                   ),
                 ),
                 const SizedBox(width: 16),
