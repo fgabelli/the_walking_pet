@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/map_service.dart';
 import '../../../../core/services/user_service.dart';
@@ -145,11 +146,16 @@ class MapStateController extends StateNotifier<MapState> {
 
       final hasPermission = await _locationService.requestPermission();
       if (!hasPermission) {
-        state = state.copyWith(
-          isLoading: false,
-          isLocationEnabled: false,
-          error: 'Permessi di localizzazione negati',
-        );
+        print('Permission denied, trying fallback to user address');
+        final fallbackSuccess = await _tryFallbackToUserAddress();
+        
+        if (!fallbackSuccess) {
+          state = state.copyWith(
+            isLoading: false,
+            isLocationEnabled: false,
+            error: 'Permessi di localizzazione negati',
+          );
+        }
         return;
       }
 
@@ -161,7 +167,8 @@ class MapStateController extends StateNotifier<MapState> {
         print('Initial position found: ${position.latitude}, ${position.longitude}');
         _updatePosition(position);
       } else {
-        print('Initial position is null');
+        print('Initial position is null, trying fallback to user address');
+        await _tryFallbackToUserAddress();
       }
 
       // Start listening to position updates
@@ -402,6 +409,37 @@ class MapStateController extends StateNotifier<MapState> {
     _walksSubscription?.cancel();
     _announcementsSubscription?.cancel();
     super.dispose();
+  }
+  Future<bool> _tryFallbackToUserAddress() async {
+    try {
+      final user = _ref.read(authServiceProvider).currentUser;
+      if (user != null && user.address != null && user.address!.isNotEmpty) {
+        print('Attempting to geocode address: ${user.address}');
+        final locations = await locationFromAddress(user.address!);
+        if (locations.isNotEmpty) {
+          final loc = locations.first;
+          final position = Position(
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0, 
+            headingAccuracy: 0,
+            floor: null,
+            isMocked: true,
+          );
+          _updatePosition(position);
+          return true;
+        }
+      }
+    } catch (e) {
+      print('Address fallback failed: $e');
+    }
+    return false;
   }
 }
 

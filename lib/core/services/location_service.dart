@@ -30,10 +30,15 @@ class LocationService {
       }
 
       // Force a fresh update
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
+      // Force a fresh update, but handle timeout gracefully
+      try {
+        return await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.medium, // Lower accuracy for faster fix
+            timeLimit: const Duration(seconds: 5));  // Shorter timeout
+      } catch (e) {
+        // Fallback to last known position if current fetch fails
+        return await Geolocator.getLastKnownPosition();
+      }
     } catch (e) {
       print('Error getting current position: $e');
       return null;
