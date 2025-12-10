@@ -225,6 +225,15 @@ class WalkDetailScreen extends ConsumerWidget {
                         )
                       : Text(isParticipant ? 'Abbandona' : 'Partecipa'),
                 ),
+              )
+            else if (isCreator)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: null, // Disabled
+                  icon: const Icon(Icons.star, color: Colors.orange),
+                  label: const Text('Sei l\'organizzatore', style: TextStyle(color: Colors.black54)),
+                ),
               ),
           ],
         ),

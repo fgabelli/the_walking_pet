@@ -11,6 +11,8 @@ import '../../../../core/services/friend_service.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../notifications/presentation/screens/notifications_screen.dart'; // Corrected import
 import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
+import '../../../walks/presentation/screens/walk_detail_screen.dart';
+import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -41,6 +43,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           LatLng(next.latitude, next.longitude),
           15.0,
         );
+      }
+    });
+
+    // Listen for selected WALK
+    ref.listen(mapControllerProvider.select((value) => value.selectedWalk), (previous, next) {
+      if (next != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WalkDetailScreen(walkId: next.id, walk: next),
+          ),
+        ).then((_) {
+          ref.read(mapControllerProvider.notifier).clearSelectedWalk();
+        });
+      }
+    });
+
+    // Listen for selected ANNOUNCEMENT
+    ref.listen(mapControllerProvider.select((value) => value.selectedAnnouncement), (previous, next) {
+      if (next != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnnouncementDetailScreen(announcementId: next.id, announcement: next),
+          ),
+        ).then((_) {
+          ref.read(mapControllerProvider.notifier).clearSelectedAnnouncement();
+        });
       }
     });
 

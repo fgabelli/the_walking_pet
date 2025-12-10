@@ -40,6 +40,8 @@ class MapState {
   final List<UserLocation> allUserLocations;
   final List<WalkModel> allWalks;
   final List<AnnouncementModel> allAnnouncements;
+  final WalkModel? selectedWalk;
+  final AnnouncementModel? selectedAnnouncement;
 
   MapState({
     this.currentPosition,
@@ -52,6 +54,8 @@ class MapState {
     this.allUserLocations = const [],
     this.allWalks = const [],
     this.allAnnouncements = const [],
+    this.selectedWalk,
+    this.selectedAnnouncement,
   });
 
   MapState copyWith({
@@ -65,6 +69,8 @@ class MapState {
     List<UserLocation>? allUserLocations,
     List<WalkModel>? allWalks,
     List<AnnouncementModel>? allAnnouncements,
+    WalkModel? selectedWalk,
+    AnnouncementModel? selectedAnnouncement,
   }) {
     return MapState(
       currentPosition: currentPosition ?? this.currentPosition,
@@ -77,6 +83,8 @@ class MapState {
       allUserLocations: allUserLocations ?? this.allUserLocations,
       allWalks: allWalks ?? this.allWalks,
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
+      selectedWalk: selectedWalk, // No null coalescing to allow clearing
+      selectedAnnouncement: selectedAnnouncement, // No null coalescing to allow clearing
     );
   }
 }
@@ -321,7 +329,7 @@ class MapStateController extends StateNotifier<MapState> {
           height: 40,
           child: GestureDetector(
             onTap: () {
-              // Handle walk tap
+              state = state.copyWith(selectedWalk: walk);
             },
             child: Container(
               decoration: BoxDecoration(
@@ -352,7 +360,7 @@ class MapStateController extends StateNotifier<MapState> {
           height: 40,
           child: GestureDetector(
             onTap: () {
-              // Handle announcement tap
+               state = state.copyWith(selectedAnnouncement: announcement);
             },
             child: Container(
               decoration: BoxDecoration(
@@ -400,6 +408,14 @@ class MapStateController extends StateNotifier<MapState> {
 
   void clearSelectedUser() {
     state = state.copyWith(selectedUser: null);
+  }
+
+  void clearSelectedWalk() {
+    state = state.copyWith(selectedWalk: null);
+  }
+
+  void clearSelectedAnnouncement() {
+    state = state.copyWith(selectedAnnouncement: null);
   }
 
   @override
