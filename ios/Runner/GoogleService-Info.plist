@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CLIENT_ID</key>
+	<string>903048437394-ndo19anet2rpv57qfl8bqlvcbbgsblvl.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.903048437394-ndo19anet2rpv57qfl8bqlvcbbgsblvl</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>903048437394-3q5simnnnqm99u1rqd49pi8ijidagoe7.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyA93OXT_AG1haFvA6yBeh775_Z64z147FI</string>
 	<key>GCM_SENDER_ID</key>
@@ -26,9 +32,7 @@
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:903048437394:ios:ce05fb8350bbb808d8504b</string>
-	<key>CLIENT_ID</key>
-	<string>903048437394-ce05fb8350bbb808d8504b.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.903048437394-ce05fb8350bbb808d8504b</string>
+	<key>DATABASE_URL</key>
+	<string>https://thewalkingpet-a1578-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>
