@@ -33,21 +33,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          if (mapState.currentPosition != null)
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: mapState.currentPosition != null 
-                    ? LatLng(
-                        mapState.currentPosition!.latitude,
-                        mapState.currentPosition!.longitude,
-                      )
-                    : const LatLng(41.9028, 12.4964), // Default to Rome
-                initialZoom: 15.0,
-                onTap: (_, __) {
-                  ref.read(mapControllerProvider.notifier).clearSelectedUser();
-                },
-              ),
+          // Map Layer (unconditional render with fallback)
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: mapState.currentPosition != null 
+                  ? LatLng(
+                      mapState.currentPosition!.latitude,
+                      mapState.currentPosition!.longitude,
+                    )
+                  : const LatLng(41.9028, 12.4964), // Default to Rome
+              initialZoom: 15.0,
+              onTap: (_, __) {
+                ref.read(mapControllerProvider.notifier).clearSelectedUser();
+              },
+            ),
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -76,10 +76,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ],
             )
-          else if (mapState.isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (mapState.error != null)
-            Center(
+            ),
+          
+          if (mapState.isLoading)
+             const Center(child: CircularProgressIndicator()),
+             
+          if (mapState.error != null)
+             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -94,7 +97,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Retry logic could be added here
+                      // Retry logic
                     },
                     child: const Text('Riprova'),
                   ),
