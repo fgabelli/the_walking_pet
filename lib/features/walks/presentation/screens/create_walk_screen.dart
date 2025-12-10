@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/walk_model.dart';
 import '../providers/walk_provider.dart';
 import '../../../../shared/widgets/address_autocomplete_field.dart';
+import 'package:geocoding/geocoding.dart';
 
 class CreateWalkScreen extends ConsumerStatefulWidget {
   final WalkModel? walkToEdit;
@@ -94,9 +95,21 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
         _selectedTime.minute,
       );
 
-      // Mock coordinates (e.g., Rome center) if not editing or changed
-      // TODO: Implement real location picking
-      if (!_isEditing) {
+      // If coordinates are 0.0 (manual entry without selection), try to geocode
+      if (_latitude == 0.0 && _longitude == 0.0 && _addressController.text.isNotEmpty) {
+        try {
+           final locations = await locationFromAddress(_addressController.text);
+           if (locations.isNotEmpty) {
+             _latitude = locations.first.latitude;
+             _longitude = locations.first.longitude;
+           }
+        } catch (_) {
+          // Keep 0.0 or set default
+        }
+      }
+
+      // Default to Rome only if still invalid and not editing
+      if (!_isEditing && (_latitude == 0.0 && _longitude == 0.0)) {
         _latitude = 41.9028;
         _longitude = 12.4964;
       }

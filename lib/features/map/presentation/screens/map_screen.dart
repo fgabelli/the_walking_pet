@@ -29,6 +29,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _showUserProfile(context, next.selectedUser!);
       }
     });
+    
+    // Auto-center map when location is found (if it was previously null/loading)
+    ref.listen(mapControllerProvider.select((value) => value.currentPosition), (previous, next) {
+      if (previous == null && next != null) {
+        _mapController.move(
+          LatLng(next.latitude, next.longitude),
+          15.0,
+        );
+      }
+    });
 
     return Scaffold(
       body: Stack(
