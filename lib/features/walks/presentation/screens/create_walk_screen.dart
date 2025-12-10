@@ -95,21 +95,44 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
         _selectedTime.minute,
       );
 
-      // If coordinates are 0.0 (manual entry without selection), try to geocode
-      if (_latitude == 0.0 && _longitude == 0.0 && _addressController.text.isNotEmpty) {
+      // Check if coordinates are 0.0 OR are the default Rome coordinates (which means they might be wrong for a non-Rome address)
+      bool needsGeocoding = (_latitude == 0.0 && _longitude == 0.0);
+      
+      // If we have Rome coordinates but the address doesn't seem to contain "Roma", try to re-geocode to fix old data
+      if ((_latitude - 41.9028).abs() < 0.0001 && (_longitude - 12.4964).abs() < 0.0001) {
+         if (!_addressController.text.toLowerCase().contains('roma')) {
+           needsGeocoding = true;
+         }
+      }
+
+      if (needsGeocoding && _addressController.text.isNotEmpty) {
         try {
            final locations = await locationFromAddress(_addressController.text);
            if (locations.isNotEmpty) {
              _latitude = locations.first.latitude;
              _longitude = locations.first.longitude;
+           } else {
+             if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Indirizzo non trovato, usare la ricerca automatica.')),
+                );
+                return; // Stop saving to prevent bad data
+             }
            }
         } catch (_) {
-          // Keep 0.0 or set default
+           if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Impossibile geolocalizzare questo indirizzo. Selezionalo dal menu a tendina.')),
+              );
+              return; // Stop saving
+           }
         }
       }
 
-      // Default to Rome only if still invalid and not editing
+      // Default to Rome ONLY if explicit fallback is needed and we really have no data
+      // But since we return above on failure, this might be redundant or for empty address cases (which are blocked by validator)
       if (!_isEditing && (_latitude == 0.0 && _longitude == 0.0)) {
+         // Final fallback if something really weird happens
         _latitude = 41.9028;
         _longitude = 12.4964;
       }
