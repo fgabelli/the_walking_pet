@@ -52,7 +52,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => WalkDetailScreen(walkId: next.id, walk: next),
+            builder: (context) => WalkDetailScreen(walk: next),
           ),
         ).then((_) {
           ref.read(mapControllerProvider.notifier).clearSelectedWalk();
@@ -66,7 +66,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AnnouncementDetailScreen(announcementId: next.id, announcement: next),
+            builder: (context) => AnnouncementDetailScreen(announcement: next),
           ),
         ).then((_) {
           ref.read(mapControllerProvider.notifier).clearSelectedAnnouncement();
