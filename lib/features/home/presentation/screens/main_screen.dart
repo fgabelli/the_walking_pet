@@ -8,6 +8,7 @@ import '../../../nextdoor/presentation/screens/nextdoor_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
+import '../../../../core/services/notification_service.dart';
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -30,6 +31,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Notification Service
+    NotificationService().initialize();
   }
 
   @override
