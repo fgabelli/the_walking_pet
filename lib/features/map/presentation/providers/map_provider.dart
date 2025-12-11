@@ -61,7 +61,6 @@ class MapState {
     this.allAnnouncements = const [],
     this.selectedWalk,
     this.selectedAnnouncement,
-    this.selectedAnnouncement,
     this.blockedUsers = const [],
     this.filterBreed,
     this.filterGender,

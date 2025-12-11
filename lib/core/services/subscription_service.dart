@@ -70,7 +70,8 @@ class SubscriptionService {
       if (currentUser != null) {
           final userModel = await UserService().getUserById(currentUser.uid);
           if (userModel != null && userModel.isPremium != isPremium) {
-              await UserService().updateUser(currentUser.uid, {'isPremium': isPremium});
+              final updatedUser = userModel.copyWith(isPremium: isPremium);
+               await UserService().updateUser(updatedUser);
           }
       }
     } catch (e) {
@@ -94,6 +95,8 @@ class SubscriptionService {
   Future<bool> purchasePackage(Package package) async {
     if (!_isInitialized) return false;
     try {
+      // purchasePackage returns CustomerInfo directly in newer versions, or we might need to verify the return type.
+      // According to docs: Future<CustomerInfo> purchasePackage(Package package)
       final customerInfo = await Purchases.purchasePackage(package);
       final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
       
