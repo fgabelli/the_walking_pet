@@ -16,46 +16,64 @@ class NextdoorScreen extends ConsumerStatefulWidget {
   ConsumerState<NextdoorScreen> createState() => _NextdoorScreenState();
 }
 
-class _NextdoorScreenState extends ConsumerState<NextdoorScreen> {
+class _NextdoorScreenState extends ConsumerState<NextdoorScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // Rebuild to update FAB visibility
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Nextdoor'),
-          centerTitle: true,
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Bacheca'),
-              Tab(text: 'Offerte'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            // Tab 1: Announcements
-            _AnnouncementsTab(),
-            // Tab 2: Offers
-            const OffersScreen(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nextdoor'),
+        centerTitle: true,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Bacheca'),
+            Tab(text: 'Offerte'),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CreateAnnouncementScreen(),
-              ),
-            );
-          },
-          label: const Text('Nuovo Annuncio'),
-          icon: const Icon(Icons.add),
-          backgroundColor: AppColors.primary,
-          heroTag: 'nextdoor_fab',
-          foregroundColor: Colors.white,
-        ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Tab 1: Announcements
+          _AnnouncementsTab(),
+          // Tab 2: Offers
+          const OffersScreen(),
+        ],
+      ),
+      floatingActionButton: _tabController.index == 0 
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateAnnouncementScreen(),
+                  ),
+                );
+              },
+              label: const Text('Nuovo Annuncio'),
+              icon: const Icon(Icons.add),
+              backgroundColor: AppColors.primary,
+              heroTag: 'nextdoor_fab',
+              foregroundColor: Colors.white,
+            )
+          : null, // Hide FAB on Offers tab (let OffersScreen handle it)
     );
   }
 }
