@@ -34,7 +34,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>The Walking Pet ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
