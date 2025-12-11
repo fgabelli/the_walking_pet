@@ -6,7 +6,7 @@ import '../../../../shared/models/announcement_model.dart';
 import '../providers/nextdoor_provider.dart';
 import 'create_announcement_screen.dart';
 import 'announcement_detail_screen.dart';
-
+import '../../../../offers/presentation/screens/offers_screen.dart'; // Import
 import '../../../profile/presentation/providers/profile_provider.dart';
 
 class NextdoorScreen extends ConsumerStatefulWidget {
@@ -16,7 +16,55 @@ class NextdoorScreen extends ConsumerStatefulWidget {
   ConsumerState<NextdoorScreen> createState() => _NextdoorScreenState();
 }
 
-class _NextdoorScreenState extends ConsumerState<NextdoorScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Nextdoor'),
+          centerTitle: true,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Bacheca'),
+              Tab(text: 'Offerte'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            // Tab 1: Announcements
+            _AnnouncementsTab(),
+            // Tab 2: Offers
+            const OffersScreen(),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CreateAnnouncementScreen(),
+              ),
+            );
+          },
+          label: const Text('Nuovo Annuncio'),
+          icon: const Icon(Icons.add),
+          backgroundColor: AppColors.primary,
+          heroTag: 'nextdoor_fab',
+          foregroundColor: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class _AnnouncementsTab extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_AnnouncementsTab> createState() => _AnnouncementsTabState();
+}
+
+class _AnnouncementsTabState extends ConsumerState<_AnnouncementsTab> {
   bool _showFriendsOnly = false;
 
   @override
@@ -24,102 +72,86 @@ class _NextdoorScreenState extends ConsumerState<NextdoorScreen> {
     final nextdoorState = ref.watch(nextdoorControllerProvider);
     final currentUserAsync = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nextdoor'),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: false, label: Text('Tutti')),
-                ButtonSegment(value: true, label: Text('Solo Amici')),
-              ],
-              selected: {_showFriendsOnly},
-              onSelectionChanged: (Set<bool> newSelection) {
-                setState(() {
-                  _showFriendsOnly = newSelection.first;
-                });
-              },
-            ),
+    return Column(
+      children: [
+        // Filter Segmented Button (moved from AppBar bottom)
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(value: false, label: Text('Tutti')),
+              ButtonSegment(value: true, label: Text('Solo Amici')),
+            ],
+            selected: {_showFriendsOnly},
+            onSelectionChanged: (Set<bool> newSelection) {
+              setState(() {
+                _showFriendsOnly = newSelection.first;
+              });
+            },
           ),
         ),
-      ),
-      body: nextdoorState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : nextdoorState.error != null
-              ? Center(child: Text('Errore: ${nextdoorState.error}'))
-              : currentUserAsync.when(
-                  data: (currentUser) {
-                    var displayedAnnouncements = nextdoorState.announcements;
-                    if (_showFriendsOnly && currentUser != null) {
-                      displayedAnnouncements = nextdoorState.announcements.where((a) {
-                        return currentUser.friends.contains(a.userId) || a.userId == currentUser.uid;
-                      }).toList();
-                    }
-
-                    if (displayedAnnouncements.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.campaign_outlined,
-                                size: 64, color: AppColors.textSecondary),
-                            const SizedBox(height: 16),
-                            Text(
-                              _showFriendsOnly
-                                  ? 'Nessun annuncio dai tuoi amici'
-                                  : 'Nessun annuncio nelle vicinanze',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: AppColors.textSecondary,
+        
+        Expanded(
+          child: nextdoorState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : nextdoorState.error != null
+                  ? Center(child: Text('Errore: ${nextdoorState.error}'))
+                  : currentUserAsync.when(
+                      data: (currentUser) {
+                        var displayedAnnouncements = nextdoorState.announcements;
+                        if (_showFriendsOnly && currentUser != null) {
+                          displayedAnnouncements = nextdoorState.announcements.where((a) {
+                            return currentUser.friends.contains(a.userId) || a.userId == currentUser.uid;
+                          }).toList();
+                        }
+      
+                        if (displayedAnnouncements.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.campaign_outlined,
+                                    size: 64, color: AppColors.textSecondary),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _showFriendsOnly
+                                      ? 'Nessun annuncio dai tuoi amici'
+                                      : 'Nessun annuncio nelle vicinanze',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                ),
+                                if (!_showFriendsOnly) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Sii il primo a scrivere qualcosa!',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
                                   ),
+                                ],
+                              ],
                             ),
-                            if (!_showFriendsOnly) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                'Sii il primo a scrivere qualcosa!',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: displayedAnnouncements.length,
-                      itemBuilder: (context, index) {
-                        final announcement = displayedAnnouncements[index];
-                        return _AnnouncementCard(announcement: announcement);
+                          );
+                        }
+      
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: displayedAnnouncements.length,
+                          itemBuilder: (context, index) {
+                            final announcement = displayedAnnouncements[index];
+                            return _AnnouncementCard(announcement: announcement);
+                          },
+                        );
                       },
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, st) => Center(child: Text('Errore utente: $e')),
-                ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateAnnouncementScreen(),
-            ),
-          );
-        },
-        label: const Text('Nuovo Annuncio'),
-        icon: const Icon(Icons.add),
-        backgroundColor: AppColors.primary,
-        heroTag: 'nextdoor_fab',
-        foregroundColor: Colors.white,
-      ),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, st) => Center(child: Text('Errore utente: $e')),
+                    ),
+        ),
+      ],
     );
   }
-}
+} // End of _AnnouncementsTab
 
 
 

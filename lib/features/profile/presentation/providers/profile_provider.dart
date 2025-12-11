@@ -98,6 +98,10 @@ class ProfileController extends StateNotifier<ProfileState> {
     Gender? gender,
     DateTime? birthDate,
     String? address,
+    String? businessCategory,
+    String? website,
+    String? phoneNumber,
+    AccountType? accountType,
   }) async {
     state = ProfileState(isLoading: true);
     try {

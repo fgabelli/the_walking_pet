@@ -26,6 +26,8 @@ class UserModel {
   final bool isPremium;
   final AccountType accountType;
   final String? businessCategory; // Only for business accounts
+  final String? website;
+  final String? phoneNumber;
   
   // Personal Info
   final Gender? gender;
@@ -53,6 +55,8 @@ class UserModel {
     this.isPremium = false,
     this.accountType = AccountType.personal,
     this.businessCategory,
+    this.website,
+    this.phoneNumber,
     this.gender,
     this.birthDate,
     this.address,
@@ -87,7 +91,9 @@ class UserModel {
         orElse: () => AccountType.personal,
       ),
       businessCategory: data['businessCategory'],
-      gender: data['gender'] != null 
+      website: data['website'],
+      phoneNumber: data['phoneNumber'],
+      gender: data['gender'] != null  
           ? Gender.values.firstWhere((e) => e.name == data['gender'], orElse: () => Gender.other)
           : null,
       birthDate: data['birthDate'] != null ? (data['birthDate'] as Timestamp).toDate() : null,
@@ -116,6 +122,8 @@ class UserModel {
       'isPremium': isPremium,
       'accountType': accountType.name,
       'businessCategory': businessCategory,
+      'website': website,
+      'phoneNumber': phoneNumber,
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
@@ -145,6 +153,8 @@ class UserModel {
     bool? isPremium,
     AccountType? accountType,
     String? businessCategory,
+    String? website,
+    String? phoneNumber,
     Gender? gender,
     DateTime? birthDate,
     String? address,
@@ -170,6 +180,8 @@ class UserModel {
       isPremium: isPremium ?? this.isPremium,
       accountType: accountType ?? this.accountType,
       businessCategory: businessCategory ?? this.businessCategory,
+      website: website ?? this.website,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,

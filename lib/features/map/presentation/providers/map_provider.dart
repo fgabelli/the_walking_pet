@@ -390,28 +390,44 @@ class MapStateController extends StateNotifier<MapState> {
                 onTap: () {
                    state = state.copyWith(selectedUser: userProfile);
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.deepPurple, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                child: userProfile!.accountType == AccountType.business
+                    ? Container(
+                        decoration: BoxDecoration(
+                          color: Colors.amber, // Business Gold
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.store, color: Colors.white, size: 24),
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.deepPurple, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: userProfile.photoUrl != null
+                              ? Image.network(
+                                  userProfile.photoUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(Icons.person, color: Colors.deepPurple),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: userProfile.photoUrl != null
-                        ? Image.network(
-                            userProfile.photoUrl!,
-                            fit: BoxFit.cover,
-                          )
-                        : const Icon(Icons.person, color: Colors.deepPurple),
-                  ),
-                ),
               ),
             ),
           );
