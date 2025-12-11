@@ -20,6 +20,12 @@ class UserModel {
   final List<String> friendRequests; // Incoming requests
   final List<String> locationWhitelist; // For 'custom' privacy
   final List<String> blockedUsers; // New field for blocked users
+  final bool isGhost; // New field for Ghost Mode (Premium)
+
+  // Monetization Fields
+  final bool isPremium;
+  final AccountType accountType;
+  final String? businessCategory; // Only for business accounts
   
   // Personal Info
   final Gender? gender;
@@ -43,6 +49,10 @@ class UserModel {
     this.friendRequests = const [],
     this.locationWhitelist = const [],
     this.blockedUsers = const [],
+    this.isGhost = false,
+    this.isPremium = false,
+    this.accountType = AccountType.personal,
+    this.businessCategory,
     this.gender,
     this.birthDate,
     this.address,
@@ -70,6 +80,13 @@ class UserModel {
       friendRequests: List<String>.from(data['friendRequests'] ?? []),
       locationWhitelist: List<String>.from(data['locationWhitelist'] ?? []),
       blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
+      isGhost: data['isGhost'] ?? false,
+      isPremium: data['isPremium'] ?? false,
+      accountType: AccountType.values.firstWhere(
+        (e) => e.name == (data['accountType'] ?? 'personal'),
+        orElse: () => AccountType.personal,
+      ),
+      businessCategory: data['businessCategory'],
       gender: data['gender'] != null 
           ? Gender.values.firstWhere((e) => e.name == data['gender'], orElse: () => Gender.other)
           : null,
@@ -95,6 +112,10 @@ class UserModel {
       'friendRequests': friendRequests,
       'locationWhitelist': locationWhitelist,
       'blockedUsers': blockedUsers,
+      'isGhost': isGhost,
+      'isPremium': isPremium,
+      'accountType': accountType.name,
+      'businessCategory': businessCategory,
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
@@ -120,6 +141,10 @@ class UserModel {
     List<String>? friendRequests,
     List<String>? locationWhitelist,
     List<String>? blockedUsers,
+    bool? isGhost,
+    bool? isPremium,
+    AccountType? accountType,
+    String? businessCategory,
     Gender? gender,
     DateTime? birthDate,
     String? address,
@@ -141,6 +166,10 @@ class UserModel {
       friendRequests: friendRequests ?? this.friendRequests,
       locationWhitelist: locationWhitelist ?? this.locationWhitelist,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      isGhost: isGhost ?? this.isGhost,
+      isPremium: isPremium ?? this.isPremium,
+      accountType: accountType ?? this.accountType,
+      businessCategory: businessCategory ?? this.businessCategory,
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,

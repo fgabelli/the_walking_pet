@@ -14,6 +14,7 @@ import '../providers/friend_provider.dart';
 import 'privacy_settings_screen.dart';
 import 'friends_list_screen.dart';
 import 'blocked_users_screen.dart'; // Import
+import '../../subscriptions/presentation/screens/paywall_screen.dart'; // Import
 import '../../../../core/services/user_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -242,6 +243,33 @@ class _ProfileContent extends ConsumerWidget {
               );
             },
           ),
+          
+          if (!user.isPremium)
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.amber.shade300, Colors.amber.shade500],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.star, color: Colors.white),
+                title: const Text(
+                  'Passa a Premium',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(Icons.chevron_right, color: Colors.white),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PaywallScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
           
           if (isMe) ...[
             const Divider(),

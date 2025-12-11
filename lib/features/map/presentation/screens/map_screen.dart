@@ -14,6 +14,7 @@ import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart'; // Added Shared Widget Import
+import '../widgets/map_filter_bottom_sheet.dart'; // FILTER IMPORT
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -181,7 +182,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                         ref.read(mapControllerProvider.notifier).setSearchQuery('');
                                       },
                                     )
-                                  : const Icon(Icons.tune, color: AppColors.primary),
+                                  : IconButton(
+                                      icon: const Icon(Icons.tune, color: AppColors.primary),
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          backgroundColor: Colors.transparent,
+                                          isScrollControlled: true,
+                                          builder: (context) => const MapFilterBottomSheet(),
+                                        );
+                                      },
+                                    ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
