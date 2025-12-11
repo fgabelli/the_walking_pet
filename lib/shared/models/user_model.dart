@@ -251,3 +251,8 @@ extension GenderExtension on Gender {
     }
   }
 }
+
+enum AccountType {
+  personal,
+  business,
+}

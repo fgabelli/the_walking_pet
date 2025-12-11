@@ -97,7 +97,18 @@ class SubscriptionService {
     try {
       // purchasePackage returns CustomerInfo directly in newer versions, or we might need to verify the return type.
       // According to docs: Future<CustomerInfo> purchasePackage(Package package)
-      final customerInfo = await Purchases.purchasePackage(package);
+      // Build fix: Handle potential PurchaseResult wrapper or direct CustomerInfo
+      final dynamic result = await Purchases.purchasePackage(package);
+      CustomerInfo customerInfo;
+      
+      // Check if result has .customerInfo property (PurchaseResult wrapper) or is CustomerInfo itself
+      try {
+        customerInfo = result as CustomerInfo;
+      } catch (_) {
+         // Assume it's PurchaseResult with customerInfo field
+         customerInfo = (result as dynamic).customerInfo;
+      }
+
       final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
       
       if (isPremium) {
