@@ -233,14 +233,20 @@ class UserProfileBottomSheet extends ConsumerWidget {
     final currentUser = ref.read(authServiceProvider).currentUser;
     final myUid = currentUser?.uid;
     
+    final isMe = myUid == user.uid;
     final isFriend = myUid != null && user.friends.contains(myUid);
-    final status = isFriend ? ChatStatus.accepted : ChatStatus.pending;
+    final status = (isFriend || isMe) ? ChatStatus.accepted : ChatStatus.pending;
     
     try {
       final chatId = await chatController.createChat(
         user.uid, 
         initialStatus: status,
       );
+      
+      // If it's a self-chat, ensure it's accepted (fixes existing pending self-chats)
+      if (chatId != null && isMe) {
+        await chatController.acceptChat(chatId);
+      }
       
       if (chatId != null && context.mounted) {
         Navigator.push(
