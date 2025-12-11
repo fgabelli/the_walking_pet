@@ -273,6 +273,45 @@ class _ProfileContent extends ConsumerWidget {
             ),
           
           if (isMe) ...[
+            // Business Profile Entry Point
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.store, color: AppColors.primary),
+                title: Text(
+                  user.accountType == AccountType.business 
+                      ? 'Gestisci Profilo Business' 
+                      : 'Passa a Profilo Business',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                ),
+                subtitle: user.accountType == AccountType.business 
+                    ? null
+                    : const Text('Per attività e professionisti', style: TextStyle(fontSize: 12)),
+                trailing: const Icon(Icons.chevron_right, color: AppColors.primary),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BusinessProfileEditScreen(user: user),
+                    ),
+                  );
+                },
+              ),
+            ),
+             const SizedBox(height: 8),
+             
             const Divider(),
             // Blocked Users
             ListTile(
