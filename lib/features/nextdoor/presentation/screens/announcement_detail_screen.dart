@@ -26,6 +26,31 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
   final _commentController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _markAsViewed();
+    });
+  }
+
+  void _markAsViewed() {
+    final currentUser = ref.read(authServiceProvider).currentUser;
+    if (currentUser == null) return;
+
+    // Check if user already viewed (is in responses with type watching)
+    final alreadyViewed = widget.announcement.responses.any(
+      (r) => r.userId == currentUser.uid && r.type == ResponseType.watching
+    );
+
+    if (!alreadyViewed) {
+      ref.read(nextdoorControllerProvider.notifier).addResponse(
+        widget.announcement.id,
+        ResponseType.watching,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _commentController.dispose();
     super.dispose();
