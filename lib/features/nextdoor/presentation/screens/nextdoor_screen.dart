@@ -6,7 +6,7 @@ import '../../../../shared/models/announcement_model.dart';
 import '../providers/nextdoor_provider.dart';
 import 'create_announcement_screen.dart';
 import 'announcement_detail_screen.dart';
-import '../../../../offers/presentation/screens/offers_screen.dart'; // Import
+import '../../../offers/presentation/screens/offers_screen.dart'; // Corrected Import
 import '../../../profile/presentation/providers/profile_provider.dart';
 
 class NextdoorScreen extends ConsumerStatefulWidget {
@@ -16,6 +16,7 @@ class NextdoorScreen extends ConsumerStatefulWidget {
   ConsumerState<NextdoorScreen> createState() => _NextdoorScreenState();
 }
 
+class _NextdoorScreenState extends ConsumerState<NextdoorScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
