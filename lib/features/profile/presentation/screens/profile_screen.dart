@@ -14,7 +14,7 @@ import '../providers/friend_provider.dart';
 import 'privacy_settings_screen.dart';
 import 'friends_list_screen.dart';
 import 'blocked_users_screen.dart'; // Import
-import '../../subscriptions/presentation/screens/paywall_screen.dart'; // Import
+import '../../../subscriptions/presentation/screens/paywall_screen.dart'; // Import
 import '../../../../core/services/user_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -264,7 +264,7 @@ class _ProfileContent extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const PaywallScreen(),
+                      builder: (context) => PaywallScreen(),
                     ),
                   );
                 },
