@@ -42,6 +42,7 @@ class MapState {
   final List<AnnouncementModel> allAnnouncements;
   final WalkModel? selectedWalk;
   final AnnouncementModel? selectedAnnouncement;
+  final List<String> blockedUsers;
 
   MapState({
     this.currentPosition,
@@ -56,6 +57,7 @@ class MapState {
     this.allAnnouncements = const [],
     this.selectedWalk,
     this.selectedAnnouncement,
+    this.blockedUsers = const [],
   });
 
   MapState copyWith({
@@ -71,6 +73,7 @@ class MapState {
     List<AnnouncementModel>? allAnnouncements,
     WalkModel? selectedWalk,
     AnnouncementModel? selectedAnnouncement,
+    List<String>? blockedUsers,
   }) {
     return MapState(
       currentPosition: currentPosition ?? this.currentPosition,
@@ -85,6 +88,7 @@ class MapState {
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
       selectedWalk: selectedWalk, // No null coalescing to allow clearing
       selectedAnnouncement: selectedAnnouncement, // No null coalescing to allow clearing
+      blockedUsers: blockedUsers ?? this.blockedUsers,
     );
   }
 }
@@ -108,6 +112,18 @@ class MapStateController extends StateNotifier<MapState> {
   ) : super(MapState()) {
     _initLocation();
     _startListeningToWalks();
+    _startListeningToProfile();
+  }
+  
+  void _startListeningToProfile() {
+    _ref.listen(currentUserProfileProvider, (previous, next) {
+      next.whenData((user) {
+        if (user != null) {
+          state = state.copyWith(blockedUsers: user.blockedUsers);
+          _updateMarkers(); // Refresh markers to filter blocked users
+        }
+      });
+    });
   }
 
   void _startListeningToWalks() {
@@ -240,6 +256,9 @@ class MapStateController extends StateNotifier<MapState> {
 
     // 1. User Markers
     for (final userLoc in _currentUserLocations) {
+      // Skip if blocked
+      if (state.blockedUsers.contains(userLoc.uid)) continue;
+
       final currentUser = _ref.read(authServiceProvider).currentUser;
       if (currentUser?.uid == userLoc.uid) continue;
 
@@ -319,6 +338,9 @@ class MapStateController extends StateNotifier<MapState> {
 
     // 2. Walk Markers
     for (final walk in state.allWalks) {
+      // Skip if creator is blocked
+      if (state.blockedUsers.contains(walk.creatorId)) continue;
+
       // Filter by query if needed (e.g. walk title or description if added later)
       // For now, we can filter by location or just show all
       
@@ -353,6 +375,9 @@ class MapStateController extends StateNotifier<MapState> {
 
     // 3. Announcement Markers
     for (final announcement in state.allAnnouncements) {
+      // Skip if author is blocked
+      if (state.blockedUsers.contains(announcement.userId)) continue;
+
       markers.add(
         Marker(
           point: LatLng(announcement.location.latitude, announcement.location.longitude),

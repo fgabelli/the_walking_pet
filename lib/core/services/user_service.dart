@@ -109,4 +109,33 @@ class UserService {
       rethrow;
     }
   }
+  // Block user
+  Future<void> blockUser(String currentUserId, String blockedUserId) async {
+    try {
+      await _firestore.collection(_collection).doc(currentUserId).update({
+        'blockedUsers': FieldValue.arrayUnion([blockedUserId]),
+      });
+      // Optionally remove from friends if blocked
+      await _firestore.collection(_collection).doc(currentUserId).update({
+        'friends': FieldValue.arrayRemove([blockedUserId]),
+      });
+      // And remove self from their friends
+      await _firestore.collection(_collection).doc(blockedUserId).update({
+        'friends': FieldValue.arrayRemove([currentUserId]),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Unblock user
+  Future<void> unblockUser(String currentUserId, String blockedUserId) async {
+    try {
+      await _firestore.collection(_collection).doc(currentUserId).update({
+        'blockedUsers': FieldValue.arrayRemove([blockedUserId]),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

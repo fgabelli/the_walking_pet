@@ -19,6 +19,7 @@ class UserModel {
   final List<String> friends;
   final List<String> friendRequests; // Incoming requests
   final List<String> locationWhitelist; // For 'custom' privacy
+  final List<String> blockedUsers; // New field for blocked users
   
   // Personal Info
   final Gender? gender;
@@ -41,6 +42,7 @@ class UserModel {
     this.friends = const [],
     this.friendRequests = const [],
     this.locationWhitelist = const [],
+    this.blockedUsers = const [],
     this.gender,
     this.birthDate,
     this.address,
@@ -67,6 +69,7 @@ class UserModel {
       friends: List<String>.from(data['friends'] ?? []),
       friendRequests: List<String>.from(data['friendRequests'] ?? []),
       locationWhitelist: List<String>.from(data['locationWhitelist'] ?? []),
+      blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
       gender: data['gender'] != null 
           ? Gender.values.firstWhere((e) => e.name == data['gender'], orElse: () => Gender.other)
           : null,
@@ -91,6 +94,7 @@ class UserModel {
       'friends': friends,
       'friendRequests': friendRequests,
       'locationWhitelist': locationWhitelist,
+      'blockedUsers': blockedUsers,
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
@@ -115,6 +119,7 @@ class UserModel {
     List<String>? friends,
     List<String>? friendRequests,
     List<String>? locationWhitelist,
+    List<String>? blockedUsers,
     Gender? gender,
     DateTime? birthDate,
     String? address,
@@ -135,6 +140,7 @@ class UserModel {
       friends: friends ?? this.friends,
       friendRequests: friendRequests ?? this.friendRequests,
       locationWhitelist: locationWhitelist ?? this.locationWhitelist,
+      blockedUsers: blockedUsers ?? this.blockedUsers,
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,

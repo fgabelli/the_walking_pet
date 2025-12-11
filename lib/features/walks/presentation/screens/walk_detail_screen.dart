@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/walk_model.dart';
+import '../../../../shared/models/user_model.dart';
+import '../../../../core/services/user_service.dart';
+import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart';
 import '../providers/walk_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'create_walk_screen.dart';
@@ -132,6 +135,36 @@ class WalkDetailScreen extends ConsumerWidget {
                   ),
               ],
             ),
+            const SizedBox(height: 16),
+            // Organized By
+            FutureBuilder<UserModel?>(
+              future: UserService().getUserById(walk.creatorId),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final creator = snapshot.data!;
+                return InkWell(
+                  onTap: () => showUserProfileBottomSheet(context, creator),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundImage: creator.photoUrl != null
+                            ? NetworkImage(creator.photoUrl!)
+                            : null,
+                        child: creator.photoUrl == null
+                            ? Text(creator.firstName[0].toUpperCase())
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Organizzato da ${creator.fullName}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 24),
 
             // Info Grid
@@ -175,20 +208,57 @@ class WalkDetailScreen extends ConsumerWidget {
             // TODO: List participants with avatars
             // For now just a placeholder list
             SizedBox(
-              height: 60,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: walk.participants.length,
-                itemBuilder: (context, index) {
-                  return const Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: CircleAvatar(
-                      radius: 24,
-                      child: Icon(Icons.person),
+              height: 70,
+              child: walk.participants.isEmpty
+                  ? const Center(child: Text('Nessun partecipante ancora'))
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: walk.participants.length,
+                      itemBuilder: (context, index) {
+                        final userId = walk.participants[index];
+                        return FutureBuilder<UserModel?>(
+                          future: UserService().getUserById(userId),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Padding(
+                                padding: EdgeInsets.only(right: 8.0),
+                                child: CircleAvatar(
+                                  radius: 24,
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            final participant = snapshot.data!;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: InkWell(
+                                onTap: () => showUserProfileBottomSheet(context, participant),
+                                borderRadius: BorderRadius.circular(24),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundImage: participant.photoUrl != null
+                                          ? NetworkImage(participant.photoUrl!)
+                                          : null,
+                                      child: participant.photoUrl == null
+                                          ? Text(participant.firstName[0].toUpperCase())
+                                          : null,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      participant.firstName,
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
             const SizedBox(height: 32),
 

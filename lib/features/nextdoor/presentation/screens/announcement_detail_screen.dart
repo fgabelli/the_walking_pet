@@ -10,6 +10,7 @@ import '../providers/nextdoor_provider.dart';
 import '../../../reviews/presentation/screens/create_review_screen.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/services/user_service.dart';
+import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart';
 import 'package:the_walking_pet/features/auth/presentation/providers/auth_provider.dart';
 
 class AnnouncementDetailScreen extends ConsumerStatefulWidget {
@@ -149,14 +150,25 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: AppColors.surfaceVariant,
-                          backgroundImage: updatedAnnouncement.authorPhotoUrl != null
-                              ? NetworkImage(updatedAnnouncement.authorPhotoUrl!)
-                              : null,
-                          child: updatedAnnouncement.authorPhotoUrl == null
-                              ? const Icon(Icons.person, color: AppColors.primary)
-                              : null,
+                        FutureBuilder<UserModel?>(
+                          future: UserService().getUserById(updatedAnnouncement.userId),
+                          builder: (context, snapshot) {
+                            final author = snapshot.data;
+                            return InkWell(
+                              onTap: author != null
+                                  ? () => showUserProfileBottomSheet(context, author)
+                                  : null,
+                              child: CircleAvatar(
+                                backgroundColor: AppColors.surfaceVariant,
+                                backgroundImage: updatedAnnouncement.authorPhotoUrl != null
+                                    ? NetworkImage(updatedAnnouncement.authorPhotoUrl!)
+                                    : null,
+                                child: updatedAnnouncement.authorPhotoUrl == null
+                                    ? const Icon(Icons.person, color: AppColors.primary)
+                                    : null,
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -306,15 +318,26 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                         final response = comments[index]; // Use the filtered 'comments' list
                       if (response.type != ResponseType.message) return const SizedBox.shrink();
 
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: AppColors.surfaceVariant,
-                          backgroundImage: response.userPhotoUrl != null
-                              ? NetworkImage(response.userPhotoUrl!)
-                              : null,
-                          child: response.userPhotoUrl == null
-                              ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
-                              : null,
+                        return ListTile(
+                        leading: FutureBuilder<UserModel?>(
+                          future: UserService().getUserById(response.userId),
+                          builder: (context, snapshot) {
+                            final user = snapshot.data;
+                            return InkWell(
+                              onTap: user != null
+                                  ? () => showUserProfileBottomSheet(context, user)
+                                  : null,
+                              child: CircleAvatar(
+                                backgroundColor: AppColors.surfaceVariant,
+                                backgroundImage: response.userPhotoUrl != null
+                                    ? NetworkImage(response.userPhotoUrl!)
+                                    : null,
+                                child: response.userPhotoUrl == null
+                                    ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
+                                    : null,
+                              ),
+                            );
+                          },
                         ),
                         title: Row(
                           children: [
@@ -390,15 +413,20 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                     children: [
                                       Row(
                                         children: [
-                                          CircleAvatar(
-                                            radius: 20,
-                                            backgroundColor: AppColors.surfaceVariant,
-                                            backgroundImage: authorPhotoUrl != null
-                                                ? NetworkImage(authorPhotoUrl)
+                                          InkWell(
+                                            onTap: userSnapshot.data != null
+                                                ? () => showUserProfileBottomSheet(context, userSnapshot.data!)
                                                 : null,
-                                            child: authorPhotoUrl == null
-                                                ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
-                                                : null,
+                                            child: CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: AppColors.surfaceVariant,
+                                              backgroundImage: authorPhotoUrl != null
+                                                  ? NetworkImage(authorPhotoUrl)
+                                                  : null,
+                                              child: authorPhotoUrl == null
+                                                  ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
+                                                  : null,
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(

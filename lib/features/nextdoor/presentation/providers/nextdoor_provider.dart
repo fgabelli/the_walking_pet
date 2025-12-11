@@ -22,12 +22,14 @@ class NextdoorState {
   final bool isLoading;
   final bool isSubmitting;
   final String? error;
+  final List<String> blockedUsers;
 
   NextdoorState({
     this.announcements = const [],
     this.isLoading = true,
     this.isSubmitting = false,
     this.error,
+    this.blockedUsers = const [],
   });
 
   NextdoorState copyWith({
@@ -35,12 +37,14 @@ class NextdoorState {
     bool? isLoading,
     bool? isSubmitting,
     String? error,
+    List<String>? blockedUsers,
   }) {
     return NextdoorState(
       announcements: announcements ?? this.announcements,
       isLoading: isLoading ?? this.isLoading,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       error: error,
+      blockedUsers: blockedUsers ?? this.blockedUsers,
     );
   }
 }
@@ -59,6 +63,42 @@ class NextdoorController extends StateNotifier<NextdoorState> {
     this._ref,
   ) : super(NextdoorState()) {
     _init();
+    _startListeningToProfile();
+  }
+
+  void _startListeningToProfile() {
+    _ref.listen(currentUserProfileProvider, (previous, next) {
+      next.whenData((user) {
+        if (user != null) {
+          state = state.copyWith(blockedUsers: user.blockedUsers);
+          // Trigger refresh of filtered list if we had stored the raw list separately.
+          // Since we store filtered list in 'announcements', we might need to re-fetch or re-filter locally?
+          // Re-fetching is safer/easier for now as we don't keep raw stream.
+          // Or better: The stream subscription below will re-emit if we didn't cancel it? No.
+          // We can just rely on the next update or force a re-fetch.
+          // For now, let's just update the state. The stream below needs to know about this new state.
+          // BUT: The stream listener implementation below needs to access 'state.blockedUsers'. 
+          // Since 'state' is available in the listener callback (via capturing or just accessing current state),
+          // it should work for NEW emissions. But existing list won't change unless we re-process it.
+          // We need to store 'rawAnnouncements' to re-filter, OR just re-fetch.
+          // Let's re-trigger _init if position is known? No.
+          // Let's just update state using current announcements re-filtered?
+          _reFilterAnnouncements();
+        }
+      });
+    });
+  }
+
+  void _reFilterAnnouncements() {
+    // This is tricky because we don't have the RAW list anymore, only the filtered one.
+    // If I block someone, I can remove them from current list.
+    // If I unblock, they won't reappear until next fetch.
+    // Ideally we keep 'rawAnnouncements' in state or controller.
+    // For now, let's just filter OUT the newly blocked ones from current list.
+    // Unblocking will require pull-to-refresh or app restart until we improve this.
+    final currentList = state.announcements;
+    final filtered = _filterAnnouncements(currentList);
+    state = state.copyWith(announcements: filtered);
   }
 
   void _init() async {
@@ -85,11 +125,15 @@ class NextdoorController extends StateNotifier<NextdoorState> {
       (announcements) {
         // Filter expired announcements
         final activeAnnouncements = announcements.where((a) => a.isActive).toList();
+        
+        // Filter blocked content
+        final filteredAnnouncements = _filterAnnouncements(activeAnnouncements);
+
         // Sort by creation date (newest first)
-        activeAnnouncements.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        filteredAnnouncements.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         
         state = state.copyWith(
-          announcements: activeAnnouncements,
+          announcements: filteredAnnouncements,
           isLoading: false,
         );
       },
@@ -250,6 +294,24 @@ class NextdoorController extends StateNotifier<NextdoorState> {
       // Handle error silently or show snackbar in UI
       print('Error adding response: $e');
     }
+  }
+  List<AnnouncementModel> _filterAnnouncements(List<AnnouncementModel> raw) {
+    if (state.blockedUsers.isEmpty) return raw;
+
+    return raw.where((a) {
+      // 1. Filter if Author is blocked
+      if (state.blockedUsers.contains(a.userId)) return false;
+      return true;
+    }).map((a) {
+      // 2. Filter responses (comments) from blocked users
+      // We need to return a COPY with filtered responses
+      // The model is immutable, checking if we need to copy
+      final blockedResponses = a.responses.where((r) => state.blockedUsers.contains(r.userId));
+      if (blockedResponses.isEmpty) return a;
+
+      final filteredResponses = a.responses.where((r) => !state.blockedUsers.contains(r.userId)).toList();
+      return a.copyWith(responses: filteredResponses);
+    }).toList();
   }
 }
 
