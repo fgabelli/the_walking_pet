@@ -302,6 +302,23 @@ class MapStateController extends StateNotifier<MapState> {
     _updateMarkers();
   }
 
+  Future<void> toggleGhostMode(bool enabled) async {
+    final user = _ref.read(authServiceProvider).currentUser;
+    if (user == null) return;
+    
+    // Optimistic update
+    state = state.copyWith(isGhostModeEnabled: enabled);
+    
+    try {
+      await _userService.updateUser(user.uid, {'isGhost': enabled});
+      // The profile listener will confirm the state update
+    } catch (e) {
+      print('Error toggling ghost mode: $e');
+      // Revert on error
+      state = state.copyWith(isGhostModeEnabled: !enabled);
+    }
+  }
+
   void _updateMarkers() async {
     final List<Marker> markers = [];
     final query = state.searchQuery.toLowerCase();
