@@ -310,7 +310,7 @@ class MapStateController extends StateNotifier<MapState> {
     state = state.copyWith(isGhostModeEnabled: enabled);
     
     try {
-      await _userService.updateUser(user.uid, {'isGhost': enabled});
+      await _userService.updateUserFields(user.uid, {'isGhost': enabled});
       // The profile listener will confirm the state update
     } catch (e) {
       print('Error toggling ghost mode: $e');

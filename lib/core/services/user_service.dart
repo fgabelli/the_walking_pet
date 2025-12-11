@@ -52,6 +52,15 @@ class UserService {
     }
   }
 
+  // Update specific fields
+  Future<void> updateUserFields(String uid, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection(_collection).doc(uid).update(data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Delete user
   Future<void> deleteUser(String uid) async {
     try {
