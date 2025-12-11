@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async'; // Keep this
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -185,14 +185,34 @@ class MapStateController extends StateNotifier<MapState> {
 
       state = state.copyWith(isLocationEnabled: true);
 
-      // Get initial position
-      final position = await _locationService.getCurrentPosition();
-      if (position != null) {
-        print('Initial position found: ${position.latitude}, ${position.longitude}');
-        _updatePosition(position);
-      } else {
-        print('Initial position is null, trying fallback to user address');
-        await _tryFallbackToUserAddress();
+      // Get initial position with timeout
+      try {
+        final position = await _locationService.getCurrentPosition().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            print('Initial position fetch timed out, trying fallback');
+            return null;
+          },
+        );
+
+        if (position != null) {
+          print('Initial position found: ${position.latitude}, ${position.longitude}');
+          _updatePosition(position);
+        } else {
+          print('Initial position is null/timed out, trying fallback to user address');
+          // Wait for fallback
+           final fallbackSuccess = await _tryFallbackToUserAddress();
+           if (!fallbackSuccess) {
+             // If fallback also fails, we must stop loading to show "Rome" or map structure at least
+             // The map widget usually handles null center by default or we set a default
+             // But we need to turn off isLoading
+              state = state.copyWith(isLoading: false, error: 'Impossibile recuperare la posizione. Mappa centrata su Roma.');
+           }
+        }
+      } catch (e) {
+         print('Error in initial position fetch: $e');
+         await _tryFallbackToUserAddress();
+         state = state.copyWith(isLoading: false); // Ensure loading is off
       }
 
       // Start listening to position updates
