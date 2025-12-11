@@ -35,8 +35,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: Stack(
         children: [
           // Background Image / Gradient
@@ -48,7 +52,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   end: Alignment.bottomCenter,
                   colors: [
                     AppColors.primary.withOpacity(0.1),
-                    Colors.white,
+                    backgroundColor,
                   ],
                 ),
               ),
@@ -62,7 +66,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close, color: textColor),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -90,7 +94,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                           'Passa a Premium',
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: textColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -98,22 +102,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         Text(
                           'Sblocca tutte le funzionalità e goditi al massimo le tue passeggiate.',
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey[600],
+                            color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 48),
                         
                         // Benefits
-                        _buildBenefitRow(Icons.filter_list, 'Filtri Avanzati', 'Cerca compagni per razza, taglia e sesso'),
-                        _buildBenefitRow(Icons.visibility_off, 'Ghost Mode', 'Naviga la mappa senza essere visto'),
-                        _buildBenefitRow(Icons.pets, 'Icona Dorata', 'Distinguiti sulla mappa con un pin esclusivo'),
-                        _buildBenefitRow(Icons.block, 'Zero Pubblicità', 'Navigazione pulita e senza interruzioni'),
+                        _buildBenefitRow(context, Icons.filter_list, 'Filtri Avanzati', 'Cerca compagni per razza, taglia e sesso'),
+                        _buildBenefitRow(context, Icons.visibility_off, 'Ghost Mode', 'Naviga la mappa senza essere visto'),
+                        _buildBenefitRow(context, Icons.pets, 'Icona Dorata', 'Distinguiti sulla mappa con un pin esclusivo'),
+                        _buildBenefitRow(context, Icons.block, 'Zero Pubblicità', 'Navigazione pulita e senza interruzioni'),
                         
                         const SizedBox(height: 48),
                         
                         // Products
-                        ..._mockProducts.map((p) => _buildProductCard(p)),
+                        ..._mockProducts.map((p) => _buildProductCard(context, p)),
                         
                         const SizedBox(height: 24),
                         
@@ -144,7 +148,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     );
   }
 
-  Widget _buildBenefitRow(IconData icon, String title, String subtitle) {
+  Widget _buildBenefitRow(BuildContext context, IconData icon, String title, String subtitle) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
@@ -172,7 +178,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 14,
                   ),
                 ),
@@ -184,14 +190,18 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(BuildContext context, Map<String, dynamic> product) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode ? Colors.grey[800] : Colors.white;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return GestureDetector(
       onTap: () => _purchase(product),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           border: Border.all(
             color: AppColors.primary,
             width: 2,
@@ -213,9 +223,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 children: [
                   Text(
                     product['title'],
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -232,7 +243,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                       Text(
                         product['period'],
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 16,
                         ),
                       ),

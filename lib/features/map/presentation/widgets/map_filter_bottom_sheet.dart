@@ -17,12 +17,14 @@ class MapFilterBottomSheet extends ConsumerWidget {
     final isPremium = userAsync.value?.isPremium ?? false;
     
     final mapState = ref.watch(mapControllerProvider);
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -74,7 +76,7 @@ class MapFilterBottomSheet extends ConsumerWidget {
                ),
              ),
              const SizedBox(height: 12),
-          ],
+           ],
           
           // Filters UI (always visible to tease, but disabled if !isPremium)
           Opacity(
@@ -88,11 +90,11 @@ class MapFilterBottomSheet extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildGenderChip(ref, mapState, null, 'Tutti'),
+                      _buildGenderChip(context, ref, mapState, null, 'Tutti'),
                       const SizedBox(width: 8),
-                      _buildGenderChip(ref, mapState, Gender.male, 'Uomo'),
+                      _buildGenderChip(context, ref, mapState, Gender.male, 'Uomo'),
                       const SizedBox(width: 8),
-                      _buildGenderChip(ref, mapState, Gender.female, 'Donna'),
+                      _buildGenderChip(context, ref, mapState, Gender.female, 'Donna'),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -102,13 +104,18 @@ class MapFilterBottomSheet extends ConsumerWidget {
                     children: [
                        Row(
                          children: [
-                           const Icon(Icons.visibility_off, color: Colors.grey),
+                           Icon(Icons.visibility_off, color: isDarkMode ? Colors.grey[400] : Colors.grey),
                            const SizedBox(width: 8),
                            Column(
                              crossAxisAlignment: CrossAxisAlignment.start,
                              children: [
                                const Text('Ghost Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-                               Text('Diventa invisibile sulla mappa', style: Theme.of(context).textTheme.bodySmall),
+                               Text(
+                                 'Diventa invisibile sulla mappa', 
+                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                   color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                 ),
+                               ),
                              ],
                            ),
                          ],
@@ -116,8 +123,7 @@ class MapFilterBottomSheet extends ConsumerWidget {
                        Switch(
                          value: mapState.isGhostModeEnabled, 
                          onChanged: (val) {
-                           // Update local state (and ideally sync to remote via ProfileController)
-                           // ref.read(profileControllerProvider.notifier).updateGhostMode(val); 
+                           ref.read(mapControllerProvider.notifier).toggleGhostMode(val); 
                          },
                          activeColor: AppColors.primary,
                        )
@@ -151,8 +157,13 @@ class MapFilterBottomSheet extends ConsumerWidget {
      );
   }
 
-  Widget _buildGenderChip(WidgetRef ref, MapState state, Gender? value, String label) {
+  Widget _buildGenderChip(BuildContext context, WidgetRef ref, MapState state, Gender? value, String label) {
     final isSelected = state.filterGender == value;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isSelected 
+        ? AppColors.primary 
+        : (isDarkMode ? Colors.white : Colors.black87);
+        
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
@@ -165,8 +176,9 @@ class MapFilterBottomSheet extends ConsumerWidget {
         }
       },
       selectedColor: AppColors.primary.withOpacity(0.2),
+      backgroundColor: isDarkMode ? Colors.grey[800] : null,
       labelStyle: TextStyle(
-        color: isSelected ? AppColors.primary : Colors.black87,
+        color: textColor,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
