@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/chat_service.dart';
 import '../../../../shared/models/chat_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/services/user_service.dart'; // Added
+import '../../../profile/presentation/providers/profile_provider.dart'; // Added
 
 /// Chat Service Provider
 final chatServiceProvider = Provider<ChatService>((ref) {
