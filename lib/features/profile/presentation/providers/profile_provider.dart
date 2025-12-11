@@ -127,6 +127,10 @@ class ProfileController extends StateNotifier<ProfileState> {
         gender: gender,
         birthDate: birthDate,
         address: address,
+        accountType: accountType,
+        businessCategory: businessCategory,
+        website: website,
+        phoneNumber: phoneNumber,
       );
 
       await _userService.updateUser(updatedUser);
