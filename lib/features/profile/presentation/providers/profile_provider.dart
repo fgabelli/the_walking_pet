@@ -101,7 +101,9 @@ class ProfileController extends StateNotifier<ProfileState> {
     String? businessCategory,
     String? website,
     String? phoneNumber,
-    AccountType? accountType,
+    String? instagramHandle,
+    String? tiktokHandle,
+    String? openingHours,
   }) async {
     state = ProfileState(isLoading: true);
     try {
@@ -131,6 +133,9 @@ class ProfileController extends StateNotifier<ProfileState> {
         businessCategory: businessCategory,
         website: website,
         phoneNumber: phoneNumber,
+        instagramHandle: instagramHandle,
+        tiktokHandle: tiktokHandle,
+        openingHours: openingHours,
       );
 
       await _userService.updateUser(updatedUser);
