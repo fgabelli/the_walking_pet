@@ -101,6 +101,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     String? businessCategory,
     String? website,
     String? phoneNumber,
+    AccountType? accountType,
     String? instagramHandle,
     String? tiktokHandle,
     String? openingHours,
