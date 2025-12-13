@@ -8,6 +8,7 @@ import 'create_announcement_screen.dart';
 import 'announcement_detail_screen.dart';
 import '../../../offers/presentation/screens/offers_screen.dart'; // Corrected Import
 import '../../../profile/presentation/providers/profile_provider.dart';
+import '../widgets/business_showcase_widget.dart';
 
 class NextdoorScreen extends ConsumerStatefulWidget {
   const NextdoorScreen({super.key});
@@ -110,6 +111,10 @@ class _AnnouncementsTabState extends ConsumerState<_AnnouncementsTab> {
           ),
         ),
         
+        // Vetrina / Showcase
+        if (!_showFriendsOnly) // Show only on 'Tutti' feed to keep 'Friends' feed clean
+          const BusinessShowcaseWidget(),
+
         Expanded(
           child: nextdoorState.isLoading
               ? const Center(child: CircularProgressIndicator())
