@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/lost_pet_alert_model.dart'; // Added
-import '../shared/models/lost_pet_alert_model.dart';
 
 class SOSService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
