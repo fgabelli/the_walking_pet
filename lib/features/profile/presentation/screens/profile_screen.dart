@@ -17,6 +17,13 @@ import 'blocked_users_screen.dart'; // Import
 import '../../../subscriptions/presentation/screens/paywall_screen.dart';
 import 'business_profile_edit_screen.dart'; // Import
 import '../../../../core/services/user_service.dart';
+import '../../../../features/map/presentation/providers/map_provider.dart'; // For LocationService via ref/provider
+// Actually we need location service provider directly or import the class
+import '../../../../core/services/location_service.dart'; // Assuming we need this
+// Wait, map_provider.dart exports locationServiceProvider. I can just use the provider import.
+// Let's add the provider import.
+import '../../../../features/map/presentation/providers/map_provider.dart'; // Contains locationServiceProvider
+
 
 class ProfileScreen extends ConsumerWidget {
   final String? userId; // If null, shows current user
@@ -273,6 +280,37 @@ class _ProfileContent extends ConsumerWidget {
             ),
           
           if (isMe) ...[
+            // SOS Emergency Button (Added)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.sos, color: Colors.white),
+                ),
+                title: const Text(
+                  'SOS PET SMARRITO',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                subtitle: const Text('Segnala smarrimento alla community'),
+                trailing: const Icon(Icons.chevron_right, color: Colors.red),
+                onTap: () => _showSOSDialog(context, ref, user.uid),
+              ),
+            ),
+            
             // Business Profile Entry Point
             Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -557,5 +595,130 @@ class _ProfileContent extends ConsumerWidget {
       age--;
     }
     return age;
+  }
+  
+  void _showSOSDialog(BuildContext context, WidgetRef ref, String userId) async {
+    final dogs = await ref.read(dogServiceProvider).getDogsByOwnerId(userId);
+    
+    if (dogs.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aggiungi prima un cane al tuo profilo!')),
+        );
+      }
+      return;
+    }
+
+    String? selectedPetId = dogs.first.id;
+    final phoneController = TextEditingController();
+    final messageController = TextEditingController();
+
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Lancia SOS Smarrimento 🚨', style: TextStyle(color: Colors.red)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Invia una notifica di emergenza a tutti gli utenti nelle vicinanze.'),
+                    const SizedBox(height: 16),
+                    
+                    // Pet Selector
+                    DropdownButtonFormField<String>(
+                      value: selectedPetId,
+                      decoration: const InputDecoration(labelText: 'Quale pet hai smarrito?'),
+                      items: dogs.map((dog) => DropdownMenuItem(
+                        value: dog.id,
+                        child: Text(dog.name),
+                      )).toList(),
+                      onChanged: (val) => setState(() => selectedPetId = val),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Phone
+                    TextField(
+                      controller: phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Numero di contatto (Obbligatorio)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.phone),
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Message
+                    TextField(
+                      controller: messageController,
+                      decoration: const InputDecoration(
+                        labelText: 'Messaggio / Dove è stato visto?',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Annulla'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, 
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () async {
+                    if (phoneController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Inserisci un numero di telefono!')),
+                      );
+                      return;
+                    }
+
+                    // Get current location
+                    try {
+                      final position = await ref.read(locationServiceProvider).getCurrentPosition();
+                      if (position != null && selectedPetId != null) {
+                        await ref.read(sosServiceProvider).triggerSOS(
+                          ownerId: userId,
+                          petId: selectedPetId!,
+                          latitude: position.latitude,
+                          longitude: position.longitude,
+                          contactPhone: phoneController.text,
+                          message: messageController.text,
+                        );
+                        
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('SOS Inviato! Tutti gli utenti sono stati avvisati.')),
+                          );
+                        }
+                      } else {
+                         throw Exception("Posizione non trovata");
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Errore invio SOS: $e')),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('INVIA SOS'),
+                ),
+              ],
+            );
+          }
+        ),
+      );
+    }
   }
 }

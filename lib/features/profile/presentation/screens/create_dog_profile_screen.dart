@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../providers/dog_provider.dart';
+import '../../../../features/health_record/presentation/screens/health_record_list_screen.dart';
 
 class CreateDogProfileScreen extends ConsumerStatefulWidget {
   final DogModel? dogToEdit;
@@ -178,6 +179,39 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
               ),
               const SizedBox(height: 8),
               const Center(child: Text('Foto del Pet')),
+              
+              if (isEditing && widget.dogToEdit != null) ...[
+                const SizedBox(height: 24),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.medical_services, color: Colors.green),
+                    title: const Text(
+                      'Libretto Sanitario',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                    ),
+                    subtitle: const Text('Vaccini, visite e scadenze'),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.green),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HealthRecordListScreen(
+                            petId: widget.dogToEdit!.id,
+                            petName: widget.dogToEdit!.name,
+                            isOwner: true, 
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              
               const SizedBox(height: 32),
 
               // Name
