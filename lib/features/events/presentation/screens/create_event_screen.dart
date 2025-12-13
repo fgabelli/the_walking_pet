@@ -24,7 +24,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   final _descController = TextEditingController();
   final _locationNameController = TextEditingController();
   
-  EventType _selectedType = EventType.walk;
+  EventType _selectedType = EventType.social;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1)); // Default tomorrow
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
   
@@ -76,10 +76,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.category),
                 ),
-                items: EventType.values.map((type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(type.displayName),
-                )).toList(),
+                items: EventType.values
+                    .where((type) => type != EventType.walk)
+                    .map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type.displayName),
+                    )).toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedType = val);
                 },
