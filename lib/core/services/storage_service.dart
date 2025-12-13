@@ -35,6 +35,24 @@ class StorageService {
     }
   }
 
+  // Upload user cover image (Business)
+  Future<String> uploadUserCoverImage(String uid, File imageFile) async {
+    try {
+      // Compress image (quality slightly lower or higher depending on need, but kept same for consistency)
+      final compressedFile = await _compressImage(imageFile);
+
+      // Upload to Firebase Storage
+      final ref = _storage.ref().child('users/$uid/cover.jpg');
+      
+      final uploadTask = await ref.putFile(compressedFile);
+
+      // Get download URL
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Upload dog profile image
   Future<String> uploadDogProfileImage(String dogId, File imageFile) async {
     try {

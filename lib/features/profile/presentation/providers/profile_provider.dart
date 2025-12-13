@@ -100,6 +100,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     String? zone,
     String? bio,
     File? imageFile,
+    File? coverImageFile, // Added
     SocialPreferences? socialPreferences,
     Gender? gender,
     DateTime? birthDate,
@@ -125,12 +126,18 @@ class ProfileController extends StateNotifier<ProfileState> {
         photoUrl = await _storageService.uploadUserProfileImage(user.uid, imageFile);
       }
 
+      String? coverImageUrl = currentUserProfile.coverImageUrl;
+      if (coverImageFile != null) {
+        coverImageUrl = await _storageService.uploadUserCoverImage(user.uid, coverImageFile);
+      }
+
       final updatedUser = currentUserProfile.copyWith(
         firstName: firstName,
         lastName: lastName,
         zone: zone,
         bio: bio,
         photoUrl: photoUrl,
+        coverImageUrl: coverImageUrl, // Added
         socialPreferences: socialPreferences,
         updatedAt: DateTime.now(),
         gender: gender,
