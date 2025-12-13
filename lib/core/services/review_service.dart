@@ -66,7 +66,6 @@ class ReviewService {
       return snapshot.docs.map((doc) => ReviewModel.fromFirestore(doc)).toList();
     });
   }
-  }
 
   // --- Announcement Reviews (Legacy/Nextdoor) ---
 

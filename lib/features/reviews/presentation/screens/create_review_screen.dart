@@ -4,6 +4,7 @@ import '../../../../core/services/review_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/review_model.dart';
 import 'package:the_walking_pet/features/auth/presentation/providers/auth_provider.dart';
+import 'package:the_walking_pet/features/profile/presentation/providers/profile_provider.dart';
 
 final reviewServiceProvider = Provider((ref) => ReviewService());
 
@@ -45,8 +46,11 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final user = ref.read(authServiceProvider).currentUser;
-      if (user == null) throw Exception('Utente non autenticato');
+    try {
+      final userAsync = ref.read(currentUserProfileProvider);
+      final user = userAsync.value;
+      
+      if (user == null) throw Exception('Utente non autenticato o profilo non caricato');
 
       final review = ReviewModel(
         id: '', // Firestore generates ID
