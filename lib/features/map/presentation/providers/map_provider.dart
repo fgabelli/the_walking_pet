@@ -9,12 +9,14 @@ import '../../../../core/services/location_service.dart';
 import '../../../../core/services/map_service.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/services/walk_service.dart';
+import '../../../../core/services/safety_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../walks/presentation/providers/walk_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../../shared/models/walk_model.dart';
 import '../../../../shared/models/announcement_model.dart';
+import '../../../../shared/models/safety_alert_model.dart'; // Added
 import '../../../nextdoor/data/nextdoor_service.dart';
 import '../../../nextdoor/presentation/providers/nextdoor_provider.dart';
 
@@ -40,8 +42,10 @@ class MapState {
   final List<UserLocation> allUserLocations;
   final List<WalkModel> allWalks;
   final List<AnnouncementModel> allAnnouncements;
+  final List<SafetyAlertModel> allAlerts; // Added
   final WalkModel? selectedWalk;
   final AnnouncementModel? selectedAnnouncement;
+  final SafetyAlertModel? selectedAlert; // Added
   final List<String> blockedUsers;
   // Filters
   final String? filterBreed;
@@ -59,8 +63,10 @@ class MapState {
     this.allUserLocations = const [],
     this.allWalks = const [],
     this.allAnnouncements = const [],
+    this.allAlerts = const [], // Added
     this.selectedWalk,
     this.selectedAnnouncement,
+    this.selectedAlert, // Added
     this.blockedUsers = const [],
     this.filterBreed,
     this.filterGender,
@@ -78,8 +84,10 @@ class MapState {
     List<UserLocation>? allUserLocations,
     List<WalkModel>? allWalks,
     List<AnnouncementModel>? allAnnouncements,
+    List<SafetyAlertModel>? allAlerts, // Added
     WalkModel? selectedWalk,
     AnnouncementModel? selectedAnnouncement,
+    SafetyAlertModel? selectedAlert, // Added
     List<String>? blockedUsers,
     String? filterBreed,
     Gender? filterGender,
@@ -96,8 +104,10 @@ class MapState {
       allUserLocations: allUserLocations ?? this.allUserLocations,
       allWalks: allWalks ?? this.allWalks,
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
+      allAlerts: allAlerts ?? this.allAlerts, // Added
       selectedWalk: selectedWalk, // No null coalescing to allow clearing
       selectedAnnouncement: selectedAnnouncement, // No null coalescing to allow clearing
+      selectedAlert: selectedAlert, // No null coalescing
       blockedUsers: blockedUsers ?? this.blockedUsers,
       filterBreed: filterBreed ?? this.filterBreed,
       filterGender: filterGender ?? this.filterGender,
@@ -116,6 +126,7 @@ class MapStateController extends StateNotifier<MapState> {
   StreamSubscription<List<UserLocation>>? _nearbyUsersSubscription;
   StreamSubscription<List<WalkModel>>? _walksSubscription;
   StreamSubscription<List<AnnouncementModel>>? _announcementsSubscription;
+  StreamSubscription<List<SafetyAlertModel>>? _alertsSubscription; // Added
 
   MapStateController(
     this._locationService,
@@ -126,6 +137,7 @@ class MapStateController extends StateNotifier<MapState> {
     _initLocation();
     _startListeningToWalks();
     _startListeningToProfile();
+    _startListeningToAlerts(); // Added
   }
   
   void _startListeningToProfile() {
@@ -150,6 +162,19 @@ class MapStateController extends StateNotifier<MapState> {
       },
       onError: (e) {
         print('Error fetching walks: $e');
+      },
+    );
+  }
+
+  // Listen to alerts (Moved active logic to service query)
+  void _startListeningToAlerts() {
+    _alertsSubscription = _ref.read(safetyServiceProvider).getActiveAlertsStream().listen(
+      (alerts) {
+        state = state.copyWith(allAlerts: alerts);
+        _updateMarkers();
+      },
+      onError: (e) {
+        print('Error fetching alerts: $e');
       },
     );
   }
@@ -508,6 +533,37 @@ class MapStateController extends StateNotifier<MapState> {
       );
     }
 
+    // 4. Safety Alert Markers (Added)
+    for (final alert in state.allAlerts) {
+      markers.add(
+        Marker(
+          point: LatLng(alert.latitude, alert.longitude),
+          width: 45,
+          height: 45,
+          child: GestureDetector(
+            onTap: () {
+              state = state.copyWith(selectedAlert: alert);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
+            ),
+          ),
+        ),
+      );
+    }
+
     state = state.copyWith(markers: markers);
   }
 
@@ -544,12 +600,17 @@ class MapStateController extends StateNotifier<MapState> {
     state = state.copyWith(selectedAnnouncement: null);
   }
 
+  void clearSelectedAlert() { // Added
+    state = state.copyWith(selectedAlert: null);
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
     _nearbyUsersSubscription?.cancel();
     _walksSubscription?.cancel();
     _announcementsSubscription?.cancel();
+    _alertsSubscription?.cancel(); // Added
     super.dispose();
   }
   Future<bool> _tryFallbackToUserAddress() async {

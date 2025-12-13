@@ -9,7 +9,9 @@ import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/services/friend_service.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../profile/presentation/providers/profile_provider.dart'; // for safetyServiceProvider
 import '../../../notifications/presentation/screens/notifications_screen.dart'; // Corrected import
+import '../../../../shared/models/safety_alert_model.dart'; // Added
 import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
@@ -62,16 +64,43 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
     });
 
-    // Listen for selected ANNOUNCEMENT
-    ref.listen(mapControllerProvider.select((value) => value.selectedAnnouncement), (previous, next) {
+    // Listen for selected ALERT (Added)
+    ref.listen(mapControllerProvider.select((value) => value.selectedAlert), (previous, next) {
       if (next != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AnnouncementDetailScreen(announcement: next),
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.warning, color: Colors.red),
+                const SizedBox(width: 8),
+                Text(next.type.displayName),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (next.description != null && next.description!.isNotEmpty)
+                  Text(next.description!),
+                const SizedBox(height: 8),
+                Text(
+                  'Segnalato il ${next.createdAt.day}/${next.createdAt.month} alle ${next.createdAt.hour}:${next.createdAt.minute.toString().padLeft(2, '0')}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Chiudi'),
+              ),
+            ],
           ),
         ).then((_) {
-          ref.read(mapControllerProvider.notifier).clearSelectedAnnouncement();
+          ref.read(mapControllerProvider.notifier).clearSelectedAlert();
         });
       }
     });
@@ -92,6 +121,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               initialZoom: 15.0,
               onTap: (_, __) {
                 ref.read(mapControllerProvider.notifier).clearSelectedUser();
+                // Also clear others if needed
               },
             ),
               children: [
@@ -261,19 +291,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         ],
       ),
       floatingActionButton: mapState.currentPosition != null
-          ? FloatingActionButton(
-              onPressed: () {
-                _mapController.move(
-                  LatLng(
-                    mapState.currentPosition!.latitude,
-                    mapState.currentPosition!.longitude,
-                  ),
-                  15.0,
-                );
-              },
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
-              child: const Icon(Icons.my_location),
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                 // Safety Report FAB (Added)
+                FloatingActionButton(
+                  heroTag: 'safety_fab',
+                  onPressed: () => _showReportDangerDialog(context, mapState.currentPosition!),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  child: const Icon(Icons.campaign), // or warning
+                ),
+                const SizedBox(height: 16),
+                FloatingActionButton(
+                  heroTag: 'location_fab',
+                  onPressed: () {
+                    _mapController.move(
+                      LatLng(
+                        mapState.currentPosition!.latitude,
+                        mapState.currentPosition!.longitude,
+                      ),
+                      15.0,
+                    );
+                  },
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  child: const Icon(Icons.my_location),
+                ),
+              ],
             )
           : null,
     );
@@ -283,5 +328,85 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     showUserProfileBottomSheet(context, user).whenComplete(() {
       ref.read(mapControllerProvider.notifier).clearSelectedUser();
     });
+  }
+  
+  void _showReportDangerDialog(BuildContext context, Position position) {
+    SafetyAlertType selectedType = SafetyAlertType.other;
+    final descriptionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Segnala Pericolo'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Aiuta la community segnalando un pericolo in questa zona.'),
+                  const SizedBox(height: 16),
+                  
+                  // Type Dropdown
+                  DropdownButtonFormField<SafetyAlertType>(
+                    value: selectedType,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo di Pericolo',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: SafetyAlertType.values.map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type.displayName),
+                    )).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => selectedType = val);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Description
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Descrizione (Opzionale)',
+                      border: OutlineInputBorder(),
+                      hintText: 'Dettagli utili...'
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+               TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annulla'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                onPressed: () {
+                  final user = ref.read(authServiceProvider).currentUser;
+                  if (user == null) return;
+
+                  ref.read(safetyServiceProvider).reportDanger(
+                    authorId: user.uid,
+                    type: selectedType,
+                    latitude: position.latitude,
+                    longitude: position.longitude,
+                    description: descriptionController.text.trim(),
+                  );
+                  
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Segnalazione inviata! Grazie per il tuo aiuto.')),
+                  );
+                },
+                child: const Text('Segnala'),
+              ),
+            ],
+          );
+        }
+      ),
+    );
   }
 }

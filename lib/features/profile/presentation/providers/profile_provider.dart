@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/review_service.dart';
+import '../../../../core/services/safety_service.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -16,9 +17,13 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService();
 });
 
-/// Review Service Provider
 final reviewServiceProvider = Provider<ReviewService>((ref) {
   return ReviewService();
+});
+
+/// Safety Service Provider
+final safetyServiceProvider = Provider<SafetyService>((ref) {
+  return SafetyService();
 });
 
 /// Current User Profile Provider
