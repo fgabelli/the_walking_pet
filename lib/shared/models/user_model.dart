@@ -42,6 +42,10 @@ class UserModel {
   final Gender? gender;
   final DateTime? birthDate;
   final String? address;
+  
+  // Reviews
+  final double averageRating;
+  final int reviewCount;
 
   UserModel({
     required this.uid,
@@ -76,6 +80,8 @@ class UserModel {
     this.gender,
     this.birthDate,
     this.address,
+    this.averageRating = 0.0,
+    this.reviewCount = 0,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -121,6 +127,8 @@ class UserModel {
           : null,
       birthDate: data['birthDate'] != null ? (data['birthDate'] as Timestamp).toDate() : null,
       address: data['address'],
+      averageRating: (data['averageRating'] ?? 0.0).toDouble(),
+      reviewCount: data['reviewCount'] ?? 0,
     );
   }
 
@@ -157,6 +165,8 @@ class UserModel {
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
+      'averageRating': averageRating,
+      'reviewCount': reviewCount,
     };
   }
 
@@ -195,6 +205,8 @@ class UserModel {
     Gender? gender,
     DateTime? birthDate,
     String? address,
+    double? averageRating,
+    int? reviewCount,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -229,6 +241,8 @@ class UserModel {
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,
+      averageRating: averageRating ?? this.averageRating,
+      reviewCount: reviewCount ?? this.reviewCount,
     );
   }
 }

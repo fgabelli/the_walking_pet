@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/models/review_model.dart';
 import '../providers/profile_provider.dart'; // For currentUserProfileProvider
 import '../../../../features/offers/presentation/screens/offers_screen.dart'; // Reuse offer listing logic if possible, or create a streamlined widget
 
@@ -22,7 +23,7 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> w
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -113,6 +114,17 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> w
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                              if (user.reviewCount > 0)
+                                Row(
+                                  children: [
+                                    Icon(Icons.star, color: Colors.amber, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '${user.averageRating.toStringAsFixed(1)} (${user.reviewCount})',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                               if (user.businessCategory != null)
                                 Chip(
                                   label: Text(
@@ -207,8 +219,9 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> w
                   unselectedLabelColor: Colors.grey,
                   indicatorColor: AppColors.primary,
                   tabs: const [
-                    Tab(text: 'Informazioni'),
-                    Tab(text: 'Offerte Attive'),
+                    Tab(text: 'Info'),
+                    Tab(text: 'Recensioni'),
+                    Tab(text: 'Offerte'),
                   ],
                 ),
               ),
@@ -221,6 +234,8 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> w
           children: [
             // Info Tab
             _InfoTab(user: user),
+            // Reviews Tab
+            _ReviewsTab(businessUser: user),
             // Offers Tab (Placeholder for now, or fetch offers by authorId)
             Center(child: Text('Le offerte di ${user.businessCategory ?? "questa attività"} appariranno qui.', style: TextStyle(color: Colors.grey))),
           ],

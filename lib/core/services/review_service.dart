@@ -1,103 +1,69 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/review_model.dart';
+import '../../shared/models/user_model.dart';
 
 class ReviewService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collection = 'reviews';
 
-  // Add a review for an announcement
-  Future<void> addReview(ReviewModel review) async {
-    try {
-      await _firestore.collection(_collection).add(review.toFirestore());
-    } catch (e) {
-      rethrow;
-    }
+  // Add a review for a Business Profile
+  Future<void> addBusinessReview(ReviewModel review) async {
+    if (review.targetUserId == null) throw Exception('Target User ID required for business review');
+
+    final businessRef = _firestore.collection('users').doc(review.targetUserId);
+    final reviewsRef = businessRef.collection('reviews');
+
+    await _firestore.runTransaction((transaction) async {
+      // 1. Get current business user data to check stats
+      final businessDoc = await transaction.get(businessRef);
+      if (!businessDoc.exists) throw Exception('Business user not found');
+
+      final businessUser = UserModel.fromFirestore(businessDoc);
+      
+      // 2. Add the new review document
+      // We use a new doc ID provided by the caller or auto-gen. 
+      // If review.id is 'temp' or empty, we generate one, but ReviewModel expects an ID.
+      // Usually we let Firestore gen ID. But here we have the object.
+      // Let's assume we create a new ref with auto ID if the passed ID is empty.
+      final newReviewRef = reviewsRef.doc(); 
+      // We need to store the review with this new ID
+      final reviewToSave = ReviewModel(
+        id: newReviewRef.id,
+        authorId: review.authorId,
+        authorName: review.authorName,
+        authorPhotoUrl: review.authorPhotoUrl,
+        rating: review.rating,
+        comment: review.comment,
+        timestamp: DateTime.now(),
+        targetUserId: review.targetUserId,
+      );
+
+      transaction.set(newReviewRef, reviewToSave.toFirestore());
+
+      // 3. Update aggregations
+      final currentCount = businessUser.reviewCount;
+      final currentAvg = businessUser.averageRating;
+      
+      final newCount = currentCount + 1;
+      final newAvg = ((currentAvg * currentCount) + review.rating) / newCount;
+
+      transaction.update(businessRef, {
+        'reviewCount': newCount,
+        'averageRating': newAvg,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
-  // Get reviews for a specific announcement
-  Stream<List<ReviewModel>> getReviewsForAnnouncement(String announcementId) {
+  // Get reviews stream for a business
+  Stream<List<ReviewModel>> getBusinessReviews(String businessUserId) {
     return _firestore
-        .collection(_collection)
-        .where('announcementId', isEqualTo: announcementId)
+        .collection('users')
+        .doc(businessUserId)
+        .collection('reviews')
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => ReviewModel.fromFirestore(doc)).toList();
     });
-  }
-
-  // Get average rating for a specific announcement
-  Future<double> getAverageRatingForAnnouncement(String announcementId) async {
-    try {
-      final snapshot = await _firestore
-          .collection(_collection)
-          .where('announcementId', isEqualTo: announcementId)
-          .get();
-
-      if (snapshot.docs.isEmpty) return 0.0;
-
-      final reviews = snapshot.docs.map((doc) => ReviewModel.fromFirestore(doc)).toList();
-      final totalRating = reviews.fold<double>(0.0, (total, review) => total + review.rating);
-      return totalRating / reviews.length;
-    } catch (e) {
-      return 0.0;
-    }
-  }
-
-  // Get review count for a specific announcement
-  Future<int> getReviewCountForAnnouncement(String announcementId) async {
-    try {
-      final snapshot = await _firestore
-          .collection(_collection)
-          .where('announcementId', isEqualTo: announcementId)
-          .get();
-      return snapshot.docs.length;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  // Get average rating for a user (from all their announcements)
-  Future<double> getUserAverageRating(String userId) async {
-    try {
-      // First, get all announcements by this user
-      final announcementsSnapshot = await _firestore
-          .collection('announcements')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      if (announcementsSnapshot.docs.isEmpty) return 0.0;
-
-      final announcementIds = announcementsSnapshot.docs.map((doc) => doc.id).toList();
-
-      // Get all reviews for these announcements
-      final reviewsSnapshot = await _firestore
-          .collection(_collection)
-          .where('announcementId', whereIn: announcementIds)
-          .get();
-
-      if (reviewsSnapshot.docs.isEmpty) return 0.0;
-
-      final reviews = reviewsSnapshot.docs.map((doc) => ReviewModel.fromFirestore(doc)).toList();
-      final totalRating = reviews.fold<double>(0.0, (total, review) => total + review.rating);
-      return totalRating / reviews.length;
-    } catch (e) {
-      return 0.0;
-    }
-  }
-
-  // Check if current user has already reviewed an announcement
-  Future<bool> hasUserReviewedAnnouncement(String authorId, String announcementId) async {
-    try {
-      final snapshot = await _firestore
-          .collection(_collection)
-          .where('authorId', isEqualTo: authorId)
-          .where('announcementId', isEqualTo: announcementId)
-          .limit(1)
-          .get();
-      return snapshot.docs.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
   }
 }
