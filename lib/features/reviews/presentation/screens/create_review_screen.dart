@@ -46,7 +46,6 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-    try {
       final userAsync = ref.read(currentUserProfileProvider);
       final user = userAsync.value;
       
