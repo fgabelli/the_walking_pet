@@ -18,7 +18,7 @@ import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 import '../../../events/presentation/screens/event_detail_screen.dart'; // Added
-import '../../../events/presentation/screens/events_list_screen.dart'; // Added
+import '../../activities/presentation/screens/activities_list_screen.dart'; // Unified Screen
 import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart'; // Added Shared Widget Import
 import '../widgets/map_filter_bottom_sheet.dart'; // FILTER IMPORT
 
@@ -384,13 +384,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                      Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const EventsListScreen(),
+                        builder: (context) => const ActivitiesListScreen(),
                       ),
                     );
                   },
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
-                  child: const Icon(Icons.calendar_today),
+                  child: const Icon(Icons.diversity_3), // Changed to generic community icon
+                  tooltip: 'Attività & Incontri',
                 ),
                 const SizedBox(height: 16),
                 FloatingActionButton(
