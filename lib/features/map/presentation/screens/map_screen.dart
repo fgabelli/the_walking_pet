@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart'; // Added
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/map_provider.dart';
@@ -163,6 +164,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ref.read(mapControllerProvider.notifier).clearSelectedSOS();
         });
       }
+    }); // Added closing brace for ref.listen
+
     // Listen for selected EVENT (Added)
     ref.listen(mapControllerProvider.select((value) => value.selectedEvent), (previous, next) {
       if (next != null) {
