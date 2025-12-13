@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
+import '../providers/profile_provider.dart'; // For currentUserProfileProvider
 import '../../../../features/offers/presentation/screens/offers_screen.dart'; // Reuse offer listing logic if possible, or create a streamlined widget
 
 class BusinessProfileScreen extends ConsumerStatefulWidget {
@@ -139,6 +140,34 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> w
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        // Follow Button
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final currentUserAsync = ref.watch(currentUserProfileProvider);
+                            return currentUserAsync.when(
+                              data: (currentUser) {
+                                if (currentUser == null || currentUser.uid == user.uid) return const SizedBox();
+                                final isFollowing = currentUser.following.contains(user.uid);
+                                
+                                return _ActionButton(
+                                  icon: isFollowing ? Icons.notifications_active : Icons.notifications_none,
+                                  label: isFollowing ? 'Segui già' : 'Segui',
+                                  color: isFollowing ? AppColors.secondary : Colors.grey,
+                                  onTap: () async {
+                                    final userService = ref.read(userServiceProvider);
+                                    if (isFollowing) {
+                                      await userService.unfollowUser(currentUser.uid, user.uid);
+                                    } else {
+                                      await userService.followUser(currentUser.uid, user.uid);
+                                    }
+                                  },
+                                );
+                              },
+                              loading: () => const SizedBox(),
+                              error: (_, __) => const SizedBox(),
+                            );
+                          },
+                        ),
                         if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
                           _ActionButton(
                             icon: Icons.phone, 
@@ -205,8 +234,9 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? color;
 
-  const _ActionButton({required this.icon, required this.label, required this.onTap});
+  const _ActionButton({required this.icon, required this.label, required this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -216,8 +246,8 @@ class _ActionButton extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppColors.primary.withOpacity(0.1),
-            child: Icon(icon, color: AppColors.primary, size: 20),
+            backgroundColor: (color ?? AppColors.primary).withOpacity(0.1),
+            child: Icon(icon, color: color ?? AppColors.primary, size: 20),
           ),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12)),
