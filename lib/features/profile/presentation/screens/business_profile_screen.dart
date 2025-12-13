@@ -358,3 +358,171 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
+
+class _ReviewsTab extends ConsumerWidget {
+  final UserModel businessUser;
+  const _ReviewsTab({required this.businessUser});
+
+  void _showAddReviewDialog(BuildContext context, WidgetRef ref) {
+    final commentController = TextEditingController();
+    double tempRating = 5.0; // Changed variable name to avoid conflict if any
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Scrivi una recensione'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < tempRating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          tempRating = index + 1.0;
+                        });
+                      },
+                    );
+                  }),
+                ),
+                TextField(
+                  controller: commentController,
+                  decoration: const InputDecoration(
+                    hintText: 'Racconta la tua esperienza...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annulla'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final currentUser = ref.read(currentUserProfileProvider).value;
+                  if (currentUser == null) return;
+
+                  final reviewService = ref.read(reviewServiceProvider);
+                  final review = ReviewModel(
+                    id: '', // Service will generate
+                    authorId: currentUser.uid,
+                    authorName: currentUser.fullName,
+                    authorPhotoUrl: currentUser.photoUrl,
+                    targetUserId: businessUser.uid,
+                    rating: tempRating,
+                    comment: commentController.text,
+                    timestamp: DateTime.now(),
+                  );
+
+                  await reviewService.addBusinessReview(review);
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: const Text('Invia'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reviewService = ref.watch(reviewServiceProvider);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${businessUser.reviewCount} Recensioni',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _showAddReviewDialog(context, ref),
+                icon: const Icon(Icons.edit),
+                label: const Text('Scrivi'),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: StreamBuilder<List<ReviewModel>>(
+            stream: reviewService.getBusinessReviews(businessUser.uid),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return Center(child: Text('Errore: ${snapshot.error}'));
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final reviews = snapshot.data ?? [];
+              if (reviews.isEmpty) {
+                return const Center(child: Text('Nessuna recensione ancora.'));
+              }
+
+              return ListView.builder(
+                itemCount: reviews.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundImage: review.authorPhotoUrl != null 
+                                    ? NetworkImage(review.authorPhotoUrl!) 
+                                    : null,
+                                child: review.authorPhotoUrl == null 
+                                    ? const Icon(Icons.person, size: 16) 
+                                    : null,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(review.authorName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              const Spacer(),
+                              Row(
+                                children: List.generate(5, (starIndex) {
+                                  return Icon(
+                                    starIndex < review.rating ? Icons.star : Icons.star_border,
+                                    size: 14,
+                                    color: Colors.amber,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(review.comment),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
