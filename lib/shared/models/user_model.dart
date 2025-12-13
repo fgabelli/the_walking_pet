@@ -29,6 +29,13 @@ class UserModel {
   final String? website;
   final String? phoneNumber;
   
+  // Rich Business Profile Fields
+  final String? coverImageUrl;
+  final List<String> galleryImages;
+  final String? openingHours; // Simplified text for now (e.g. "Lun-Ven: 9-18")
+  final String? instagramHandle;
+  final String? tiktokHandle;
+  
   // Personal Info
   final Gender? gender;
   final DateTime? birthDate;
@@ -57,6 +64,11 @@ class UserModel {
     this.businessCategory,
     this.website,
     this.phoneNumber,
+    this.coverImageUrl,
+    this.galleryImages = const [],
+    this.openingHours,
+    this.instagramHandle,
+    this.tiktokHandle,
     this.gender,
     this.birthDate,
     this.address,
@@ -93,6 +105,11 @@ class UserModel {
       businessCategory: data['businessCategory'],
       website: data['website'],
       phoneNumber: data['phoneNumber'],
+      coverImageUrl: data['coverImageUrl'],
+      galleryImages: List<String>.from(data['galleryImages'] ?? []),
+      openingHours: data['openingHours'],
+      instagramHandle: data['instagramHandle'],
+      tiktokHandle: data['tiktokHandle'],
       gender: data['gender'] != null  
           ? Gender.values.firstWhere((e) => e.name == data['gender'], orElse: () => Gender.other)
           : null,
@@ -124,6 +141,11 @@ class UserModel {
       'businessCategory': businessCategory,
       'website': website,
       'phoneNumber': phoneNumber,
+      'coverImageUrl': coverImageUrl,
+      'galleryImages': galleryImages,
+      'openingHours': openingHours,
+      'instagramHandle': instagramHandle,
+      'tiktokHandle': tiktokHandle,
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
@@ -155,6 +177,11 @@ class UserModel {
     String? businessCategory,
     String? website,
     String? phoneNumber,
+    String? coverImageUrl,
+    List<String>? galleryImages,
+    String? openingHours,
+    String? instagramHandle,
+    String? tiktokHandle,
     Gender? gender,
     DateTime? birthDate,
     String? address,
@@ -182,6 +209,11 @@ class UserModel {
       businessCategory: businessCategory ?? this.businessCategory,
       website: website ?? this.website,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      galleryImages: galleryImages ?? this.galleryImages,
+      openingHours: openingHours ?? this.openingHours,
+      instagramHandle: instagramHandle ?? this.instagramHandle,
+      tiktokHandle: tiktokHandle ?? this.tiktokHandle,
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,
