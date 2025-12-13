@@ -118,6 +118,56 @@ class UserService {
       rethrow;
     }
   }
+
+  Future<void> rejectFriendRequest(String currentUserId, String requesterId) async {
+    final batch = _firestore.batch();
+    
+    // Remove from current user's requests
+    final currentUserRef = _firestore.collection(_collection).doc(currentUserId);
+    batch.update(currentUserRef, {
+      'friendRequests': FieldValue.arrayRemove([requesterId]),
+    });
+    
+    await batch.commit();
+  }
+
+  // Follow System (For Business Profiles)
+  Future<void> followUser(String currentUserId, String targetUserId) async {
+    final batch = _firestore.batch();
+    
+    // Add target to current user's 'following' list
+    final currentUserRef = _firestore.collection(_collection).doc(currentUserId);
+    batch.update(currentUserRef, {
+      'following': FieldValue.arrayUnion([targetUserId]),
+    });
+    
+    // Add current user to target's 'followers' list
+    final targetUserRef = _firestore.collection(_collection).doc(targetUserId);
+    batch.update(targetUserRef, {
+      'followers': FieldValue.arrayUnion([currentUserId]),
+    });
+    
+    await batch.commit();
+  }
+
+  Future<void> unfollowUser(String currentUserId, String targetUserId) async {
+    final batch = _firestore.batch();
+    
+    // Remove target from current user's 'following' list
+    final currentUserRef = _firestore.collection(_collection).doc(currentUserId);
+    batch.update(currentUserRef, {
+      'following': FieldValue.arrayRemove([targetUserId]),
+    });
+    
+    // Remove current user from target's 'followers' list
+    final targetUserRef = _firestore.collection(_collection).doc(targetUserId);
+    batch.update(targetUserRef, {
+      'followers': FieldValue.arrayRemove([currentUserId]),
+    });
+    
+    await batch.commit();
+  }
+  
   // Block user
   Future<void> blockUser(String currentUserId, String blockedUserId) async {
     try {
