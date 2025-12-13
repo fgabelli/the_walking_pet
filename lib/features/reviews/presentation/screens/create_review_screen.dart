@@ -10,11 +10,13 @@ final reviewServiceProvider = Provider((ref) => ReviewService());
 class CreateReviewScreen extends ConsumerStatefulWidget {
   final String announcementId;
   final String announcementTitle;
+  final String targetUserId;
 
   const CreateReviewScreen({
     super.key,
     required this.announcementId,
     required this.announcementTitle,
+    required this.targetUserId,
   });
 
   @override
@@ -49,7 +51,10 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
       final review = ReviewModel(
         id: '', // Firestore generates ID
         authorId: user.uid,
+        authorName: user.fullName,
+        authorPhotoUrl: user.photoUrl,
         announcementId: widget.announcementId,
+        targetUserId: widget.targetUserId,
         rating: _rating,
         comment: _commentController.text.trim(),
         timestamp: DateTime.now(),

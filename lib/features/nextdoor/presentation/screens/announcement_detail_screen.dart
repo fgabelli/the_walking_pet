@@ -262,8 +262,9 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => CreateReviewScreen(
-                                        announcementId: updatedAnnouncement.id,
-                                        announcementTitle: updatedAnnouncement.message.length > 50
+                                          announcementId: updatedAnnouncement.id,
+                                          targetUserId: updatedAnnouncement.userId,
+                                          announcementTitle: updatedAnnouncement.message.length > 50
                                             ? '${updatedAnnouncement.message.substring(0, 50)}...'
                                             : updatedAnnouncement.message,
                                       ),
