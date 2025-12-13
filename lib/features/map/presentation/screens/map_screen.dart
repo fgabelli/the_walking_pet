@@ -12,6 +12,7 @@ import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart'; // for safetyServiceProvider
 import '../../../notifications/presentation/screens/notifications_screen.dart'; // Corrected import
 import '../../../../shared/models/safety_alert_model.dart'; // Added
+import '../../../../shared/models/lost_pet_alert_model.dart'; // Added SOS Model
 import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
@@ -64,7 +65,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
     });
 
-    // Listen for selected ALERT (Added)
+    // Listen for selected ALERT
     ref.listen(mapControllerProvider.select((value) => value.selectedAlert), (previous, next) {
       if (next != null) {
         showDialog(
@@ -101,6 +102,63 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ).then((_) {
           ref.read(mapControllerProvider.notifier).clearSelectedAlert();
+        });
+      }
+    });
+
+    // Listen for selected SOS (Added)
+    ref.listen(mapControllerProvider.select((value) => value.selectedSOS), (previous, next) {
+      if (next != null) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.red[50],
+            title: const Row(
+              children: [
+                Icon(Icons.sos, color: Colors.red, size: 32),
+                SizedBox(width: 8),
+                Text('SOS PET SMARRITO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                 const Text('Un nostro amico a 4 zampe è stato smarrito in questa zona! Aiutaci a trovarlo.', textAlign: TextAlign.center),
+                 const SizedBox(height: 16),
+                 if (next.message != null && next.message!.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                      child: Text(next.message!, style: const TextStyle(fontStyle: FontStyle.italic)),
+                    ),
+                 const SizedBox(height: 16),
+                 const Text('Se lo vedi, contatta subito il proprietario:', style: TextStyle(fontWeight: FontWeight.bold)),
+                 const SizedBox(height: 8),
+                 Text(next.contactPhone, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Chiudi', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                onPressed: () {
+                  // TODO: Launch dialer
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Chiamata a ${next.contactPhone}...')),
+                  );
+                },
+                icon: const Icon(Icons.call),
+                label: const Text('CHIAMA ORA'),
+              ),
+            ],
+          ),
+        ).then((_) {
+          ref.read(mapControllerProvider.notifier).clearSelectedSOS();
         });
       }
     });

@@ -4,6 +4,7 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/services/safety_service.dart';
+import '../../../../core/services/sos_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -24,6 +25,11 @@ final reviewServiceProvider = Provider<ReviewService>((ref) {
 /// Safety Service Provider
 final safetyServiceProvider = Provider<SafetyService>((ref) {
   return SafetyService();
+});
+
+/// SOS Service Provider
+final sosServiceProvider = Provider<SOSService>((ref) {
+  return SOSService();
 });
 
 /// Current User Profile Provider
