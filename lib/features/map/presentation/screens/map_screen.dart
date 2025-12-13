@@ -16,6 +16,8 @@ import '../../../../shared/models/lost_pet_alert_model.dart'; // Added SOS Model
 import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
+import '../../../events/presentation/screens/event_detail_screen.dart'; // Added
+import '../../../events/presentation/screens/events_list_screen.dart'; // Added
 import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart'; // Added Shared Widget Import
 import '../widgets/map_filter_bottom_sheet.dart'; // FILTER IMPORT
 
@@ -159,6 +161,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ).then((_) {
           ref.read(mapControllerProvider.notifier).clearSelectedSOS();
+        });
+      }
+    // Listen for selected EVENT (Added)
+    ref.listen(mapControllerProvider.select((value) => value.selectedEvent), (previous, next) {
+      if (next != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: next),
+          ),
+        ).then((_) {
+          ref.read(mapControllerProvider.notifier).clearSelectedEvent();
         });
       }
     });
@@ -359,6 +373,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                   child: const Icon(Icons.campaign), // or warning
+                ),
+                const SizedBox(height: 16),
+                FloatingActionButton(
+                  heroTag: 'events_fab',
+                  onPressed: () {
+                     Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EventsListScreen(),
+                      ),
+                    );
+                  },
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  child: const Icon(Icons.calendar_today),
                 ),
                 const SizedBox(height: 16),
                 FloatingActionButton(

@@ -1,4 +1,98 @@
-import 'dart:async'; // Keep this
+import '../../../../core/services/event_service.dart'; // Added
+import '../../../../shared/models/event_model.dart'; // Added
+// ... existing imports
+
+// Inside MapState class
+  final List<SafetyAlertModel> allAlerts;
+  final List<LostPetAlertModel> allSOSAlerts;
+  final List<EventModel> allEvents; // Added
+  final WalkModel? selectedWalk;
+  final AnnouncementModel? selectedAnnouncement;
+  final SafetyAlertModel? selectedAlert;
+  final LostPetAlertModel? selectedSOS;
+  final EventModel? selectedEvent; // Added
+  
+  MapState({
+    // ... params
+    this.allEvents = const [], // Added
+    this.selectedEvent, // Added
+  });
+
+  MapState copyWith({
+    // ... params
+    List<EventModel>? allEvents, // Added
+    EventModel? selectedEvent, // Added
+  }) {
+    return MapState(
+      // ... existing
+      allEvents: allEvents ?? this.allEvents,
+      selectedEvent: selectedEvent, // No coalescing
+      // ... existing
+    );
+  }
+
+// Inside MapStateController class
+  StreamSubscription<List<EventModel>>? _eventsSubscription; // Added
+
+  MapStateController(...) {
+    // ... existing init
+    _startListeningToEvents(); // Added
+  }
+
+  void _startListeningToEvents() {
+    _eventsSubscription = _ref.read(eventServiceProvider).getUpcomingEventsStream().listen(
+      (events) {
+        state = state.copyWith(allEvents: events);
+        _updateMarkers();
+      },
+      onError: (e) {
+        print('Error fetching events: $e');
+      },
+    );
+  }
+
+  // Inside _updateMarkers method
+    // 6. Event Markers (Added)
+    for (final event in state.allEvents) {
+      if (state.blockedUsers.contains(event.creatorId)) continue;
+      
+      markers.add(
+        Marker(
+          point: LatLng(event.latitude, event.longitude),
+          width: 45,
+          height: 45,
+          child: GestureDetector(
+            onTap: () {
+              state = state.copyWith(selectedEvent: event);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.deepPurpleAccent,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.event_available, color: Colors.white, size: 26),
+            ),
+          ),
+        ),
+      );
+    }
+    
+  // Inside clearSelectedEvent
+  void clearSelectedEvent() {
+    state = state.copyWith(selectedEvent: null);
+  }
+
+  // Inside dispose
+    _eventsSubscription?.cancel();
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,7 +105,9 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/services/walk_service.dart';
 import '../../../../core/services/safety_service.dart';
 import '../../../../core/services/sos_service.dart'; // Added
+import '../../../../core/services/event_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/models/event_model.dart'; // Added
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../walks/presentation/providers/walk_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
@@ -46,10 +142,12 @@ class MapState {
   final List<AnnouncementModel> allAnnouncements;
   final List<SafetyAlertModel> allAlerts;
   final List<LostPetAlertModel> allSOSAlerts; // Added
+  final List<EventModel> allEvents; // Added
   final WalkModel? selectedWalk;
   final AnnouncementModel? selectedAnnouncement;
   final SafetyAlertModel? selectedAlert;
   final LostPetAlertModel? selectedSOS; // Added
+  final EventModel? selectedEvent; // Added
   final List<String> blockedUsers;
   // Filters
   final String? filterBreed;
@@ -69,10 +167,12 @@ class MapState {
     this.allAnnouncements = const [],
     this.allAlerts = const [],
     this.allSOSAlerts = const [], // Added
+    this.allEvents = const [], // Added
     this.selectedWalk,
     this.selectedAnnouncement,
     this.selectedAlert,
     this.selectedSOS, // Added
+    this.selectedEvent, // Added
     this.blockedUsers = const [],
     this.filterBreed,
     this.filterGender,
@@ -92,10 +192,12 @@ class MapState {
     List<AnnouncementModel>? allAnnouncements,
     List<SafetyAlertModel>? allAlerts,
     List<LostPetAlertModel>? allSOSAlerts, // Added
+    List<EventModel>? allEvents, // Added
     WalkModel? selectedWalk,
     AnnouncementModel? selectedAnnouncement,
     SafetyAlertModel? selectedAlert,
     LostPetAlertModel? selectedSOS, // Added
+    EventModel? selectedEvent, // Added
     List<String>? blockedUsers,
     String? filterBreed,
     Gender? filterGender,
@@ -114,10 +216,12 @@ class MapState {
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
       allAlerts: allAlerts ?? this.allAlerts,
       allSOSAlerts: allSOSAlerts ?? this.allSOSAlerts, // Added
+      allEvents: allEvents ?? this.allEvents, // Added
       selectedWalk: selectedWalk, // No null coalescing to allow clearing
       selectedAnnouncement: selectedAnnouncement, // No null coalescing to allow clearing
       selectedAlert: selectedAlert, // No null coalescing
       selectedSOS: selectedSOS, // Added
+      selectedEvent: selectedEvent, // Added
       blockedUsers: blockedUsers ?? this.blockedUsers,
       filterBreed: filterBreed ?? this.filterBreed,
       filterGender: filterGender ?? this.filterGender,
@@ -138,6 +242,7 @@ class MapStateController extends StateNotifier<MapState> {
   StreamSubscription<List<AnnouncementModel>>? _announcementsSubscription;
   StreamSubscription<List<SafetyAlertModel>>? _alertsSubscription;
   StreamSubscription<List<LostPetAlertModel>>? _sosSubscription; // Added
+  StreamSubscription<List<EventModel>>? _eventsSubscription; // Added
 
   MapStateController(
     this._locationService,
@@ -150,7 +255,23 @@ class MapStateController extends StateNotifier<MapState> {
     _startListeningToProfile();
     _startListeningToAlerts();
     _startListeningToSOS(); // Added
+    _startListeningToEvents(); // Added
   }
+
+  // ... (previous methods)
+
+  void _startListeningToEvents() {
+    _eventsSubscription = _ref.read(eventServiceProvider).getUpcomingEventsStream().listen(
+      (events) {
+        state = state.copyWith(allEvents: events);
+        _updateMarkers();
+      },
+      onError: (e) {
+        print('Error fetching events: $e');
+      },
+    );
+  }
+
   
   void _startListeningToProfile() {
     _ref.listen(currentUserProfileProvider, (previous, next) {
@@ -630,6 +751,40 @@ class MapStateController extends StateNotifier<MapState> {
         ),
       );
     }
+    
+    // 6. Event Markers (Added)
+    for (final event in state.allEvents) {
+      if (state.blockedUsers.contains(event.creatorId)) continue;
+      
+      markers.add(
+        Marker(
+          point: LatLng(event.latitude, event.longitude),
+          width: 45,
+          height: 45,
+          child: GestureDetector(
+            onTap: () {
+              state = state.copyWith(selectedEvent: event);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.deepPurpleAccent,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.event_available, color: Colors.white, size: 26),
+            ),
+          ),
+        ),
+      );
+    }
+
 
     state = state.copyWith(markers: markers);
   }
@@ -675,6 +830,10 @@ class MapStateController extends StateNotifier<MapState> {
     state = state.copyWith(selectedSOS: null);
   }
 
+  void clearSelectedEvent() { // Added
+    state = state.copyWith(selectedEvent: null);
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
@@ -683,6 +842,7 @@ class MapStateController extends StateNotifier<MapState> {
     _announcementsSubscription?.cancel();
     _alertsSubscription?.cancel();
     _sosSubscription?.cancel(); // Added
+    _eventsSubscription?.cancel(); // Added
     super.dispose();
   }
   Future<bool> _tryFallbackToUserAddress() async {
