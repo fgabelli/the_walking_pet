@@ -419,7 +419,7 @@ class _ProfileContent extends ConsumerWidget {
                   child: Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Center(
-                      child: Text('Non hai ancora aggiunto nessun cane.'),
+                      child: Text('Non hai ancora aggiunto nessun pet.'),
                     ),
                   ),
                 );

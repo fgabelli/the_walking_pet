@@ -130,7 +130,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Modifica Cane' : 'Aggiungi Cane'),
+        title: Text(isEditing ? 'Modifica Pet' : 'Aggiungi Pet'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -177,7 +177,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              const Center(child: Text('Foto del cane')),
+              const Center(child: Text('Foto del Pet')),
               const SizedBox(height: 32),
 
               // Name
@@ -329,7 +329,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                             color: Colors.white,
                           ),
                         )
-                      : Text(isEditing ? 'Salva Modifiche' : 'Salva Cane'),
+                      : Text(isEditing ? 'Salva Modifiche' : 'Salva Pet'),
                 ),
               ),
               if (isEditing) ...[
@@ -343,7 +343,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                             final confirm = await showDialog<bool>(
                               context: context,
                               builder: (context) => AlertDialog(
-                                title: const Text('Elimina Cane'),
+                                title: const Text('Elimina Pet'),
                                 content: const Text(
                                     'Sei sicuro di voler eliminare questo profilo?'),
                                 actions: [
@@ -371,7 +371,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                                 if (state.error == null) {
                                   Navigator.pop(context); // Close screen
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Cane eliminato')),
+                                    const SnackBar(content: Text('Pet eliminato')),
                                   );
                                 }
                               }
@@ -380,7 +380,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.error,
                     ),
-                    child: const Text('Elimina Cane'),
+                    child: const Text('Elimina Pet'),
                   ),
                 ),
               ],

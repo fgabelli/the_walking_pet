@@ -32,7 +32,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo, divulghiamo e proteggiamo le tue informazioni quando utilizzi la nostra applicazione mobile.\n\n'
               '1. Raccolta delle Informazioni\n'
               'Raccogliamo le informazioni che ci fornisci direttamente, come quando crei un account, aggiorni il tuo profilo o comunichi con noi. '
-              'Queste informazioni possono includere il tuo nome, indirizzo email, data di nascita, genere e informazioni sul tuo cane.\n\n'
+              'Queste informazioni possono includere il tuo nome, indirizzo email, data di nascita, genere e informazioni sul tuo animale domestico.\n\n'
               '2. Utilizzo delle Informazioni\n'
               'Utilizziamo le informazioni raccolte per fornire, mantenere e migliorare i nostri servizi, per comunicare con te e per personalizzare la tua esperienza.\n\n'
               '3. Condivisione delle Informazioni\n'

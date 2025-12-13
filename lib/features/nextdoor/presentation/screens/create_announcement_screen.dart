@@ -217,7 +217,7 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
                 decoration: const InputDecoration(
                   labelText: 'Messaggio',
                   alignLabelWithHint: true,
-                  hintText: 'Es. Ho trovato un cane smarrito in via Roma...',
+                  hintText: 'Es. Ho trovato un animale smarrito in via Roma...',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
