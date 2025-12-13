@@ -54,7 +54,7 @@ class HealthRecordModel {
       id: doc.id,
       petId: data['petId'] ?? '',
       type: HealthRecordType.values.firstWhere(
-        (e) => e.toString() == data['type'],
+        (e) => e.name == data['type'] || e.toString() == data['type'],
         orElse: () => HealthRecordType.other,
       ),
       title: data['title'] ?? '',
@@ -71,7 +71,7 @@ class HealthRecordModel {
   Map<String, dynamic> toFirestore() {
     return {
       'petId': petId,
-      'type': type.toString(),
+      'type': type.name, // Changed to .name for cleaner data
       'title': title,
       'date': Timestamp.fromDate(date),
       'nextDueDate': nextDueDate != null ? Timestamp.fromDate(nextDueDate!) : null,

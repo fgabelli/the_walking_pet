@@ -42,12 +42,15 @@ class HealthService {
   Stream<List<HealthRecordModel>> getHealthRecordsStream(String petId) {
     return _healthRef
         .where('petId', isEqualTo: petId)
-        .orderBy('date', descending: true)
-        .snapshots()
+        .snapshots() // Removed orderBy to avoid index issues
         .map((snapshot) {
-      return snapshot.docs
+      final records = snapshot.docs
           .map((doc) => HealthRecordModel.fromFirestore(doc))
           .toList();
+      
+      // Sort client-side
+      records.sort((a, b) => b.date.compareTo(a.date));
+      return records;
     });
   }
 }
