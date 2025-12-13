@@ -20,6 +20,8 @@ class UserModel {
   final List<String> friendRequests; // Incoming requests
   final List<String> locationWhitelist; // For 'custom' privacy
   final List<String> blockedUsers; // New field for blocked users
+  final List<String> followers; // Users following this profile (Business)
+  final List<String> following; // Profiles this user is following
   final bool isGhost; // New field for Ghost Mode (Premium)
 
   // Monetization Fields
@@ -58,6 +60,8 @@ class UserModel {
     this.friendRequests = const [],
     this.locationWhitelist = const [],
     this.blockedUsers = const [],
+    this.followers = const [],
+    this.following = const [],
     this.isGhost = false,
     this.isPremium = false,
     this.accountType = AccountType.personal,
@@ -96,6 +100,8 @@ class UserModel {
       friendRequests: List<String>.from(data['friendRequests'] ?? []),
       locationWhitelist: List<String>.from(data['locationWhitelist'] ?? []),
       blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
+      followers: List<String>.from(data['followers'] ?? []),
+      following: List<String>.from(data['following'] ?? []),
       isGhost: data['isGhost'] ?? false,
       isPremium: data['isPremium'] ?? false,
       accountType: AccountType.values.firstWhere(
@@ -135,6 +141,8 @@ class UserModel {
       'friendRequests': friendRequests,
       'locationWhitelist': locationWhitelist,
       'blockedUsers': blockedUsers,
+      'followers': followers,
+      'following': following,
       'isGhost': isGhost,
       'isPremium': isPremium,
       'accountType': accountType.name,
@@ -171,6 +179,8 @@ class UserModel {
     List<String>? friendRequests,
     List<String>? locationWhitelist,
     List<String>? blockedUsers,
+    List<String>? followers,
+    List<String>? following,
     bool? isGhost,
     bool? isPremium,
     AccountType? accountType,
@@ -203,6 +213,8 @@ class UserModel {
       friendRequests: friendRequests ?? this.friendRequests,
       locationWhitelist: locationWhitelist ?? this.locationWhitelist,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      followers: followers ?? this.followers,
+      following: following ?? this.following,
       isGhost: isGhost ?? this.isGhost,
       isPremium: isPremium ?? this.isPremium,
       accountType: accountType ?? this.accountType,
