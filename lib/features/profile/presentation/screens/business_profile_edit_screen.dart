@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/profile_provider.dart';
@@ -17,6 +18,9 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _websiteController;
   late TextEditingController _phoneController;
+  late TextEditingController _instagramController;
+  late TextEditingController _tiktokController;
+  late TextEditingController _hoursController;
   String? _selectedCategory;
   bool _isLoading = false;
 
@@ -38,6 +42,9 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
     super.initState();
     _websiteController = TextEditingController(text: widget.user.website);
     _phoneController = TextEditingController(text: widget.user.phoneNumber);
+    _instagramController = TextEditingController(text: widget.user.instagramHandle);
+    _tiktokController = TextEditingController(text: widget.user.tiktokHandle);
+    _hoursController = TextEditingController(text: widget.user.openingHours);
     _selectedCategory = widget.user.businessCategory;
   }
 
@@ -45,6 +52,9 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
   void dispose() {
     _websiteController.dispose();
     _phoneController.dispose();
+    _instagramController.dispose();
+    _tiktokController.dispose();
+    _hoursController.dispose();
     super.dispose();
   }
 
@@ -58,6 +68,9 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
         businessCategory: _selectedCategory,
         website: _websiteController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
+        instagramHandle: _instagramController.text.trim(),
+        tiktokHandle: _tiktokController.text.trim(),
+        openingHours: _hoursController.text.trim(),
         accountType: AccountType.business, // Force switch to business
       );
       
@@ -133,6 +146,47 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
                    border: OutlineInputBorder(),
                  ),
                  keyboardType: TextInputType.phone,
+               ),
+               const SizedBox(height: 16),
+
+               // Socials Section
+               Text('Social & Info', style: Theme.of(context).textTheme.titleMedium),
+               const SizedBox(height: 8),
+
+               // Instagram
+               TextFormField(
+                 controller: _instagramController,
+                 decoration: const InputDecoration(
+                   labelText: 'Instagram Handle',
+                   prefixIcon: Icon(FontAwesomeIcons.instagram),
+                   border: OutlineInputBorder(),
+                   hintText: '@tuo.business'
+                 ),
+               ),
+               const SizedBox(height: 16),
+
+               // TikTok
+               TextFormField(
+                 controller: _tiktokController,
+                 decoration: const InputDecoration(
+                   labelText: 'TikTok Handle',
+                   prefixIcon: Icon(FontAwesomeIcons.tiktok),
+                   border: OutlineInputBorder(),
+                   hintText: '@tuo.business'
+                 ),
+               ),
+               const SizedBox(height: 16),
+
+               // Opening Hours (Simple Text for now)
+               TextFormField(
+                 controller: _hoursController,
+                 decoration: const InputDecoration(
+                   labelText: 'Orari di Apertura',
+                   prefixIcon: Icon(Icons.access_time),
+                   border: OutlineInputBorder(),
+                   hintText: 'Lun-Ven: 09:00 - 18:00'
+                 ),
+                 maxLines: 2,
                ),
                
                const SizedBox(height: 32),
