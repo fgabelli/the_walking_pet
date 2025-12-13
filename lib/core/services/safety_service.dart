@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../shared/models/safety_alert_model.dart'; // Added
 import '../shared/models/safety_alert_model.dart';
 
 class SafetyService {
