@@ -6,7 +6,9 @@ import '../../../../core/services/event_service.dart';
 import '../../../../shared/models/event_model.dart';
 import '../../../../core/services/location_service.dart'; // For initial location
 import '../../../../features/map/presentation/providers/map_provider.dart';
-import '../../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../features/map/presentation/providers/map_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class CreateEventScreen extends ConsumerStatefulWidget {

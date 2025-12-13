@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/event_service.dart';
 import '../../../../shared/models/event_model.dart';
-import '../../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../shared/models/event_model.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class EventDetailScreen extends ConsumerWidget {
