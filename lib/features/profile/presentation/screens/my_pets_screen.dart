@@ -1,15 +1,14 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../providers/dog_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../profile/presentation/screens/create_dog_profile_screen.dart';
-import '../../health_record/presentation/screens/health_record_list_screen.dart';
+import 'create_dog_profile_screen.dart'; // Same directory
+import '../../../health_record/presentation/screens/health_record_list_screen.dart'; // Correct relative path
 import '../../../../core/services/location_service.dart';
-import '../../../../features/map/presentation/providers/map_provider.dart'; // For location
-import '../../../../core/services/sos_service.dart'; // For SOS
+import '../../../../features/map/presentation/providers/map_provider.dart'; 
+import '../../../../core/services/sos_service.dart';
 
 class MyPetsScreen extends ConsumerWidget {
   const MyPetsScreen({super.key});
@@ -31,7 +30,7 @@ class MyPetsScreen extends ConsumerWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateDogProfileScreen()),
+            MaterialPageRoute(builder: (context) => CreateDogProfileScreen()),
           );
         },
         label: const Text('Aggiungi Pet', style: TextStyle(color: Colors.white)),
