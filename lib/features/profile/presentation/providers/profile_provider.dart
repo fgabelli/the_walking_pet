@@ -27,10 +27,7 @@ final safetyServiceProvider = Provider<SafetyService>((ref) {
   return SafetyService();
 });
 
-/// SOS Service Provider
-final sosServiceProvider = Provider<SOSService>((ref) {
-  return SOSService();
-});
+
 
 /// Current User Profile Provider
 final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
