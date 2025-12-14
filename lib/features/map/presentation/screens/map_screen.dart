@@ -375,7 +375,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   onPressed: () => _showReportDangerDialog(context, mapState.currentPosition!),
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
-                  child: const Icon(Icons.campaign), // or warning
+                  child: const Icon(Icons.warning_amber), // Changed from campaign to distinguish from Nextdoor
                 ),
                 const SizedBox(height: 16),
                 FloatingActionButton(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../map/presentation/screens/map_screen.dart';
-import '../../../walks/presentation/screens/walks_list_screen.dart';
+import '../../../profile/presentation/screens/my_pets_screen.dart'; // Changed import
 import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../nextdoor/presentation/screens/nextdoor_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +21,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   final List<Widget> _screens = [
     const MapScreen(),
-    const WalksListScreen(),
+    const MyPetsScreen(), // Changed from WalksListScreen
     const NextdoorScreen(), // Changed from placeholder
     const ChatListScreen(),
     const ProfileScreen(),
@@ -57,14 +57,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             label: 'Mappa',
           ),
           NavigationDestination(
-            icon: Icon(Icons.directions_walk_outlined),
-            selectedIcon: Icon(Icons.directions_walk),
-            label: 'Passeggiate',
+            icon: Icon(Icons.pets), // Changed icon
+            selectedIcon: Icon(Icons.pets),
+            label: 'I Miei Pet', // Changed label
           ),
           NavigationDestination(
-            icon: Icon(Icons.campaign_outlined), // Changed icon
-            selectedIcon: Icon(Icons.campaign), // Changed icon
-            label: 'Nextdoor', // Changed label
+            icon: Icon(Icons.campaign_outlined), 
+            selectedIcon: Icon(Icons.campaign),
+            label: 'Nextdoor', 
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
