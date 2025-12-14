@@ -42,7 +42,8 @@ class HealthService {
   Stream<List<HealthRecordModel>> getHealthRecordsStream(String petId) {
     return _healthRef
         .where('petId', isEqualTo: petId)
-        .snapshots() // Removed orderBy to avoid index issues
+        .limit(100) // Force query change and limit results
+        .snapshots()
         .map((snapshot) {
       final records = snapshot.docs
           .map((doc) => HealthRecordModel.fromFirestore(doc))

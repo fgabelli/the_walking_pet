@@ -18,7 +18,7 @@ import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 import '../../../events/presentation/screens/event_detail_screen.dart'; // Added
-import '../../activities/presentation/screens/activities_list_screen.dart'; // Unified Screen
+import '../../../activities/presentation/screens/activities_list_screen.dart'; // Unified Screen
 import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart'; // Added Shared Widget Import
 import '../widgets/map_filter_bottom_sheet.dart'; // FILTER IMPORT
 
