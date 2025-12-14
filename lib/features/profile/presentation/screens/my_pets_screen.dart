@@ -320,8 +320,8 @@ class _PetCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                     Icon(dog.gender == Gender.male ? Icons.male : Icons.female, 
-                          color: dog.gender == Gender.male ? Colors.blue : Colors.pink),
+                     Icon(dog.gender == DogGender.male ? Icons.male : Icons.female, 
+                          color: dog.gender == DogGender.male ? Colors.blue : Colors.pink),
                      const SizedBox(width: 8),
                      Text(
                        '${dog.breed} • ${dog.size.displayName}',

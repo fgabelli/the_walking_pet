@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/lost_pet_alert_model.dart'; // Added
 
 class SOSService {
@@ -46,3 +47,5 @@ class SOSService {
     });
   }
 }
+
+final sosServiceProvider = Provider<SOSService>((ref) => SOSService());
