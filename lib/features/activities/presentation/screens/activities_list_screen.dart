@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/event_service.dart';
 import '../../../../shared/models/event_model.dart';
-import '../../walks/presentation/providers/walk_provider.dart';
+import '../../../walks/presentation/providers/walk_provider.dart';
 import '../../../../shared/models/walk_model.dart';
-import '../../activities/models/activity_item.dart';
+import '../../models/activity_item.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../events/presentation/screens/event_detail_screen.dart';
-import '../../events/presentation/screens/create_event_screen.dart';
-import '../../walks/presentation/screens/walk_detail_screen.dart';
-import '../../walks/presentation/screens/create_walk_screen.dart';
+import '../../../events/presentation/screens/event_detail_screen.dart';
+import '../../../events/presentation/screens/create_event_screen.dart';
+import '../../../walks/presentation/screens/walk_detail_screen.dart';
+import '../../../walks/presentation/screens/create_walk_screen.dart';
 
 class ActivitiesListScreen extends ConsumerStatefulWidget {
   const ActivitiesListScreen({super.key});
@@ -142,7 +142,7 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateWalkScreen()),
+                    MaterialPageRoute(builder: (context) => CreateWalkScreen()),
                   );
                 },
               ),
@@ -157,7 +157,7 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateEventScreen()),
+                    MaterialPageRoute(builder: (context) => CreateEventScreen()),
                   );
                 },
               ),
