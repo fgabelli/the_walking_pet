@@ -1,6 +1,6 @@
 
-import '../../shared/models/walk_model.dart';
-import '../../shared/models/event_model.dart';
+import '../../../shared/models/walk_model.dart';
+import '../../../shared/models/event_model.dart';
 
 enum ActivityType {
   walk,

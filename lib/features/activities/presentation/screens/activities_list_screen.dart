@@ -25,7 +25,7 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walksAsync = ref.watch(walksProvider);
+    final walksAsync = ref.watch(upcomingWalksProvider);
     final eventService = ref.watch(eventServiceProvider);
 
     return Scaffold(
