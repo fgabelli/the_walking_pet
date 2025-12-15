@@ -560,8 +560,8 @@ class MapStateController extends StateNotifier<MapState> {
 
       // Search Filter
       if (query.isNotEmpty) {
-        final matches = announcement.title.toLowerCase().contains(query) ||
-                        announcement.description.toLowerCase().contains(query);
+        final matches = announcement.message.toLowerCase().contains(query) ||
+                        announcement.authorName.toLowerCase().contains(query);
         if (!matches) continue;
       }
 
