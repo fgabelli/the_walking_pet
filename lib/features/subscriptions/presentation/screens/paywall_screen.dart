@@ -5,7 +5,8 @@ import '../../../../shared/models/user_model.dart';
 import '../../../../core/services/subscription_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'; // Added
-import '../../../profile/presentation/providers/profile_provider.dart'; // Added for purchaseServiceProvider
+import '../../../profile/presentation/providers/profile_provider.dart';
+import '../../../../core/services/purchase_service.dart'; // Added provider definition here
 
 class PaywallScreen extends ConsumerStatefulWidget {
   final String offeringId; // 'default' or 'business_pro'
