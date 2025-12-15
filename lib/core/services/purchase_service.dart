@@ -52,8 +52,17 @@ class PurchaseService {
 
   Future<bool> purchasePackage(Package package) async {
     try {
-      final customerInfo = await Purchases.purchasePackage(package);
-      return _checkEntitlements(customerInfo);
+      final result = await Purchases.purchasePackage(package);
+      // Accessing customerInfo from the result wrapper (likely needed for this SDK version)
+      // Note: If result IS CustomerInfo (old SDK), this name change is harmless, but property access is key.
+      // Based on error "PurchaseResult cannot be assigned to CustomerInfo", PurchaseResult wraps it.
+      // Typically: result.customerInfo (or similar). 
+      // Let's safe bet that PurchaseResult is NOT CustomerInfo.
+      // Wait, let's verify if PurchaseResult isn't the return type of the Web implementation?
+      // No, this is iOS build.
+      // I'll try to find if PurchaseResult has a property.
+      // If I can't, I will use `await Purchases.getCustomerInfo()` immediately after purchase to be safe and ignore the return object's specific shape.
+      return _checkEntitlements(await Purchases.getCustomerInfo());
     } catch (e) {
       print('Purchase failed: $e');
       return false;
