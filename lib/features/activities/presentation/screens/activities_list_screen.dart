@@ -12,6 +12,8 @@ import '../../../events/presentation/screens/event_detail_screen.dart';
 import '../../../events/presentation/screens/create_event_screen.dart';
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../walks/presentation/screens/create_walk_screen.dart';
+import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Added
+import '../../../profile/presentation/providers/profile_provider.dart'; // Added
 
 class ActivitiesListScreen extends ConsumerStatefulWidget {
   const ActivitiesListScreen({super.key});
@@ -27,10 +29,14 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
   Widget build(BuildContext context) {
     final walksAsync = ref.watch(upcomingWalksProvider);
     final eventService = ref.watch(eventServiceProvider);
+    final currentUserAsync = ref.watch(currentUserProfileProvider);
+    final currentUser = currentUserAsync.value;
+    final showAds = currentUser != null && !currentUser.isPremium;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Attività & Incontri'),
+        // ... (existing AppBar setup checked ok in context)
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -94,14 +100,35 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
 
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: allItems.length,
+                itemCount: showAds 
+                    ? allItems.length + (allItems.length ~/ 8) 
+                    : allItems.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  final item = allItems[index];
-                  if (item.type == ActivityType.walk) {
-                    return _WalkCard(walk: item.walk!);
+                  if (showAds) {
+                    // Ad Injection Logic: Every 8 items (indices 8, 17...)
+                    // Based on my previous logic: index > 0 && (index + 1) % 9 == 0
+                    if (index > 0 && (index + 1) % 9 == 0) {
+                       return const UnifiedAdCard(zone: 'activities_list');
+                    }
+
+                    final itemIndex = index - (index ~/ 9);
+                    if (itemIndex >= allItems.length) return const SizedBox.shrink();
+
+                    final item = allItems[itemIndex];
+                    if (item.type == ActivityType.walk) {
+                      return _WalkCard(walk: item.walk!);
+                    } else {
+                      return _EventCard(event: item.event!);
+                    }
                   } else {
-                    return _EventCard(event: item.event!);
+                    // No Ads logic
+                    final item = allItems[index];
+                    if (item.type == ActivityType.walk) {
+                      return _WalkCard(walk: item.walk!);
+                    } else {
+                      return _EventCard(event: item.event!);
+                    }
                   }
                 },
               );

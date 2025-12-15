@@ -4,9 +4,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../core/services/subscription_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart'; // Added
+import '../../../profile/presentation/providers/profile_provider.dart'; // Added for purchaseServiceProvider
 
 class PaywallScreen extends ConsumerStatefulWidget {
-  const PaywallScreen({super.key});
+  final String offeringId; // 'default' or 'business_pro'
+
+  const PaywallScreen({super.key, this.offeringId = 'default'});
 
   @override
   ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
@@ -14,24 +18,32 @@ class PaywallScreen extends ConsumerStatefulWidget {
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   bool _isLoading = false;
-  // Mock products for UI testing
-  final List<Map<String, dynamic>> _mockProducts = [
-    {
-      'id': 'monthly',
-      'title': 'Mensile',
-      'price': '€2.99',
-      'period': '/ mese',
-      'identifier': 'premium_monthly',
-    },
-    {
-      'id': 'annual',
-      'title': 'Annuale',
-      'price': '€29.99',
-      'period': '/ anno',
-      'savings': 'Risparmia il 16%',
-      'identifier': 'premium_annual',
-    },
-  ];
+  List<Package> _packages = []; // Changed from _mockProducts
+  
+  @override
+  void initState() {
+    super.initState();
+    _fetchOfferings();
+  }
+
+  Future<void> _fetchOfferings() async {
+    setState(() => _isLoading = true);
+    try {
+      final offerings = await ref.read(purchaseServiceProvider).getOfferings();
+      if (offerings != null) {
+        final offering = offerings.all[widget.offeringId] ?? offerings.current;
+        if (offering != null) {
+          setState(() {
+            _packages = offering.availablePackages;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching offerings: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +129,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 48),
                         
                         // Products
-                        ..._mockProducts.map((p) => _buildProductCard(context, p)),
+                        if (_packages.isEmpty && !_isLoading)
+                           const Text('Nessuna offerta disponibile al momento.'),
+                        ..._packages.map((p) => _buildProductCard(context, p)),
                         
                         const SizedBox(height: 24),
                         
@@ -190,13 +204,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Map<String, dynamic> product) {
+  Widget _buildProductCard(BuildContext context, Package package) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDarkMode ? Colors.grey[800] : Colors.white;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final product = package.storeProduct;
 
     return GestureDetector(
-      onTap: () => _purchase(product),
+      onTap: () => _purchase(package),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
@@ -222,7 +237,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product['title'],
+                    product.title, // RevenueCat Title
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -233,73 +248,60 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   Row(
                     children: [
                       Text(
-                        product['price'],
+                        product.priceString, // RevenueCat Price
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
                           color: AppColors.primary,
                         ),
                       ),
-                      Text(
-                        product['period'],
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                          fontSize: 16,
-                        ),
-                      ),
+                       const SizedBox(width: 8),
+                      // Text(
+                      //   package.packageType == PackageType.annual ? '/ anno' : '/ mese',
+                      //   style: TextStyle(
+                      //     color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      //     fontSize: 16,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ],
               ),
             ),
-            if (product.containsKey('savings'))
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  product['savings'],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+            // Savings badge logic could be added here if needed
           ],
         ),
       ),
     );
   }
 
-  Future<void> _purchase(Map<String, dynamic> product) async {
+  Future<void> _purchase(Package package) async {
     setState(() => _isLoading = true);
     
-    // MOCK BUY LOGIC FOR NOW
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-    
-    setState(() => _isLoading = false);
-    
-    // Simulate success
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Acquisto simulato con successo! (Mock)')),
-    );
-    Navigator.pop(context);
-    
-    // REAL LOGIC (Commented out until keys are ready)
-    /*
     try {
-      final success = await ref.read(subscriptionServiceProvider).purchasePackage(realPackage);
-      if (success && mounted) {
-        Navigator.pop(context);
+      final success = await ref.read(purchaseServiceProvider).purchasePackage(package);
+      
+      if (!mounted) return;
+
+      if (success) {
+         // Refresh profile entitlement status
+         await ref.read(profileControllerProvider.notifier).refreshEntitlements();
+         
+         if (!mounted) return;
+
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Acquisto completato con successo! 🎉')),
+         );
+         Navigator.pop(context);
       }
     } catch (e) {
-      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore durante l\'acquisto: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-    */
   }
 }

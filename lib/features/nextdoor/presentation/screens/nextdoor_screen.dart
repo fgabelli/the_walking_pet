@@ -9,6 +9,7 @@ import 'announcement_detail_screen.dart';
 import '../../../offers/presentation/screens/offers_screen.dart'; // Corrected Import
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../widgets/business_showcase_widget.dart';
+import '../../../../features/ads/presentation/widgets/unified_ad_card.dart'; // Added
 
 class NextdoorScreen extends ConsumerStatefulWidget {
   const NextdoorScreen({super.key});
@@ -159,12 +160,26 @@ class _AnnouncementsTabState extends ConsumerState<_AnnouncementsTab> {
                           );
                         }
       
+                        bool showAds = currentUser != null && !currentUser.isPremium;
+                        
                         return ListView.builder(
                           padding: const EdgeInsets.all(16),
-                          itemCount: displayedAnnouncements.length,
+                          itemCount: showAds 
+                              ? displayedAnnouncements.length + (displayedAnnouncements.length ~/ 5)
+                              : displayedAnnouncements.length,
                           itemBuilder: (context, index) {
-                            final announcement = displayedAnnouncements[index];
-                            return _AnnouncementCard(announcement: announcement);
+                            if (showAds) {
+                              // Ad Injection Logic
+                              if (index > 0 && (index + 1) % 6 == 0) {
+                                return const UnifiedAdCard(zone: 'nextdoor_feed');
+                              }
+                              final itemIndex = index - (index ~/ 6);
+                              if (itemIndex >= displayedAnnouncements.length) return const SizedBox.shrink();
+                              return _AnnouncementCard(announcement: displayedAnnouncements[itemIndex]);
+                            } else {
+                              // No Ads
+                              return _AnnouncementCard(announcement: displayedAnnouncements[index]);
+                            }
                           },
                         );
                       },

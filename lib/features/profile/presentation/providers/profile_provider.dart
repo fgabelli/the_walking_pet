@@ -4,7 +4,8 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/services/safety_service.dart';
-import '../../../../core/services/sos_service.dart'; // Added
+import '../../../../core/services/sos_service.dart'; 
+import '../../../../core/services/purchase_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -54,10 +55,64 @@ class ProfileState {
 class ProfileController extends StateNotifier<ProfileState> {
   final UserService _userService;
   final StorageService _storageService;
+  final PurchaseService _purchaseService;
   final Ref _ref;
 
-  ProfileController(this._userService, this._storageService, this._ref)
-      : super(ProfileState());
+  ProfileController(this._userService, this._storageService, this._purchaseService, this._ref)
+      : super(ProfileState()) {
+    _initPurchases();
+  }
+
+  Future<void> _initPurchases() async {
+     await _purchaseService.init();
+     await refreshEntitlements();
+  }
+
+  Future<void> refreshEntitlements() async {
+    final customerInfo = await _purchaseService.getCustomerInfo();
+    if (customerInfo != null) {
+      final isPremium = _purchaseService.isPremium(customerInfo);
+      final isBusiness = _purchaseService.isBusiness(customerInfo);
+      
+      // Sync with Firestore if changed (Optimistic check)
+      final user = _ref.read(authServiceProvider).currentUser;
+      if (user != null) {
+         final currentUserProfile = await _userService.getUserById(user.uid);
+         if (currentUserProfile != null) {
+           bool needsUpdate = false;
+           UserModel updatedUser = currentUserProfile;
+
+           // Sync Premium
+           if (currentUserProfile.isPremium != isPremium) {
+             updatedUser = updatedUser.copyWith(isPremium: isPremium);
+             needsUpdate = true;
+           }
+
+           // Sync Business (Unlock if entitled, but don't downgrade automatically maybe? 
+           // Or yes, strict sync? Let's be strict for now or add logic to not downgrade business if manual override is present?
+           // For simplicity: If has business entitlement, force business type.
+           if (isBusiness) {
+             if (currentUserProfile.accountType != AccountType.business) {
+                updatedUser = updatedUser.copyWith(accountType: AccountType.business);
+                needsUpdate = true;
+             }
+           } 
+           // If NOT business entitlement, should we downgrade? 
+           // Maybe they cancelled. Yes, let's revert to personal if not entitled.
+           else if (currentUserProfile.accountType == AccountType.business) {
+              // CAREFUL: What if they are grandfathered? 
+              // For this task, we assume strict sync.
+              updatedUser = updatedUser.copyWith(accountType: AccountType.personal);
+              needsUpdate = true;
+           }
+           
+           if (needsUpdate) {
+             await _userService.updateUser(updatedUser);
+           }
+         }
+      }
+    }
+  }
 
   Future<void> createProfile({
     required String firstName,
@@ -190,11 +245,17 @@ class ProfileController extends StateNotifier<ProfileState> {
   }
 }
 
+/// Purchase Service Provider
+final purchaseServiceProvider = Provider<PurchaseService>((ref) {
+  return PurchaseService();
+});
+
 /// Profile Controller Provider
 final profileControllerProvider = StateNotifierProvider<ProfileController, ProfileState>((ref) {
   return ProfileController(
     ref.watch(userServiceProvider),
     ref.watch(storageServiceProvider),
+    ref.watch(purchaseServiceProvider), // Injected
     ref,
   );
 });

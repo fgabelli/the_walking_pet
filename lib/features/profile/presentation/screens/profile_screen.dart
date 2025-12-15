@@ -7,13 +7,14 @@ import '../providers/dog_provider.dart';
 import '../providers/profile_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/services/review_service.dart';
+import '../../../../core/services/purchase_service.dart'; // Added
 import 'create_dog_profile_screen.dart';
 import 'create_profile_screen.dart';
 
 import '../providers/friend_provider.dart';
 import 'privacy_settings_screen.dart';
 import 'friends_list_screen.dart';
-import 'blocked_users_screen.dart'; // Import
+import 'blocked_users_screen.dart';
 import '../../../subscriptions/presentation/screens/paywall_screen.dart';
 import 'business_profile_edit_screen.dart'; // Import
 import '../../../../core/services/user_service.dart';
@@ -310,13 +311,32 @@ class _ProfileContent extends ConsumerWidget {
                     ? null
                     : const Text('Per attività e professionisti', style: TextStyle(fontSize: 12)),
                 trailing: const Icon(Icons.chevron_right, color: AppColors.primary),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BusinessProfileEditScreen(user: user),
-                    ),
-                  );
+                onTap: () async {
+                  // Check Business Entitlement
+                  final customerInfo = await ref.read(purchaseServiceProvider).getCustomerInfo();
+                  final isBusinessPro = customerInfo != null && 
+                                      ref.read(purchaseServiceProvider).isBusiness(customerInfo);
+
+                  if (!context.mounted) return;
+
+                  if (isBusinessPro || user.accountType == AccountType.business) {
+                    // Allow access if they have entitlement OR if they are already business (grandfathered/free)
+                    // You might want to stricter check later
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BusinessProfileEditScreen(user: user),
+                      ),
+                    );
+                  } else {
+                    // Show Paywall for Business
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaywallScreen(offeringId: 'business_pro'),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
