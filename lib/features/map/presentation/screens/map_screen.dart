@@ -19,8 +19,10 @@ import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 import '../../../events/presentation/screens/event_detail_screen.dart'; // Added
 import '../../../activities/presentation/screens/activities_list_screen.dart'; // Unified Screen
-import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart'; // Added Shared Widget Import
-import '../widgets/map_filter_bottom_sheet.dart'; // FILTER IMPORT
+import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart';
+import '../widgets/map_filter_bottom_sheet.dart';
+import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Ads
+import 'package:google_mobile_ads/google_mobile_ads.dart'; // AdSize
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -35,6 +37,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final mapState = ref.watch(mapControllerProvider);
+    final userAsync = ref.watch(currentUserProfileProvider);
+    final isPremium = userAsync.value?.isPremium ?? false;
 
     // Listen for selected user changes to show bottom sheet
     ref.listen(mapControllerProvider, (previous, next) {
@@ -228,6 +232,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ],
             ),
           
+        // Ad Banner (Top Center - Below Search Bar)
+        if (!isPremium)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 80, 
+            left: 0, 
+            right: 0,
+            child: const Center(
+              child: UnifiedAdCard(
+                zone: 'map_banner',
+                adSize: AdSize.banner, // Standard 320x50
+              ),
+            ),
+          ),
+
           if (mapState.isLoading)
              const Center(child: CircularProgressIndicator()),
              

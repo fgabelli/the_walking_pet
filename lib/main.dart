@@ -7,7 +7,10 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-void main() async {
+import 'core/services/purchase_service.dart'; // Import PurchaseService Provider
+// ... other imports
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
@@ -19,16 +22,26 @@ void main() async {
   // Initialize Timeago
   timeago.setLocaleMessages('it', timeago.ItMessages());
 
-  // Initialize AdMob (Fail silently if not supported on platform e.g. web/macos yet)
+  // Initialize AdMob
   try {
      MobileAds.instance.initialize();
   } catch (e) {
      debugPrint('AdMob Init Error: $e');
   }
+
+  // Initialize Providers & Services using ProviderContainer
+  // This ensures services like RevenueCat are ready before UI
+  final container = ProviderContainer();
+  try {
+    await container.read(purchaseServiceProvider).init();
+  } catch (e) {
+    debugPrint('PurchaseService Init Error: $e');
+  }
   
   runApp(
-    const ProviderScope(
-      child: TheWalkingPetApp(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const TheWalkingPetApp(),
     ),
   );
 }

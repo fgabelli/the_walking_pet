@@ -11,8 +11,13 @@ final adServiceProvider = Provider<AdService>((ref) => AdService());
 
 class UnifiedAdCard extends ConsumerStatefulWidget {
   final String zone; // e.g. 'nextdoor_feed', 'activities_list'
+  final AdSize? adSize; // Optional, defaults to mediumRectangle
 
-  const UnifiedAdCard({super.key, required this.zone});
+  const UnifiedAdCard({
+    super.key, 
+    required this.zone,
+    this.adSize,
+  });
 
   @override
   ConsumerState<UnifiedAdCard> createState() => _UnifiedAdCardState();
@@ -70,7 +75,7 @@ class _UnifiedAdCardState extends ConsumerState<UnifiedAdCard> {
     _bannerAd = BannerAd(
       adUnitId: 'ca-app-pub-3940256099942544/2934735716', // iOS Test ID
       request: const AdRequest(),
-      size: AdSize.mediumRectangle, // Fits well in feed
+      size: widget.adSize ?? AdSize.mediumRectangle, // Use passed size or default to Rect
       listener: BannerAdListener(
         onAdLoaded: (_) {
           if (mounted) {
