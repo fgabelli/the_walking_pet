@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
@@ -92,3 +93,7 @@ class PurchaseService {
   bool isPremium(CustomerInfo info) => info.entitlements.all['premium']?.isActive ?? false;
   bool isBusiness(CustomerInfo info) => info.entitlements.all['business_pro']?.isActive ?? false;
 }
+
+final purchaseServiceProvider = Provider<PurchaseService>((ref) {
+  return PurchaseService();
+});

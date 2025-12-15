@@ -245,10 +245,7 @@ class ProfileController extends StateNotifier<ProfileState> {
   }
 }
 
-/// Purchase Service Provider
-final purchaseServiceProvider = Provider<PurchaseService>((ref) {
-  return PurchaseService();
-});
+
 
 /// Profile Controller Provider
 final profileControllerProvider = StateNotifierProvider<ProfileController, ProfileState>((ref) {
