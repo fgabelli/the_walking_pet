@@ -148,10 +148,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 48),
                         
                         // Benefits
-                        _buildBenefitRow(context, Icons.filter_list, 'Filtri Avanzati', 'Cerca compagni per razza, taglia e sesso'),
-                        _buildBenefitRow(context, Icons.visibility_off, 'Ghost Mode', 'Naviga la mappa senza essere visto'),
-                        _buildBenefitRow(context, Icons.pets, 'Icona Dorata', 'Distinguiti sulla mappa con un pin esclusivo'),
-                        _buildBenefitRow(context, Icons.block, 'Zero Pubblicità', 'Navigazione pulita e senza interruzioni'),
+                        if (widget.offeringId == 'business_pro') ...[
+                          _buildBenefitRow(context, Icons.store, 'Profilo Aziendale', 'Crea una vetrina completa per la tua attività'),
+                          _buildBenefitRow(context, Icons.map, 'Visibilità Mappa', 'Fatti trovare facilmente dai clienti in zona'),
+                          _buildBenefitRow(context, Icons.event, 'Eventi Promossi', 'Organizza eventi esclusivi per la community'),
+                          _buildBenefitRow(context, Icons.verified, 'Badge Business', 'Goditi la fiducia del badge verificato'),
+                        ] else ...[
+                          _buildBenefitRow(context, Icons.filter_list, 'Filtri Avanzati', 'Cerca compagni per razza, taglia e sesso'),
+                          _buildBenefitRow(context, Icons.visibility_off, 'Ghost Mode', 'Naviga la mappa senza essere visto'),
+                          _buildBenefitRow(context, Icons.pets, 'Icona Dorata', 'Distinguiti sulla mappa con un pin esclusivo'),
+                          _buildBenefitRow(context, Icons.block, 'Zero Pubblicità', 'Navigazione pulita e senza interruzioni'),
+                        ],
                         
                         const SizedBox(height: 48),
                         
