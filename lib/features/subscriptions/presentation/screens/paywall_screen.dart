@@ -19,8 +19,9 @@ class PaywallScreen extends ConsumerStatefulWidget {
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   bool _isLoading = false;
-  List<Package> _packages = []; // Changed from _mockProducts
-  
+  List<Package> _packages = [];
+  String _debugInfo = ''; // Added for on-screen debugging
+
   @override
   void initState() {
     super.initState();
@@ -28,33 +29,42 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Future<void> _fetchOfferings() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _debugInfo = 'Fetching offerings...';
+    });
+    
     try {
       final offerings = await ref.read(purchaseServiceProvider).getOfferings();
-      print('--- DEBUG PAYWALL ---');
-      print('Requested Offering ID: ${widget.offeringId}');
       if (offerings == null) {
-        print('Offerings response is NULL');
+        setState(() => _debugInfo = 'Offerings response is NULL\nPossible causes:\n- Network error\n- Config mismatch');
       } else {
-         print('Available Offerings Keys: ${offerings.all.keys.toList()}');
-         print('Current Offering: ${offerings.current?.identifier}');
+         final keys = offerings.all.keys.toList();
+         final currentId = offerings.current?.identifier;
+         
+         final buffer = StringBuffer();
+         buffer.writeln('All Offerings: $keys');
+         buffer.writeln('Current Default: $currentId');
          
          final offering = offerings.all[widget.offeringId] ?? offerings.current;
+         
          if (offering != null) {
-           print('Found Offering: ${offering.identifier}');
-           print('Packages count: ${offering.availablePackages.length}');
-           for(var p in offering.availablePackages) {
-             print('Package: ${p.identifier} - Product: ${p.storeProduct.identifier}');
+           buffer.writeln('Selected: ${offering.identifier}');
+           buffer.writeln('Pkgs count: ${offering.availablePackages.length}');
+           if (offering.availablePackages.isEmpty) {
+             buffer.writeln('WARNING: Selected offering has 0 packages!');
            }
            setState(() {
             _packages = offering.availablePackages;
+            _debugInfo = buffer.toString();
            });
          } else {
-           print('Offering ${widget.offeringId} NOT FOUND in response');
+           buffer.writeln('ERROR: Offering "${widget.offeringId}" NOT FOUND!');
+           setState(() => _debugInfo = buffer.toString());
          }
       }
     } catch (e) {
-      print('Error fetching offerings: $e');
+      setState(() => _debugInfo = 'EXCEPTION: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -78,7 +88,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primary.withOpacity(0.1),
+                    Colors.orange.withOpacity(0.1), // Changed to Orange to prove update
                     backgroundColor,
                   ],
                 ),
@@ -146,8 +156,20 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 48),
                         
                         // Products
-                        if (_packages.isEmpty && !_isLoading)
-                           const Text('Nessuna offerta disponibile al momento.'),
+                        if (_packages.isEmpty && !_isLoading) ...[
+                           const Text('Nessuna offerta disponibile al momento.', style: TextStyle(fontWeight: FontWeight.bold)),
+                           const SizedBox(height: 20),
+                           // DEBUG INFO BOX
+                           Container(
+                             padding: const EdgeInsets.all(12),
+                             width: double.infinity,
+                             color: Colors.black87,
+                             child: Text(
+                               'DEBUG INFO (Build 66):\n$_debugInfo',
+                               style: const TextStyle(color: Colors.greenAccent, fontFamily: 'Courier', fontSize: 12),
+                             ),
+                           ),
+                        ],
                         ..._packages.map((p) => _buildProductCard(context, p)),
                         
                         const SizedBox(height: 24),
@@ -273,19 +295,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         ),
                       ),
                        const SizedBox(width: 8),
-                      // Text(
-                      //   package.packageType == PackageType.annual ? '/ anno' : '/ mese',
-                      //   style: TextStyle(
-                      //     color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      //     fontSize: 16,
-                      //   ),
-                      // ),
                     ],
                   ),
                 ],
               ),
             ),
-            // Savings badge logic could be added here if needed
           ],
         ),
       ),
