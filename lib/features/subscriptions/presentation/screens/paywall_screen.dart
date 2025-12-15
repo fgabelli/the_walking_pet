@@ -31,13 +31,27 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     setState(() => _isLoading = true);
     try {
       final offerings = await ref.read(purchaseServiceProvider).getOfferings();
-      if (offerings != null) {
-        final offering = offerings.all[widget.offeringId] ?? offerings.current;
-        if (offering != null) {
-          setState(() {
+      print('--- DEBUG PAYWALL ---');
+      print('Requested Offering ID: ${widget.offeringId}');
+      if (offerings == null) {
+        print('Offerings response is NULL');
+      } else {
+         print('Available Offerings Keys: ${offerings.all.keys.toList()}');
+         print('Current Offering: ${offerings.current?.identifier}');
+         
+         final offering = offerings.all[widget.offeringId] ?? offerings.current;
+         if (offering != null) {
+           print('Found Offering: ${offering.identifier}');
+           print('Packages count: ${offering.availablePackages.length}');
+           for(var p in offering.availablePackages) {
+             print('Package: ${p.identifier} - Product: ${p.storeProduct.identifier}');
+           }
+           setState(() {
             _packages = offering.availablePackages;
-          });
-        }
+           });
+         } else {
+           print('Offering ${widget.offeringId} NOT FOUND in response');
+         }
       }
     } catch (e) {
       print('Error fetching offerings: $e');
@@ -104,7 +118,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 24),
                         
                         Text(
-                          'Passa a Premium',
+                          widget.offeringId == 'business_pro' 
+                              ? 'Passa a Business' 
+                              : 'Passa a Premium',
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: textColor,

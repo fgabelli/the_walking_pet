@@ -293,7 +293,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               ref.read(mapControllerProvider.notifier).setSearchQuery(value);
                             },
                             decoration: InputDecoration(
-                              hintText: 'Cerca passeggiate o amici...',
+                              hintText: 'Cerca passeggiate, eventi o amici...',
                               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: AppColors.textSecondary,
                                   ),

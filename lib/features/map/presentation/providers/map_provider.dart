@@ -518,6 +518,13 @@ class MapStateController extends StateNotifier<MapState> {
     for (final walk in state.allWalks) {
       if (state.blockedUsers.contains(walk.creatorId)) continue;
       
+      // Search Filter
+      if (query.isNotEmpty) {
+        final matches = (walk.title?.toLowerCase().contains(query) ?? false) ||
+                        (walk.description?.toLowerCase().contains(query) ?? false);
+        if (!matches) continue;
+      }
+
       markers.add(
         Marker(
           point: LatLng(walk.meetingPoint.latitude, walk.meetingPoint.longitude),
@@ -551,6 +558,13 @@ class MapStateController extends StateNotifier<MapState> {
     for (final announcement in state.allAnnouncements) {
       if (state.blockedUsers.contains(announcement.userId)) continue;
 
+      // Search Filter
+      if (query.isNotEmpty) {
+        final matches = announcement.title.toLowerCase().contains(query) ||
+                        announcement.description.toLowerCase().contains(query);
+        if (!matches) continue;
+      }
+
       markers.add(
         Marker(
           point: LatLng(announcement.location.latitude, announcement.location.longitude),
@@ -582,6 +596,13 @@ class MapStateController extends StateNotifier<MapState> {
 
     // 4. Safety Alert Markers
     for (final alert in state.allAlerts) {
+       // Search Filter (Type displayName matches?)
+       if (query.isNotEmpty) {
+         final matches = alert.type.displayName.toLowerCase().contains(query) ||
+                         (alert.description?.toLowerCase().contains(query) ?? false);
+         if (!matches) continue;
+       }
+
       markers.add(
         Marker(
           point: LatLng(alert.latitude, alert.longitude),
@@ -613,7 +634,14 @@ class MapStateController extends StateNotifier<MapState> {
     
     // 5. SOS Markers (Priority - Added)
     for (final sos in state.allSOSAlerts) {
-      // Very noticeable pulsating marker effect could be complex, for now big red container
+      // Search Filter
+      if (query.isNotEmpty) {
+         // Maybe search by "sos" or description
+         final matches = (sos.message?.toLowerCase().contains(query) ?? false) ||
+                         query == 'sos';
+         if (!matches) continue;
+      }
+
       markers.add(
         Marker(
           point: LatLng(sos.latitude, sos.longitude),
@@ -662,6 +690,13 @@ class MapStateController extends StateNotifier<MapState> {
     // 6. Event Markers (Added)
     for (final event in state.allEvents) {
       if (state.blockedUsers.contains(event.creatorId)) continue;
+
+      // Search Filter
+      if (query.isNotEmpty) {
+        final matches = (event.title?.toLowerCase().contains(query) ?? false) ||
+                        (event.description?.toLowerCase().contains(query) ?? false);
+        if (!matches) continue;
+      }
       
       markers.add(
         Marker(
