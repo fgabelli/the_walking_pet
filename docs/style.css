@@ -95,20 +95,23 @@ nav {
 
 /* Hero Section */
 .hero {
-    padding: 100px 0 120px;
+    padding: 60px 0 100px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 60px;
+    gap: 40px;
     position: relative;
     background: radial-gradient(circle at top right, rgba(255, 126, 95, 0.05), transparent 40%);
 }
 
 .hero-content {
-    flex: 1;
+    text-align: center;
+    max-width: 800px;
+    z-index: 10;
 }
 
 .hero h1 {
-    font-size: 4rem;
+    font-size: 3.5rem;
     margin-bottom: 24px;
     color: var(--text-dark);
 }
@@ -122,49 +125,37 @@ nav {
 .hero p {
     font-size: 1.25rem;
     color: var(--text-light);
-    margin-bottom: 40px;
-    max-width: 500px;
+    margin-bottom: 32px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hero-image {
-    flex: 1;
+    width: 100%;
     display: flex;
     justify-content: center;
     position: relative;
 }
 
 .hero-image img {
-    max-width: 100%;
-    width: 650px;
-    /* Increased size for impact */
-    border-radius: var(--radius-lg);
+    width: 100%;
+    /* max-height: 600px; Remove height constraint to respect ratio */
+    object-fit: cover;
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-floating);
-    transform: perspective(1000px) rotateY(-5deg);
-    transition: transform 0.5s ease;
-    animation: float 6s ease-in-out infinite;
+    /* Remove perspective transform for wide banner */
+    transform: none;
+    animation: none;
 }
 
 .hero-image:hover img {
-    transform: perspective(1000px) rotateY(0deg) scale(1.02);
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0px) rotateY(-5deg);
-    }
-
-    50% {
-        transform: translateY(-20px) rotateY(-5deg);
-    }
-
-    100% {
-        transform: translateY(0px) rotateY(-5deg);
-    }
+    transform: none;
 }
 
 .download-buttons {
     display: flex;
     gap: 16px;
+    justify-content: center;
 }
 
 .btn {
