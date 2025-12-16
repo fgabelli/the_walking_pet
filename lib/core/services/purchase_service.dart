@@ -91,7 +91,7 @@ class PurchaseService {
       final currentUserAuth = _ref.read(authServiceProvider).currentUser;
       if (currentUserAuth != null) {
         // Fetch the actual UserModel to check current DB status
-        final userModel = await _ref.read(userServiceProvider).getUser(currentUserAuth.uid);
+        final userModel = await _ref.read(userServiceProvider).getUserById(currentUserAuth.uid);
         
         if (userModel != null) {
           final Map<String, dynamic> updates = {};
