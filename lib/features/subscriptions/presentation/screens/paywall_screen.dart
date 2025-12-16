@@ -6,7 +6,8 @@ import '../../../../core/services/subscription_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'; // Added
 import '../../../profile/presentation/providers/profile_provider.dart';
-import '../../../../core/services/purchase_service.dart'; // Added provider definition here
+import '../../../../core/services/purchase_service.dart';
+import 'package:url_launcher/url_launcher.dart'; // Added // Added provider definition here
 
 class PaywallScreen extends ConsumerStatefulWidget {
   final String offeringId; // 'default' or 'business_pro'
@@ -192,6 +193,37 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                           textAlign: TextAlign.center,
                         ),
                          const SizedBox(height: 24),
+                        
+                        // Legal Links (Privacy & Terms)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _launchURL('https://thewalkingpet.it/privacy.html'),
+                              child: Text(
+                                'Privacy Policy',
+                                style: TextStyle(
+                                  fontSize: 12, 
+                                  color: Colors.grey[600], 
+                                  decoration: TextDecoration.underline
+                                ),
+                              ),
+                            ),
+                            Text(' • ', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                            GestureDetector(
+                              onTap: () => _launchURL('https://thewalkingpet.it/terms.html'),
+                              child: Text(
+                                'Termini e Condizioni',
+                                style: TextStyle(
+                                  fontSize: 12, 
+                                  color: Colors.grey[600], 
+                                  decoration: TextDecoration.underline
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                         const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -370,6 +402,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final uri = Uri.parse(urlString);
+    if (!await launchUrl(uri)) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Impossibile aprire il link: $urlString')),
+         );
+      }
     }
   }
 }

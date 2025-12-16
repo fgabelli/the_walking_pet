@@ -17,7 +17,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp();
-  print("Handling a background message: ${message.messageId}");
 }
 
 Future<void> main() async {
@@ -25,6 +24,17 @@ Future<void> main() async {
   
   // Initialize Firebase
   await Firebase.initializeApp();
+
+  // Initialize ATT
+  // We wait a brief moment to ensure the app is visible before requesting permission
+  // or checks if it's already determined.
+  // Note: On Android this plugin returns "notSupported" which is fine.
+  try {
+    await Future.delayed(const Duration(milliseconds: 200));
+    await AppTrackingTransparency.requestTrackingAuthorization();
+  } catch (e) {
+    debugPrint('Error requesting tracking authorization: $e');
+  }
   
   // Set the background messaging handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
