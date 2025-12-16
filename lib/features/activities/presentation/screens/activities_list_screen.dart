@@ -416,6 +416,8 @@ class _EventCard extends StatelessWidget {
         return Icons.coffee;
       case EventType.other:
         return Icons.event;
+      case EventType.litter:
+        return Icons.cleaning_services;
     }
   }
 }

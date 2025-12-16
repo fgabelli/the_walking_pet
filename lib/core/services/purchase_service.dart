@@ -5,6 +5,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
 import '../services/user_service.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/profile/presentation/providers/profile_provider.dart'; // Added for userServiceProvider
 
 class PurchaseService {
   final Ref _ref; // Added to access other providers
@@ -87,31 +88,31 @@ class PurchaseService {
     final hasActiveEntitlement = isPremium || isBusiness;
 
     try {
-      final currentUser = _ref.read(authServiceProvider).currentUser;
-      if (currentUser != null) {
-        final Map<String, dynamic> updates = {};
-
-        // 1. Sync Premium Status
-        if (currentUser.isPremium != hasActiveEntitlement) {
-          updates['isPremium'] = hasActiveEntitlement;
-        }
-
-        // 2. Sync Business Status
-        // If they have the business entitlement, force account type to business
-        if (isBusiness && currentUser.accountType != AccountType.business) {
-             updates['accountType'] = AccountType.business.name;
-        }
+      final currentUserAuth = _ref.read(authServiceProvider).currentUser;
+      if (currentUserAuth != null) {
+        // Fetch the actual UserModel to check current DB status
+        final userModel = await _ref.read(userServiceProvider).getUser(currentUserAuth.uid);
         
-        // Note: We don't automatically downgrade 'business' to 'personal' if subscription expires
-        // because they might be a manually verified business or permanent business.
-        // We only upgrade for now.
+        if (userModel != null) {
+          final Map<String, dynamic> updates = {};
 
-        if (updates.isNotEmpty) {
-          print('Syncing User Status to Firestore: $updates');
-          await _ref.read(userServiceProvider).updateUserFields(
-            currentUser.uid, 
-            updates
-          );
+          // 1. Sync Premium Status
+          if (userModel.isPremium != hasActiveEntitlement) {
+            updates['isPremium'] = hasActiveEntitlement;
+          }
+
+          // 2. Sync Business Status
+          if (isBusiness && userModel.accountType != AccountType.business) {
+               updates['accountType'] = AccountType.business.name;
+          }
+          
+          if (updates.isNotEmpty) {
+            print('Syncing User Status to Firestore: $updates');
+            await _ref.read(userServiceProvider).updateUserFields(
+              currentUserAuth.uid, 
+              updates
+            );
+          }
         }
       }
     } catch (e) {
