@@ -164,7 +164,7 @@ nav {
     letter-spacing: 1px;
 }
 
-.hero h1 span {
+.hero-home h1 span {
     background: linear-gradient(135deg, #FFD1A9 0%, #FA709A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -172,7 +172,7 @@ nav {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
-.hero p {
+.hero-home p {
     font-size: 1.5rem;
     color: #FFFFFF;
     /* Pure White */
@@ -327,6 +327,14 @@ nav {
     box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    /* Ensure full height for grid */
+}
+
+.premium-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-floating);
 }
 
 .premium-card::before {
