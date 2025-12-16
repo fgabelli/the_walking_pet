@@ -45,6 +45,16 @@ class PurchaseService {
     }
   }
 
+  Future<void> identifyUser(String userId) async {
+    if (!_isInitialized) await init();
+    try {
+      final result = await Purchases.logIn(userId);
+      await _syncWithFirestore(result.customerInfo);
+    } catch (e) {
+      print('Error identifying user: $e');
+    }
+  }
+
   Future<CustomerInfo?> getCustomerInfo() async {
     try {
       return await Purchases.getCustomerInfo();

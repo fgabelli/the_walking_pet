@@ -38,6 +38,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     super.initState();
     // Initialize Notification Service
     NotificationService().initialize();
+    
+    // Sync Purchases Identity
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authServiceProvider).currentUser;
+      if (user != null) {
+        ref.read(purchaseServiceProvider).identifyUser(user.uid);
+      }
+    });
   }
 
   @override
