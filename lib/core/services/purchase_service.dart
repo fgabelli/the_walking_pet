@@ -18,7 +18,7 @@ class PurchaseService {
     try {
       String apiKey;
       if (Platform.isIOS) {
-        apiKey = 'sk_bfmkJWJBnXdJnoMZohAqjEKZXaJUh';
+        apiKey = 'appl_iDvNyOMRufxukhtmMEpLdtaufyJ';
       } else if (Platform.isAndroid) {
         apiKey = 'sk_eoEeRwqedJlLgIbxsXrxzBgGZnuqd';
       } else {
