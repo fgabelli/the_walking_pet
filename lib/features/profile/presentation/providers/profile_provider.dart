@@ -43,6 +43,11 @@ final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
   );
 });
 
+/// Stream provider for specific user profile
+final userProfileStreamProvider = StreamProvider.family<UserModel?, String>((ref, uid) {
+  return ref.watch(userServiceProvider).getUserStream(uid);
+});
+
 /// Profile Controller State
 class ProfileState {
   final bool isLoading;

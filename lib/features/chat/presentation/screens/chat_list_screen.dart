@@ -96,35 +96,65 @@ class _ChatListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: Fetch other participant's name/photo
-    // For now, just show a placeholder or try to find it from participants
-    // We need a way to know WHICH participant is the "other" one.
-    // We can get current user from auth provider.
-    
-    // This logic should ideally be in a provider or view model
-    
-    return ListTile(
-      leading: const CircleAvatar(
-        child: Icon(Icons.person),
-      ),
-      title: const Text('Utente'), // Placeholder
-      subtitle: Text(
-        chat.lastMessage?.text ?? 'Inizia a chattare',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: Text(
-        timeago.format(chat.updatedAt, locale: 'it'),
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatScreen(chatId: chat.id),
+    final currentUser = ref.watch(authServiceProvider).currentUser;
+    if (currentUser == null) return const SizedBox.shrink();
+
+    // Identify the other participant
+    final otherUserId = chat.participants.firstWhere(
+      (id) => id != currentUser.uid,
+      orElse: () => 'unknown',
+    );
+
+    // If chat is with self or unknown (shouldn't happen usually)
+    if (otherUserId == 'unknown') return const SizedBox.shrink();
+
+    final otherUserAsync = ref.watch(userProfileStreamProvider(otherUserId));
+
+    return otherUserAsync.when(
+      data: (user) {
+        if (user == null) return const SizedBox.shrink(); // User not found
+        
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+            child: user.photoUrl == null ? Text(user.firstName[0].toUpperCase()) : null,
           ),
+          title: Text('${user.firstName} ${user.lastName}'),
+          subtitle: Text(
+            chat.lastMessage?.text ?? 'Inizia a chattare',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: chat.lastMessage != null && 
+                          !chat.lastMessage!.isRead && 
+                          chat.lastMessage!.senderId != currentUser.uid 
+                  ? FontWeight.bold 
+                  : FontWeight.normal,
+            ),
+          ),
+          trailing: Text(
+            timeago.format(chat.updatedAt, locale: 'it'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(chatId: chat.id, otherUser: user), // Passing user to avoid refetching if possible
+              ),
+            );
+          },
         );
       },
+      loading: () => ListTile(
+        leading: const CircleAvatar(child: Icon(Icons.person)),
+        title: const Text('Caricamento...'),
+        subtitle: Text(chat.lastMessage?.text ?? ''),
+      ),
+      error: (_, __) => ListTile(
+        leading: const CircleAvatar(child: Icon(Icons.error)),
+        title: const Text('Utente non disponibile'),
+      ),
     );
   }
 }
