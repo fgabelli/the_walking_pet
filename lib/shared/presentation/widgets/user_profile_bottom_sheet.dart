@@ -276,7 +276,7 @@ class UserProfileBottomSheet extends ConsumerWidget {
           MaterialPageRoute(
             builder: (context) => ChatScreen(
               chatId: chatId,
-              otherUserName: user.fullName,
+              otherUser: user,
             ),
           ),
         );

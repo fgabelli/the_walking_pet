@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
 import '../../../../core/services/notification_service.dart';
-import '../../auth/presentation/providers/auth_provider.dart'; // Added
+import '../../../auth/presentation/providers/auth_provider.dart'; // Corrected
 import '../../../../core/services/purchase_service.dart'; // Added
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
