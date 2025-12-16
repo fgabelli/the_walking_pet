@@ -185,6 +185,40 @@ nav {
     /* No transparency */
 }
 
+/* =========================
+   HERO PAGE (Detail Pages) 
+   ========================= */
+.hero-page {
+    padding: 60px 0 80px;
+    text-align: center;
+    background: radial-gradient(circle at top right, rgba(255, 126, 95, 0.05), transparent 40%);
+    /* Restores auto height so images aren't cut off */
+    height: auto;
+    overflow: visible;
+}
+
+.hero-page .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-page h1 {
+    font-size: 3rem;
+    margin-bottom: 24px;
+    color: var(--text-dark);
+    /* Dark text for white background pages */
+    text-shadow: none;
+    font-weight: 800;
+}
+
+.hero-page p {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin-bottom: 32px;
+    text-shadow: none;
+    opacity: 1;
+}
+
 .download-buttons {
     display: flex;
     gap: 20px;
@@ -342,22 +376,29 @@ footer {
 
 /* Responsive */
 @media (max-width: 900px) {
-    .hero {
-        flex-direction: column-reverse;
-        text-align: center;
-        padding: 60px 0;
+
+    /* Update for Hero Home Overlay */
+    .hero-home {
+        height: 60vh;
+        /* Taller on mobile for content */
+        max-height: 600px;
     }
 
-    .hero h1 {
-        font-size: 3rem;
+    .hero-home h1 {
+        font-size: 2.5rem;
+        /* Smaller font on mobile */
     }
 
-    .hero p {
-        margin-left: auto;
-        margin-right: auto;
+    .hero-home p {
+        font-size: 1.2rem;
     }
 
     .nav-links {
         display: none;
+        /* Consider a hamburger menu for future */
+    }
+
+    .hero-page {
+        padding: 40px 0;
     }
 }
