@@ -96,34 +96,36 @@ nav {
 /* Hero Section */
 .hero {
     position: relative;
-    /* Limit vertical space while allowing full width */
-    max-height: 700px;
+    /* Use dynamic viewport height, but constrained for wide screens */
     height: 80vh;
-    overflow: hidden;
+    min-height: 600px;
+    width: 100%;
+    margin-top: -60px;
+    /* Counteract header padding */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    margin-top: -60px;
-    /* Counteract header padding if needed, or adjust header z-index */
+    overflow: hidden;
 }
 
-/* 4:3 Image as Background (Cover) */
+/* Wide Image as Background (Cover) */
 .hero-image {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 0;
+    /* Background layer */
 }
 
 .hero-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-    /* No border radius for full bleed */
+    /* Ensures no white space (crops if needed) */
+    object-position: center bottom;
+    /* Anchor to bottom to show pets */
     border-radius: 0;
     box-shadow: none;
     transform: none;
@@ -135,48 +137,62 @@ nav {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
-    z-index: 2;
+    /* Darker gradient at top for text readability */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.5) 100%);
+    z-index: 1;
+    /* Above image, below text */
+    pointer-events: none;
+    /* Allow clicks to pass through */
 }
 
 /* Text Overlay */
 .hero-content {
     position: relative;
     z-index: 10;
+    /* Topmost layer */
     text-align: center;
-    max-width: 800px;
-    padding: 40px;
+    max-width: 900px;
+    padding: 20px;
+    margin-top: 60px;
+    /* Visual balance */
 }
 
 .hero h1 {
     font-size: 4rem;
     margin-bottom: 24px;
     color: var(--white);
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    font-weight: 800;
 }
 
 .hero h1 span {
-    background: linear-gradient(135deg, #FF9A8B 0%, #FF6A88 100%);
-    /* Lighter gradient for dark bg */
+    background: linear-gradient(135deg, #FFD1A9 0%, #FA709A 100%);
+    /* Bright Peach-Pink gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* Fallback for visibility */
     text-shadow: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    /* Shadow for gradient text */
 }
 
 .hero p {
-    font-size: 1.5rem;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 40px;
+    font-size: 1.6rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 48px;
     margin-left: auto;
     margin-right: auto;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+    max-width: 700px;
 }
 
 .download-buttons {
     display: flex;
-    gap: 16px;
+    gap: 20px;
     justify-content: center;
+    position: relative;
+    z-index: 20;
+    /* Ensure buttons are clickable */
 }
 
 .btn {
