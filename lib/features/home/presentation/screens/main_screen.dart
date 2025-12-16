@@ -41,7 +41,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // Initialize Notification Service
     NotificationService().initialize();
     
-    // Sync Purchases Identity
+    // Sync Purchases Identity (Listen to Auth Changes)
+    // This ensures we sync even if Auth takes a moment to initialize
+    ref.listenManual(authServiceProvider, (previous, next) async {
+       final user = next.currentUser;
+       if (user != null) {
+         debugPrint('AuthUser loaded: ${user.uid}, identifying in Purchases...');
+         await ref.read(purchaseServiceProvider).identifyUser(user.uid);
+       }
+    });
+
+    // Also check immediately in case it's already there
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(authServiceProvider).currentUser;
       if (user != null) {

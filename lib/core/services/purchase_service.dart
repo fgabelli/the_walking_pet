@@ -95,7 +95,12 @@ class PurchaseService {
     final isBusiness = customerInfo.entitlements.all['business_pro']?.isActive ?? false;
     
     // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
-    final hasActiveEntitlement = isPremium || isBusiness;
+    // Generic catch-all: if ANY entitlement is active, treat as Premium
+    // This solves potential ID mismatches (e.g. 'Premium' vs 'premium')
+    final hasAnyActive = customerInfo.entitlements.active.isNotEmpty;
+    final hasActiveEntitlement = isPremium || isBusiness || hasAnyActive;
+    
+    print('Purchase Sync: Active=${customerInfo.entitlements.active.keys}, Premium=$isPremium, Business=$isBusiness, HasAny=$hasAnyActive');
 
     try {
       final currentUserAuth = _ref.read(authServiceProvider).currentUser;
