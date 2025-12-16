@@ -95,61 +95,82 @@ nav {
 
 /* Hero Section */
 .hero {
-    padding: 60px 0 100px;
+    position: relative;
+    /* Limit vertical space while allowing full width */
+    max-height: 700px;
+    height: 80vh;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 40px;
-    position: relative;
-    background: radial-gradient(circle at top right, rgba(255, 126, 95, 0.05), transparent 40%);
-}
-
-.hero-content {
-    text-align: center;
-    max-width: 800px;
-    z-index: 10;
-}
-
-.hero h1 {
-    font-size: 3.5rem;
-    margin-bottom: 24px;
-    color: var(--text-dark);
-}
-
-.hero h1 span {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero p {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    margin-bottom: 32px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.hero-image {
-    width: 100%;
-    display: flex;
     justify-content: center;
-    position: relative;
+    padding: 0;
+    margin-top: -60px;
+    /* Counteract header padding if needed, or adjust header z-index */
+}
+
+/* 4:3 Image as Background (Cover) */
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
 .hero-image img {
     width: 100%;
-    /* max-height: 600px; Remove height constraint to respect ratio */
+    height: 100%;
     object-fit: cover;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-floating);
-    /* Remove perspective transform for wide banner */
+    object-position: center;
+    /* No border radius for full bleed */
+    border-radius: 0;
+    box-shadow: none;
     transform: none;
     animation: none;
 }
 
-.hero-image:hover img {
-    transform: none;
+/* Gradient Overlay for Readability */
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 2;
+}
+
+/* Text Overlay */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 800px;
+    padding: 40px;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    color: var(--white);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hero h1 span {
+    background: linear-gradient(135deg, #FF9A8B 0%, #FF6A88 100%);
+    /* Lighter gradient for dark bg */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Fallback for visibility */
+    text-shadow: none;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .download-buttons {
