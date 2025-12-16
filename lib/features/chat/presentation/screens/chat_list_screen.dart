@@ -5,6 +5,7 @@ import '../../../../shared/models/chat_model.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../../profile/presentation/providers/profile_provider.dart'; // Added
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 

@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/chat_model.dart';
+import '../../../../shared/models/user_model.dart'; // Added
 import '../providers/chat_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
-  final String? otherUserName; // Optional, for header
+  final UserModel? otherUser; // Changed from String? otherUserName
 
   const ChatScreen({
     super.key,
     required this.chatId,
-    this.otherUserName,
+    this.otherUser,
   });
 
   @override
@@ -47,7 +48,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.otherUserName ?? 'Chat'),
+        title: Text(widget.otherUser?.fullName ?? 'Chat'),
       ),
       body: chatAsync.when(
         data: (chat) {
