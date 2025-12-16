@@ -88,7 +88,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.orange.withOpacity(0.1), // Changed to Orange to prove update
+                    AppColors.primary.withOpacity(0.1),
                     backgroundColor,
                   ],
                 ),
@@ -163,20 +163,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 48),
                         
                         // Products
-                        if (_packages.isEmpty && !_isLoading) ...[
+                        if (_packages.isEmpty && !_isLoading)
                            const Text('Nessuna offerta disponibile al momento.', style: TextStyle(fontWeight: FontWeight.bold)),
-                           const SizedBox(height: 20),
-                           // DEBUG INFO BOX
-                           Container(
-                             padding: const EdgeInsets.all(12),
-                             width: double.infinity,
-                             color: Colors.black87,
-                             child: Text(
-                               'DEBUG INFO (Build 66):\n$_debugInfo',
-                               style: const TextStyle(color: Colors.greenAccent, fontFamily: 'Courier', fontSize: 12),
-                             ),
-                           ),
-                        ],
+                        
                         ..._packages.map((p) => _buildProductCard(context, p)),
                         
                         const SizedBox(height: 24),
