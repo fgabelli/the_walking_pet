@@ -38,6 +38,7 @@ class DogController extends StateNotifier<DogState> {
     String? notes,
     File? imageFile,
     DogGender gender = DogGender.male,
+    PetSpecies species = PetSpecies.dog, // Added
   }) async {
     state = DogState(isLoading: true);
     try {
@@ -57,6 +58,7 @@ class DogController extends StateNotifier<DogState> {
         notes: notes,
         createdAt: DateTime.now(),
         gender: gender,
+        species: species, // Added
       );
 
       // 2. Create document in Firestore to get ID
@@ -93,6 +95,7 @@ class DogController extends StateNotifier<DogState> {
     File? imageFile,
     String? currentPhotoUrl,
     DogGender? gender,
+    PetSpecies? species, // Added
   }) async {
     state = DogState(isLoading: true);
     try {
@@ -119,6 +122,7 @@ class DogController extends StateNotifier<DogState> {
         photoUrl: photoUrl,
         createdAt: DateTime.now(), // Ideally keep original creation date, but for now this is fine or we can pass it
         gender: gender ?? DogGender.male,
+        species: species ?? PetSpecies.dog, // Added
       );
 
       // 3. Update in Firestore

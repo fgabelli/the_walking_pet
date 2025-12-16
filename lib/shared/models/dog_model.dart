@@ -1,6 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Dog model
+enum PetSpecies {
+  dog,
+  cat,
+}
+
+extension PetSpeciesExtension on PetSpecies {
+  String get displayName {
+    switch (this) {
+      case PetSpecies.dog:
+        return 'Cane';
+      case PetSpecies.cat:
+        return 'Gatto';
+    }
+  }
+}
+
+/// Dog model (Renaming to PetModel conceptually, but keeping class name for now to avoid massive refactor)
 class DogModel {
   final String id;
   final String ownerId;
@@ -14,6 +30,7 @@ class DogModel {
   final String? photoUrl;
   final DateTime createdAt;
   final DogGender gender;
+  final PetSpecies species; // Added
 
   DogModel({
     required this.id,
@@ -28,6 +45,7 @@ class DogModel {
     this.photoUrl,
     required this.createdAt,
     this.gender = DogGender.male,
+    this.species = PetSpecies.dog, // Default for existing records
   });
 
   factory DogModel.fromFirestore(DocumentSnapshot doc) {
@@ -51,6 +69,10 @@ class DogModel {
         (e) => e.name == (data['gender'] ?? 'male'),
         orElse: () => DogGender.male,
       ),
+      species: PetSpecies.values.firstWhere(
+        (e) => e.name == (data['species'] ?? 'dog'),
+        orElse: () => PetSpecies.dog,
+      ),
     );
   }
 
@@ -67,6 +89,7 @@ class DogModel {
       'photoUrl': photoUrl,
       'createdAt': Timestamp.fromDate(createdAt),
       'gender': gender.name,
+      'species': species.name,
     };
   }
 
@@ -83,6 +106,7 @@ class DogModel {
     String? photoUrl,
     DateTime? createdAt,
     DogGender? gender,
+    PetSpecies? species,
   }) {
     return DogModel(
       id: id ?? this.id,
@@ -97,6 +121,7 @@ class DogModel {
       photoUrl: photoUrl ?? this.photoUrl,
       createdAt: createdAt ?? this.createdAt,
       gender: gender ?? this.gender,
+      species: species ?? this.species,
     );
   }
 }

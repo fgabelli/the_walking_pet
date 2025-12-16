@@ -13,7 +13,12 @@ class LocationService {
     return await Geolocator.isLocationServiceEnabled();
   }
 
-  /// Get current position
+  /// Get last known position (Fast)
+  Future<Position?> getLastKnownPosition() async {
+    return await Geolocator.getLastKnownPosition();
+  }
+
+  /// Get current position (Precise but slower)
   Future<Position?> getCurrentPosition() async {
     try {
       // Check permissions first
@@ -29,7 +34,6 @@ class LocationService {
         return null;
       }
 
-      // Force a fresh update
       // Force a fresh update, but handle timeout gracefully
       try {
         return await Geolocator.getCurrentPosition(

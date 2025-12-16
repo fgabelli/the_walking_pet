@@ -24,6 +24,7 @@ import '../../../../core/services/location_service.dart'; // Assuming we need th
 // Wait, map_provider.dart exports locationServiceProvider. I can just use the provider import.
 // Let's add the provider import.
 import '../../../../features/map/presentation/providers/map_provider.dart'; // Contains locationServiceProvider
+import '../../../subscriptions/presentation/screens/subscription_settings_screen.dart'; // Added
 
 
 class ProfileScreen extends ConsumerWidget {
@@ -253,6 +254,22 @@ class _ProfileContent extends ConsumerWidget {
             },
           ),
           
+          if (user.isPremium) 
+            ListTile(
+              leading: const Icon(Icons.credit_card, color: AppColors.primary),
+              title: const Text('Il mio Abbonamento'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                 // Import needed at top
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                     builder: (context) => const SubscriptionSettingsScreen(),
+                   ),
+                 );
+              },
+            ),
+
           if (!user.isPremium)
             Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -380,35 +397,76 @@ class _ProfileContent extends ConsumerWidget {
                 style: TextStyle(color: AppColors.error),
               ),
               onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Elimina Account'),
-                    content: const Text(
-                      'Sei sicuro di voler eliminare definitivamente il tuo account? Questa azione è irreversibile e perderai tutti i tuoi dati.',
+                if (user.isPremium) {
+                   // Premium Warning Dialog
+                   showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Abbonamento Attivo'),
+                      content: const Text(
+                        'Attenzione: Hai un abbonamento attivo. L\'eliminazione dell\'account NON annullerà automaticamente il rinnovo automatico sullo store.\n\nTi consigliamo di gestire o annullare l\'abbonamento prima di procedere, per evitare addebiti indesiderati.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                               context,
+                               MaterialPageRoute(builder: (_) => const SubscriptionSettingsScreen()),
+                            );
+                          },
+                          child: const Text('Gestisci Abbonamento'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                             Navigator.pop(context);
+                             _showDeleteConfirmation(context);
+                          },
+                          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                          child: const Text('Ignora e Procedi'),
+                        ),
+                      ],
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Annulla'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          ref.read(profileControllerProvider.notifier).deleteAccount();
-                        },
-                        style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                        child: const Text('Elimina'),
-                      ),
-                    ],
-                  ),
-                );
+                  );
+                } else {
+                   _showDeleteConfirmation(context);
+                }
               },
             ),
           ],
           const SizedBox(height: 24),
 
 
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina Account'),
+        content: const Text(
+          'Sei sicuro di voler eliminare definitivamente il tuo account? Questa azione è irreversibile e perderai tutti i tuoi dati.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          Consumer(
+            builder: (context, ref, _) {
+              return TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ref.read(profileControllerProvider.notifier).deleteAccount();
+                },
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                child: const Text('Elimina'),
+              );
+            }
+          ),
         ],
       ),
     );

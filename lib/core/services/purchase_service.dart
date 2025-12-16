@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
+import '../services/user_service.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 
 class PurchaseService {
-  static const _apiKey = 'goog_...'; // TO BE FILLED (User specific key needed or hardcode dummy for now) 
-  // Actually, I should use a config file or environment variable, but for now I'll leave a placeholder or ask user to provide it.
-  // Wait, I don't have the key. I will assume the user has configured RevenueCat in the dashboard.
-  // I will check if there is a keys file.
+  final Ref _ref; // Added to access other providers
   
+  PurchaseService(this._ref);
+
   bool _isInitialized = false;
 
   Future<void> init() async {
@@ -28,6 +29,16 @@ class PurchaseService {
       
       await Purchases.configure(PurchasesConfiguration(apiKey)); 
       _isInitialized = true;
+      
+      // Listen to subscription updates
+      Purchases.addCustomerInfoUpdateListener((customerInfo) {
+        _syncWithFirestore(customerInfo);
+      });
+      
+      // Initial sync
+      final info = await Purchases.getCustomerInfo();
+      _syncWithFirestore(info);
+
     } catch (e) {
       print('Error initializing PurchaseService: $e');
     }
@@ -49,17 +60,9 @@ class PurchaseService {
 
   Future<bool> purchasePackage(Package package) async {
     try {
-      final result = await Purchases.purchasePackage(package);
-      // Accessing customerInfo from the result wrapper (likely needed for this SDK version)
-      // Note: If result IS CustomerInfo (old SDK), this name change is harmless, but property access is key.
-      // Based on error "PurchaseResult cannot be assigned to CustomerInfo", PurchaseResult wraps it.
-      // Typically: result.customerInfo (or similar). 
-      // Let's safe bet that PurchaseResult is NOT CustomerInfo.
-      // Wait, let's verify if PurchaseResult isn't the return type of the Web implementation?
-      // No, this is iOS build.
-      // I'll try to find if PurchaseResult has a property.
-      // If I can't, I will use `await Purchases.getCustomerInfo()` immediately after purchase to be safe and ignore the return object's specific shape.
-      return _checkEntitlements(await Purchases.getCustomerInfo());
+      await Purchases.purchasePackage(package);
+      final info = await Purchases.getCustomerInfo();
+      return _syncWithFirestore(info);
     } catch (e) {
       print('Purchase failed: $e');
       return false;
@@ -69,27 +72,86 @@ class PurchaseService {
   Future<bool> restorePurchases() async {
     try {
       final customerInfo = await Purchases.restorePurchases();
-      return _checkEntitlements(customerInfo);
+      return _syncWithFirestore(customerInfo);
     } catch (e) {
       print('Restore failed: $e');
       return false;
     }
   }
   
-  // Mapping RevenueCat Entitlements to App Logic
-  bool _checkEntitlements(CustomerInfo customerInfo) {
+  Future<bool> _syncWithFirestore(CustomerInfo customerInfo) async {
     final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
     final isBusiness = customerInfo.entitlements.all['business_pro']?.isActive ?? false;
     
-    // We might want to return specific status or trigger a global update
-    // For now returning true if ANY active entitlement is found is a simple signal of success
-    return isPremium || isBusiness;
+    // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
+    final hasActiveEntitlement = isPremium || isBusiness;
+
+    try {
+      final currentUser = _ref.read(authServiceProvider).currentUser;
+      if (currentUser != null) {
+        final Map<String, dynamic> updates = {};
+
+        // 1. Sync Premium Status
+        if (currentUser.isPremium != hasActiveEntitlement) {
+          updates['isPremium'] = hasActiveEntitlement;
+        }
+
+        // 2. Sync Business Status
+        // If they have the business entitlement, force account type to business
+        if (isBusiness && currentUser.accountType != AccountType.business) {
+             updates['accountType'] = AccountType.business.name;
+        }
+        
+        // Note: We don't automatically downgrade 'business' to 'personal' if subscription expires
+        // because they might be a manually verified business or permanent business.
+        // We only upgrade for now.
+
+        if (updates.isNotEmpty) {
+          print('Syncing User Status to Firestore: $updates');
+          await _ref.read(userServiceProvider).updateUserFields(
+            currentUser.uid, 
+            updates
+          );
+        }
+      }
+    } catch (e) {
+      print('Error syncing with Firestore: $e');
+    }
+    
+    return hasActiveEntitlement;
   }
   
   bool isPremium(CustomerInfo info) => info.entitlements.all['premium']?.isActive ?? false;
   bool isBusiness(CustomerInfo info) => info.entitlements.all['business_pro']?.isActive ?? false;
+  
+  /// Returns the management URL for the active platform store
+  /// Note: RevenueCat's customerInfo.managementURL is often null on Android until configured or specific cases.
+  /// We can fall back to standard store URLs if needed.
+  Future<String?> getManagementURL() async {
+    final customerInfo = await getCustomerInfo();
+    if (customerInfo?.managementURL != null) {
+      return customerInfo!.managementURL;
+    }
+    // Fallback based on platform if specific URL is missing (often happens in sandbox)
+    if (Platform.isIOS) {
+       return 'https://apps.apple.com/account/subscriptions';
+    } else if (Platform.isAndroid) {
+       return 'https://play.google.com/store/account/subscriptions';
+    }
+    return null;
+  }
+  
+  EntitlementInfo? getActiveEntitlement(CustomerInfo info) {
+    if (info.entitlements.all['business_pro']?.isActive ?? false) {
+      return info.entitlements.all['business_pro'];
+    }
+    if (info.entitlements.all['premium']?.isActive ?? false) {
+      return info.entitlements.all['premium'];
+    }
+    return null;
+  }
 }
 
 final purchaseServiceProvider = Provider<PurchaseService>((ref) {
-  return PurchaseService();
+  return PurchaseService(ref);
 });

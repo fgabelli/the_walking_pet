@@ -4,6 +4,7 @@ enum EventType {
   walk,
   training,
   social,
+  litter, // Added
   other
 }
 
@@ -16,6 +17,8 @@ extension EventTypeExtension on EventType {
         return 'Addestramento';
       case EventType.social:
         return 'Raduno Social';
+      case EventType.litter:
+        return 'Cucciolata 🐾'; // Added emoji as requested
       case EventType.other:
         return 'Altro';
     }

@@ -168,6 +168,19 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         
                         ..._packages.map((p) => _buildProductCard(context, p)),
                         
+                        const SizedBox(height: 16),
+                        
+                        TextButton(
+                          onPressed: _isLoading ? null : _restorePurchases,
+                          child: Text(
+                            'Ripristina Acquisti',
+                            style: TextStyle(
+                              color: textColor,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        
                         const SizedBox(height: 24),
                         
                         Text(
@@ -312,7 +325,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
       if (success) {
          // Refresh profile entitlement status
-         await ref.read(profileControllerProvider.notifier).refreshEntitlements();
+         // We don't strictly need this if we rely on Firestore stream, but good for immediate update if using local state
+         // await ref.read(profileControllerProvider.notifier).refreshEntitlements();
          
          if (!mounted) return;
 
@@ -325,6 +339,33 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Errore durante l\'acquisto: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _restorePurchases() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await ref.read(purchaseServiceProvider).restorePurchases();
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Acquisti ripristinati con successo!')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nessun acquisto attivo trovato.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore durante il ripristino: $e')),
         );
       }
     } finally {

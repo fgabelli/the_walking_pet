@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
+import '../../../../shared/data/breeds_data.dart'; // Added
 import '../providers/dog_provider.dart';
 import '../../../../features/health_record/presentation/screens/health_record_list_screen.dart';
 
@@ -19,12 +20,13 @@ class CreateDogProfileScreen extends ConsumerStatefulWidget {
 class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _breedController;
+  final TextEditingController _breedController = TextEditingController(); // Managed differently for autocomplete
   late TextEditingController _ageController;
   late TextEditingController _notesController;
   
   late DogSize _selectedSize;
   late DogGender _selectedGender;
+  late PetSpecies _selectedSpecies; // Added
   late double _energyLevel;
   late List<String> _selectedCharacter;
   
@@ -40,12 +42,16 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.dogToEdit?.name ?? '');
-    _breedController = TextEditingController(text: widget.dogToEdit?.breed ?? '');
+    // Breed controller is now handled via Autocomplete initialValue logic, 
+    // but we keep a reference to read it or set initial text if using custom fieldViewBuilder
+    _breedController.text = widget.dogToEdit?.breed ?? ''; 
+    
     _ageController = TextEditingController(text: widget.dogToEdit?.age.toString() ?? '');
     _notesController = TextEditingController(text: widget.dogToEdit?.notes ?? '');
     
     _selectedSize = widget.dogToEdit?.size ?? DogSize.medium;
     _selectedGender = widget.dogToEdit?.gender ?? DogGender.male;
+    _selectedSpecies = widget.dogToEdit?.species ?? PetSpecies.dog; // Added
     _energyLevel = widget.dogToEdit?.energyLevel.toDouble() ?? 3.0;
     _selectedCharacter = List.from(widget.dogToEdit?.character ?? []);
   }
@@ -88,6 +94,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           imageFile: _imageFile,
           currentPhotoUrl: widget.dogToEdit!.photoUrl,
           gender: _selectedGender,
+          species: _selectedSpecies, // Added
         );
       } else {
         await controller.createDog(
@@ -100,6 +107,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           notes: _notesController.text.trim(),
           imageFile: _imageFile,
           gender: _selectedGender,
+          species: _selectedSpecies, // Added
         );
       }
           
@@ -141,6 +149,28 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Species Selection (Big Cards)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSpeciesCard(
+                      PetSpecies.dog, 
+                      Icons.pets, 
+                      'Cane'
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSpeciesCard(
+                      PetSpecies.cat, 
+                      Icons.catching_pokemon, // Use a cat-like icon if available, or just generic
+                      'Gatto'
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
               // Image Picker
               Center(
                 child: GestureDetector(
@@ -169,7 +199,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                     ),
                     child: (_imageFile == null && widget.dogToEdit?.photoUrl == null)
                         ? const Icon(
-                            Icons.pets,
+                            Icons.add_a_photo,
                             size: 40,
                             color: AppColors.textTertiary,
                           )
@@ -220,23 +250,64 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Nome',
-                  prefixIcon: Icon(Icons.pets),
+                  prefixIcon: Icon(Icons.badge),
                 ),
                 validator: (value) =>
                     value?.isEmpty ?? true ? 'Inserisci il nome' : null,
               ),
               const SizedBox(height: 16),
 
-              // Breed
-              TextFormField(
-                controller: _breedController,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Razza',
-                  prefixIcon: Icon(Icons.category),
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Inserisci la razza' : null,
+              // Breed Autocomplete
+              Autocomplete<String>(
+                initialValue: TextEditingValue(text: _breedController.text),
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text == '') {
+                    return const Iterable<String>.empty();
+                  }
+                  final query = textEditingValue.text.toLowerCase();
+                  final breeds = _selectedSpecies == PetSpecies.dog 
+                      ? BreedsData.dogBreeds 
+                      : BreedsData.catBreeds;
+                  
+                  // Logic for synonyms
+                  if (query.contains('bastard')) {
+                     return ['Meticcio / Incrocio'];
+                  }
+
+                  return breeds.where((String option) {
+                    return option.toLowerCase().contains(query);
+                  });
+                },
+                onSelected: (String selection) {
+                  _breedController.text = selection;
+                },
+                fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                  // Sync the autocomplete controller with our manual _breedController
+                  // actually we can just pass _breedController if we listen to changes, but easier to use theirs
+                  // and sync back to ours on submit or change.
+                  // BETTER: Use their controller for the UI, and in onChanged update ours.
+                  
+                  // Wait, we need to handle the initial value correctly.
+                  if (_breedController.text.isNotEmpty && textEditingController.text.isEmpty) {
+                    textEditingController.text = _breedController.text;
+                  }
+
+                  return TextFormField(
+                    controller: textEditingController, // Use the Autocomplete's controller
+                    focusNode: focusNode,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Razza',
+                      prefixIcon: Icon(Icons.category),
+                      helperText: 'Seleziona dalla lista',
+                    ),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Inserisci la razza' : null,
+                    onChanged: (val) {
+                      _breedController.text = val;
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 16),
 
@@ -246,7 +317,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Età (anni)',
-                  prefixIcon: Icon(Icons.calendar_today),
+                  prefixIcon: Icon(Icons.cake),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Inserisci l\'età';
@@ -420,6 +491,52 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
               ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpeciesCard(PetSpecies species, IconData icon, String label) {
+    final isSelected = _selectedSpecies == species;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSpecies = species;
+          // Clear breed when switching species to avoid "Golden Retriever" for a Cat
+          _breedController.clear(); 
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.grey.shade300,
+            width: 2,
+          ),
+          boxShadow: isSelected 
+              ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+              : [],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon, 
+              size: 40, 
+              color: isSelected ? Colors.white : AppColors.textSecondary
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : AppColors.textPrimary,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -278,37 +278,18 @@ class MapStateController extends StateNotifier<MapState> {
 
       state = state.copyWith(isLocationEnabled: true);
 
-      // Get initial position with timeout
-      try {
-        final position = await _locationService.getCurrentPosition().timeout(
-          const Duration(seconds: 5),
-          onTimeout: () {
-            print('Initial position fetch timed out, trying fallback');
-            return null;
-          },
-        );
-
-        if (position != null) {
-          print('Initial position found: ${position.latitude}, ${position.longitude}');
-          _updatePosition(position);
-        } else {
-          print('Initial position is null/timed out, trying fallback to user address');
-          // Wait for fallback
-           final fallbackSuccess = await _tryFallbackToUserAddress();
-           if (!fallbackSuccess) {
-             // If fallback also fails, we must stop loading to show "Rome" or map structure at least
-             // The map widget usually handles null center by default or we set a default
-             // But we need to turn off isLoading
-              state = state.copyWith(isLoading: false, error: 'Impossibile recuperare la posizione. Mappa centrata su Roma.');
-           }
-        }
-      } catch (e) {
-         print('Error in initial position fetch: $e');
-         await _tryFallbackToUserAddress();
-         state = state.copyWith(isLoading: false); // Ensure loading is off
+      // STRATEGY: 
+      // 1. Try Last Known Position (Fastest) to show something immediately
+      final lastKnown = await _locationService.getLastKnownPosition();
+      if (lastKnown != null) {
+        print('Using Last Known Position: ${lastKnown.latitude}, ${lastKnown.longitude}');
+        _updatePosition(lastKnown);
+        // Don't turn off loading yet if we want to wait for fresh, 
+        // but often it's better to show map immediately.
       }
 
-      // Start listening to position updates
+      // 2. Start Listening (Best for updates)
+      // We start listening immediately so we catch the fresh fix whenever it comes
       _positionSubscription = _locationService.getPositionStream().listen(
         (position) {
           print('Position update: ${position.latitude}, ${position.longitude}');
@@ -316,9 +297,43 @@ class MapStateController extends StateNotifier<MapState> {
         },
         onError: (e) {
           print('Position stream error: $e');
-          state = state.copyWith(error: e.toString());
+          // Only show error if we have NO position at all
+          if (state.currentPosition == null) {
+            state = state.copyWith(error: e.toString(), isLoading: false);
+          }
         },
       );
+
+      // 3. If no last known, try to urge a current position fetch (or fallback)
+      if (lastKnown == null) {
+        try {
+          final position = await _locationService.getCurrentPosition().timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => null,
+          );
+
+          if (position != null) {
+             _updatePosition(position);
+          } else {
+             // If still null, try fallback address
+             if (state.currentPosition == null) { // Check if stream updated meanwhile
+               print('No GPS Fix yet, trying fallback to user address');
+               final fallbackSuccess = await _tryFallbackToUserAddress();
+               if (!fallbackSuccess) {
+                 state = state.copyWith(isLoading: false, error: 'Ricerca posizione in corso...');
+               }
+             }
+          }
+        } catch (e) {
+           if (state.currentPosition == null) {
+              await _tryFallbackToUserAddress();
+           }
+        }
+      } 
+      
+      // Ensure loading is off eventually
+      state = state.copyWith(isLoading: false);
+
     } catch (e) {
       print('Error initializing location: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -467,45 +482,54 @@ class MapStateController extends StateNotifier<MapState> {
                 onTap: () {
                    state = state.copyWith(selectedUser: userProfile);
                 },
-                child: userProfile!.accountType == AccountType.business
-                    ? Container(
-                        decoration: BoxDecoration(
-                          color: Colors.amber, // Business Gold
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
+                  child: userProfile!.accountType == AccountType.business
+                      ? Container(
+                          decoration: BoxDecoration(
+                            color: Colors.amber, // Business Gold
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.store, color: Colors.white, size: 24),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            // Premium Check: Gold Border if Premium, Deep Purple if Standard
+                            border: Border.all(
+                              color: (userProfile.isPremium) ? Colors.amber : Colors.deepPurple, 
+                              width: (userProfile.isPremium) ? 3 : 2
                             ),
-                          ],
+                            boxShadow: [
+                              BoxShadow(
+                                color: (userProfile.isPremium) 
+                                    ? Colors.amber.withOpacity(0.6) // Gold Glow
+                                    : Colors.black.withOpacity(0.2),
+                                blurRadius: (userProfile.isPremium) ? 8 : 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: userProfile.photoUrl != null
+                                ? Image.network(
+                                    userProfile.photoUrl!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Icon(
+                                    Icons.person, 
+                                    color: (userProfile.isPremium) ? Colors.amber : Colors.deepPurple
+                                  ),
+                          ),
                         ),
-                        child: const Icon(Icons.store, color: Colors.white, size: 24),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.deepPurple, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: userProfile.photoUrl != null
-                              ? Image.network(
-                                  userProfile.photoUrl!,
-                                  fit: BoxFit.cover,
-                                )
-                              : const Icon(Icons.person, color: Colors.deepPurple),
-                        ),
-                      ),
-              ),
+                ),
             ),
           );
         }
