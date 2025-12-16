@@ -20,16 +20,22 @@ class AuthState {
   AuthState({this.isLoading = false, this.error});
 }
 
+import '../../../../core/services/purchase_service.dart'; // Added import
+
 /// Auth Controller
 class AuthController extends StateNotifier<AuthState> {
   final AuthService _authService;
+  final PurchaseService _purchaseService; // Added
 
-  AuthController(this._authService) : super(AuthState());
+  AuthController(this._authService, this._purchaseService) : super(AuthState());
 
   Future<void> signInWithEmail(String email, String password) async {
     state = AuthState(isLoading: true);
     try {
-      await _authService.signInWithEmail(email: email, password: password);
+      final user = await _authService.signInWithEmail(email: email, password: password);
+      if (user != null) {
+        await _purchaseService.identifyUser(user.uid);
+      }
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());
@@ -39,7 +45,10 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> registerWithEmail(String email, String password) async {
     state = AuthState(isLoading: true);
     try {
-      await _authService.registerWithEmail(email: email, password: password);
+      final user = await _authService.registerWithEmail(email: email, password: password);
+       if (user != null) {
+        await _purchaseService.identifyUser(user.uid);
+      }
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());
@@ -49,7 +58,10 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signInWithGoogle() async {
     state = AuthState(isLoading: true);
     try {
-      await _authService.signInWithGoogle();
+      final user = await _authService.signInWithGoogle();
+       if (user != null) {
+        await _purchaseService.identifyUser(user.uid);
+      }
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());
@@ -59,17 +71,23 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signInWithApple() async {
     state = AuthState(isLoading: true);
     try {
-      await _authService.signInWithApple();
+      final user = await _authService.signInWithApple();
+       if (user != null) {
+        await _purchaseService.identifyUser(user.uid);
+      }
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());
     }
   }
-
+  
+  // ... signOut remains same
   Future<void> signOut() async {
     state = AuthState(isLoading: true);
     try {
       await _authService.signOut();
+      // Optionally reset purchases identity? RevenueCat handles logOut automatically if we want
+      // await Purchases.logOut(); 
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());
@@ -79,5 +97,8 @@ class AuthController extends StateNotifier<AuthState> {
 
 /// Auth Controller Provider
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
-  return AuthController(ref.watch(authServiceProvider));
+  return AuthController(
+    ref.watch(authServiceProvider),
+    ref.watch(purchaseServiceProvider),
+  );
 });

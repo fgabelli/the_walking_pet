@@ -25,6 +25,7 @@ import '../../../../core/services/location_service.dart'; // Assuming we need th
 // Let's add the provider import.
 import '../../../../features/map/presentation/providers/map_provider.dart'; // Contains locationServiceProvider
 import '../../../subscriptions/presentation/screens/subscription_settings_screen.dart'; // Added
+import '../../../subscriptions/presentation/screens/debug_purchase_screen.dart'; // Added
 
 
 class ProfileScreen extends ConsumerWidget {
