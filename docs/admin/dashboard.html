@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - The Walking Pet</title>
+    <link rel="stylesheet" href="../style.css?v=4">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">🔒 Admin Panel</div>
+                <div class="nav-links">
+                    <a href="#" style="color: var(--primary);">Campagne</a>
+                    <a href="#" onclick="logout()">Esci</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" style="padding: 40px 0;">
+        <div
+            style="background: white; padding: 40px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2>Gestione Annunci</h2>
+                <button class="btn btn-primary">+ Nuova Campagna</button>
+            </div>
+
+            <div
+                style="background: var(--bg-soft); padding: 20px; border-radius: 12px; text-align: center; color: var(--text-light);">
+                <p>Nessuna campagna attiva al momento.</p>
+            </div>
+        </div>
+
+        <div class="row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div
+                style="background: white; padding: 30px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); text-align: center;">
+                <h3 style="font-size: 2rem; color: var(--primary);">0</h3>
+                <p>Click Totali</p>
+            </div>
+            <div
+                style="background: white; padding: 30px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); text-align: center;">
+                <h3 style="font-size: 2rem; color: var(--accent-blue);">0</h3>
+                <p>Impression</p>
+            </div>
+            <div
+                style="background: white; padding: 30px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); text-align: center;">
+                <h3 style="font-size: 2rem; color: var(--accent-gold);">0.00%</h3>
+                <p>CTR Medio</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (!localStorage.getItem('isAdmin')) {
+            window.location.href = '../login.html';
+        }
+        function logout() {
+            localStorage.removeItem('isAdmin');
+            window.location.href = '../login.html';
+        }
+    </script>
+</body>
+
+</html>
