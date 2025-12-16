@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // Added
 import 'app.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
