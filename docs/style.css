@@ -96,16 +96,17 @@ nav {
 /* Hero Section */
 .hero {
     position: relative;
-    /* Use dynamic viewport height, but constrained for wide screens */
-    height: 80vh;
-    min-height: 600px;
+    /* Compact height as requested (approx half of previous) */
+    height: 45vh;
+    min-height: 400px;
+    max-height: 500px;
     width: 100%;
-    margin-top: -60px;
-    /* Counteract header padding */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    /* Remove negative margin to avoid overlap issues for now, unless header is transparent */
+    margin-top: 0;
 }
 
 /* Wide Image as Background (Cover) */
@@ -116,83 +117,77 @@ nav {
     width: 100%;
     height: 100%;
     z-index: 0;
-    /* Background layer */
+    /* Level 0: Background */
 }
 
 .hero-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Ensures no white space (crops if needed) */
-    object-position: center bottom;
-    /* Anchor to bottom to show pets */
+    /* Crucial for wide/short aspect ratio */
+    object-position: center 40%;
+    /* Focus slightly above center to see faces */
     border-radius: 0;
-    box-shadow: none;
     transform: none;
-    animation: none;
 }
 
-/* Gradient Overlay for Readability */
+/* Gradient Overlay */
 .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    /* Darker gradient at top for text readability */
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.5) 100%);
+    /* Stronger gradient since text must pop on complex background */
+    background: rgba(0, 0, 0, 0.4);
     z-index: 1;
-    /* Above image, below text */
+    /* Level 1: Overlay */
     pointer-events: none;
-    /* Allow clicks to pass through */
 }
 
-/* Text Overlay */
-.hero-content {
+/* Content Container Wrapper */
+.hero .container {
     position: relative;
-    z-index: 10;
-    /* Topmost layer */
+    z-index: 2;
+    /* Level 2: Content layer */
+    width: 100%;
+}
+
+/* Text Content */
+.hero-content {
     text-align: center;
     max-width: 900px;
-    padding: 20px;
-    margin-top: 60px;
-    /* Visual balance */
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .hero h1 {
-    font-size: 4rem;
-    margin-bottom: 24px;
+    font-size: 3.5rem;
+    /* Slightly smaller for compact view */
+    margin-bottom: 16px;
     color: var(--white);
-    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     font-weight: 800;
 }
 
 .hero h1 span {
     background: linear-gradient(135deg, #FFD1A9 0%, #FA709A 100%);
-    /* Bright Peach-Pink gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: none;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    /* Shadow for gradient text */
 }
 
 .hero p {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 48px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-bottom: 32px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     font-weight: 500;
-    max-width: 700px;
 }
 
 .download-buttons {
     display: flex;
     gap: 20px;
     justify-content: center;
-    position: relative;
-    z-index: 20;
-    /* Ensure buttons are clickable */
 }
 
 .btn {
