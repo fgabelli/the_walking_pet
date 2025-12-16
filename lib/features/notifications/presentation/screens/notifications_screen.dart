@@ -7,21 +7,25 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
 // Provider for fetching friend requests
+import '../../../profile/presentation/providers/profile_provider.dart'; // Added
+
+// Provider for fetching friend requests
 final friendRequestsProvider = FutureProvider<List<UserModel>>((ref) async {
-  final currentUser = ref.watch(authServiceProvider).currentUser;
-  if (currentUser == null) return [];
+  final currentUserState = ref.watch(currentUserProfileProvider);
   
-  // We need the FULL user model to get the request UIDs
-  // But wait, currentUser from authService is Firebase User.
-  // We need to fetch the real user model first.
-  final userService = UserService(); // or use provider
-  final userModel = await userService.getUserById(currentUser.uid);
-  
+  // If loading or error, return empty? Or preserve previous? Start empty.
+  // accessing .value returns the latest data if available
+  final userModel = currentUserState.value;
+    
   if (userModel == null || userModel.friendRequests.isEmpty) return [];
 
-  // Fetch all requesting users
+  final userService = UserService(); // or use provider
   final requests = <UserModel>[];
+  
+  // Fetch details for each requester
+  // Optimisation: Could use whereIn query if list is large, but for now loop is fine
   for (final uid in userModel.friendRequests) {
+    // If we have a provider for generic users, we could use it, but plain fetch is okay
     final sender = await userService.getUserById(uid);
     if (sender != null) requests.add(sender);
   }
