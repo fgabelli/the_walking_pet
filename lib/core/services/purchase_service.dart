@@ -43,12 +43,8 @@ class PurchaseService {
   }
 
   Future<Offerings?> getOfferings() async {
-    try {
-      return await Purchases.getOfferings();
-    } catch (e) {
-      print('Error fetching offerings: $e');
-      return null;
-    }
+    // try-catch removed to allow UI to catch and display the actual error
+    return await Purchases.getOfferings();
   }
 
   Future<bool> purchasePackage(Package package) async {
