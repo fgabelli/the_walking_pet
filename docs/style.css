@@ -93,10 +93,11 @@ nav {
     color: var(--primary);
 }
 
-/* Hero Section */
-.hero {
+/* =========================
+   HERO HOME (Landing Page) 
+   ========================= */
+.hero-home {
     position: relative;
-    /* Compact height as requested (approx half of previous) */
     height: 45vh;
     min-height: 400px;
     max-height: 500px;
@@ -105,63 +106,54 @@ nav {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    /* Remove negative margin to avoid overlap issues for now, unless header is transparent */
     margin-top: 0;
 }
 
-/* Wide Image as Background (Cover) */
-.hero-image {
+/* Wide Image as Background */
+.hero-home .hero-image {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: 0;
-    /* Level 0: Background */
 }
 
-.hero-image img {
+.hero-home .hero-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Crucial for wide/short aspect ratio */
     object-position: center 40%;
-    /* Focus slightly above center to see faces */
     border-radius: 0;
-    transform: none;
 }
 
 /* Gradient Overlay */
-.hero::after {
+.hero-home::after {
     content: '';
     position: absolute;
     inset: 0;
-    /* Darker overlay for better text contrast */
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
     z-index: 1;
-    /* Level 1: Overlay */
     pointer-events: none;
 }
 
-/* Content Container Wrapper */
-.hero .container {
+/* Content Container */
+.hero-home .container {
     position: relative;
     z-index: 2;
-    /* Level 2: Content layer */
     width: 100%;
 }
 
-/* Text Content */
-.hero-content {
+/* Text Content (Home) */
+.hero-home .hero-content {
     text-align: center;
     max-width: 900px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-.hero h1 {
+.hero-home h1 {
     font-size: 3.5rem;
-    /* Slightly smaller for compact view */
     margin-bottom: 16px;
     color: #FFFFFF;
     /* Pure White */
