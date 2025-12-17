@@ -11,6 +11,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'core/services/purchase_service.dart'; // Import PurchaseService Provider
+import 'core/services/notification_service.dart'; // Import NotificationService
 // ... other imports
 
 @pragma('vm:entry-point')
@@ -60,6 +61,13 @@ Future<void> main() async {
     await container.read(purchaseServiceProvider).init();
   } catch (e) {
     debugPrint('PurchaseService Init Error: $e');
+  }
+
+  // Initialize Notification Service
+  try {
+     await container.read(notificationServiceProvider).initialize();
+  } catch (e) {
+     debugPrint('NotificationService Init Error: $e');
   }
   
   runApp(
