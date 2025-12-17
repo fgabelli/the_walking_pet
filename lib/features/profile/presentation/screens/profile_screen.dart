@@ -434,6 +434,21 @@ class _ProfileContent extends ConsumerWidget {
                 }
               },
             ),
+
+            // Debug Option (Visible for now)
+            ListTile(
+              leading: const Icon(Icons.bug_report, color: Colors.grey),
+              title: const Text('Diagnostica Acquisti', style: TextStyle(color: Colors.grey)),
+              onTap: () {
+                Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                     builder: (context) => const DebugPurchaseScreen(),
+                   ),
+                 );
+              },
+            ),
+
           ],
           const SizedBox(height: 24),
 
