@@ -7,7 +7,7 @@ import '../../../../shared/models/user_model.dart';
 import '../providers/profile_provider.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
 import 'package:google_api_headers/google_api_headers.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:google_maps_webservice/places.dart' as places;
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   final UserModel? userToEdit;
@@ -90,12 +90,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Future<void> _searchAddress() async {
     const kGoogleApiKey = "AIzaSyA93OXT_AG1haFvA6yBeh775_Z64z147FI";
     try {
-      Prediction? p = await PlacesAutocomplete.show(
+      places.Prediction? p = await PlacesAutocomplete.show(
         context: context,
         apiKey: kGoogleApiKey,
         mode: Mode.overlay,
         language: "it",
-        components: [Component(Component.country, "it")],
+        components: [places.Component(places.Component.country, "it")],
         types: [],
         strictbounds: false,
         decoration: InputDecoration(
