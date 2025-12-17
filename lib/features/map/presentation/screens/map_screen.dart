@@ -23,6 +23,7 @@ import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart';
 import '../widgets/map_filter_bottom_sheet.dart';
 import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Ads
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // AdSize
+import 'package:url_launcher/url_launcher.dart'; // Added
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -124,7 +125,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               children: [
                 Icon(Icons.sos, color: Colors.red, size: 32),
                 SizedBox(width: 8),
-                Text('SOS PET SMARRITO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                Text('PET SMARRITO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
               ],
             ),
             content: Column(
@@ -153,11 +154,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                onPressed: () {
-                  // TODO: Launch dialer
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Chiamata a ${next.contactPhone}...')),
-                  );
+                onPressed: () async {
+                  final uri = Uri.parse('tel:${next.contactPhone}');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Impossibile chiamare ${next.contactPhone}')),
+                      );
+                    }
+                  }
                 },
                 icon: const Icon(Icons.call),
                 label: const Text('CHIAMA ORA'),
