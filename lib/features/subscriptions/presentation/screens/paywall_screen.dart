@@ -164,10 +164,31 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         const SizedBox(height: 48),
                         
                         // Products
+                        // Products
                         if (_packages.isEmpty && !_isLoading)
-                           const Text('Nessuna offerta disponibile al momento.', style: TextStyle(fontWeight: FontWeight.bold)),
+                           Column(
+                             children: [
+                               const Text('Nessuna offerta disponibile al momento.', style: TextStyle(fontWeight: FontWeight.bold)),
+                               if (widget.offeringId == 'business_pro')
+                                 const Text('\nAssicurati che l\'Offering "business_pro" esista su RevenueCat e contenga pacchetti.', 
+                                   textAlign: TextAlign.center, style: TextStyle(color: Colors.red, fontSize: 10)),
+                             ],
+                           ),
                         
-                        ..._packages.map((p) => _buildProductCard(context, p)),
+                        // DEBUG: Show Offering ID
+                         Padding(
+                           padding: const EdgeInsets.only(bottom: 8.0),
+                           child: Text("Offering: ${widget.offeringId}", style: TextStyle(fontSize: 10, color: Colors.grey[400])),
+                         ),
+
+                        ..._packages.map((p) => Column(
+                          children: [
+                            _buildProductCard(context, p),
+                            Text("Pkg: ${p.identifier}\nProd: ${p.storeProduct.identifier}", 
+                                style: TextStyle(fontSize: 9, color: Colors.grey[400])),
+                            const SizedBox(height: 10),
+                          ],
+                        )),
                         
                         const SizedBox(height: 16),
                         
