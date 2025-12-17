@@ -5,9 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/profile_provider.dart';
-import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
-import 'package:google_api_headers/google_api_headers.dart';
-import 'package:google_maps_webservice/places.dart' as places;
+import '../../../../core/services/google_places_service.dart';
+import '../../../../shared/widgets/address_search_delegate.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   final UserModel? userToEdit;
@@ -89,33 +88,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
   Future<void> _searchAddress() async {
     const kGoogleApiKey = "AIzaSyA93OXT_AG1haFvA6yBeh775_Z64z147FI";
-    try {
-      places.Prediction? p = await PlacesAutocomplete.show(
-        context: context,
-        apiKey: kGoogleApiKey,
-        mode: Mode.overlay,
-        language: "it",
-        components: [places.Component(places.Component.country, "it")],
-        types: [],
-        strictbounds: false,
-        decoration: InputDecoration(
-          hintText: 'Cerca indirizzo...',
-          fillColor: Colors.white,
-          filled: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
-      if (p != null) {
-        setState(() {
-          _addressController.text = p.description ?? '';
-          // Optionally autofill zone if simple text match
-          // _zoneController.text = ...
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Errore ricerca: $e')));
-      }
+    final placesService = GooglePlacesService(kGoogleApiKey);
+    
+    // Simple custom search dialog
+    final prediction = await showSearch(
+      context: context, 
+      delegate: AddressSearchDelegate(placesService),
+    );
+    
+    if (prediction != null) {
+      setState(() {
+        _addressController.text = prediction.description;
+      });
     }
   }
 

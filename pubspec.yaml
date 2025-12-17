@@ -36,7 +36,6 @@ dependencies:
   geolocator: ^13.0.2
   geocoding: ^3.0.0
   geoflutterfire_plus: ^0.0.17
-  
   # UI & Design
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.16
