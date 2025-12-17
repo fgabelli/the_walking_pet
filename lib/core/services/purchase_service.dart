@@ -48,8 +48,24 @@ class PurchaseService {
   Future<void> identifyUser(String userId) async {
     if (!_isInitialized) await init();
     try {
+      print('PURCHASE: Identifying user $userId...');
       final result = await Purchases.logIn(userId);
-      await _syncWithFirestore(result.customerInfo);
+      print('PURCHASE: LogIn Result (Created=${result.created})');
+      
+      // Sync immediately
+      bool isActive = await _syncWithFirestore(result.customerInfo);
+      
+      // If result is false, maybe it needs a refresh?
+      if (!isActive) {
+         print('PURCHASE: Initial sync was false. Forcing refresh of CustomerInfo...');
+         try {
+           final info = await Purchases.getCustomerInfo();
+           await _syncWithFirestore(info);
+         } catch(e) {
+           print('PURCHASE: Error refreshing info: $e');
+         }
+      }
+      
     } catch (e) {
       print('Error identifying user: $e');
     }
