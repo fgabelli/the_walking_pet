@@ -123,7 +123,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             backgroundColor: Colors.red[50],
             title: const Row(
               children: [
-                Icon(Icons.sos, color: Colors.red, size: 32),
+                Icon(Icons.campaign, color: Colors.red, size: 32),
                 SizedBox(width: 8),
                 Text('PET SMARRITO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
               ],
@@ -131,7 +131,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 const Text('Un nostro amico a 4 zampe è stato smarrito in questa zona! Aiutaci a trovarlo.', textAlign: TextAlign.center),
+                 const Text('Un nostro amico a 4 zampe è stato smarrito in questa zona! Aiutaci a trovarlo.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87)),
                  const SizedBox(height: 16),
                  if (next.message != null && next.message!.isNotEmpty)
                     Container(
