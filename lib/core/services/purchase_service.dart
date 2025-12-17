@@ -107,6 +107,7 @@ class PurchaseService {
     final hasActiveEntitlement = isPremium || isBusiness;
     
     print('Purchase Sync: Active Entitlements=${customerInfo.entitlements.active.keys}');
+    print('Purchase Sync: ALL Entitlements=${customerInfo.entitlements.all.keys}');
     print('Status: Premium=$isPremium, Business=$isBusiness => Unlock Features=$hasActiveEntitlement');
 
     try {

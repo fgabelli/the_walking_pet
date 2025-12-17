@@ -211,6 +211,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   icon: const FaIcon(FontAwesomeIcons.apple, size: 24),
                   label: const Text('Accedi con Apple'),
                 ),
+                const SizedBox(height: 24),
+                // Terms and Privacy Disclaimer
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Continuando, accetti i Termini e Condizioni e la Privacy Policy di The Walking Pet.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                  ),
+                ),
                 const SizedBox(height: 48),
                 
                 // Register Link
