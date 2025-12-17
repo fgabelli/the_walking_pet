@@ -219,7 +219,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Continuando, accetti i Termini e Condizioni e la Privacy Policy di The Walking Pet.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Colors.grey,
                           fontSize: 12,
                         ),
                   ),

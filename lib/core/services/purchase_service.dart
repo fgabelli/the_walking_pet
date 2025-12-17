@@ -120,7 +120,13 @@ class PurchaseService {
     
     // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
     // Strict check for specific entitlements to distinguish account types
+    // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
+    // Strict check for specific entitlements to distinguish account types
     final hasActiveEntitlement = isPremium || isBusiness;
+    
+    if (!isBusiness && customerInfo.entitlements.all.containsKey('business_pro')) {
+       print('PURCHASE: business_pro FOUND but not active. Expiration: ${customerInfo.entitlements.all['business_pro']?.expirationDate}');
+    }
     
     print('Purchase Sync: Active Entitlements=${customerInfo.entitlements.active.keys}');
     print('Purchase Sync: ALL Entitlements=${customerInfo.entitlements.all.keys}');

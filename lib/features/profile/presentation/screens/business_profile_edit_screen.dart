@@ -7,7 +7,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/profile_provider.dart';
 
-class BusinessProfileEditScreen extends ConsumerStatefulWidget {
+import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
+import 'package:google_api_headers/google_api_headers.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:google_api_headers/google_api_headers.dart';
   final UserModel user;
 
   const BusinessProfileEditScreen({super.key, required this.user});
@@ -224,13 +227,19 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
                     ),
                     const SizedBox(height: 16),
                     
-                    // Address
-                    TextFormField(
-                      controller: _addressController,
-                      decoration: const InputDecoration(
-                        labelText: 'Indirizzo Completo',
-                        prefixIcon: Icon(Icons.location_on),
-                        border: OutlineInputBorder(),
+                    // Address with Autocomplete
+                    GestureDetector(
+                      onTap: _searchAddress,
+                      child: AbsorbPointer(
+                        child: TextFormField(
+                          controller: _addressController,
+                          decoration: const InputDecoration(
+                            labelText: 'Indirizzo Completo',
+                            prefixIcon: Icon(Icons.location_on),
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.search),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
