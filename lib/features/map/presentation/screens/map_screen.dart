@@ -137,12 +137,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                      child: Text(next.message!, style: const TextStyle(fontStyle: FontStyle.italic)),
+                      child: Text(next.message!, style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.black87)),
                     ),
                  const SizedBox(height: 16),
-                 const Text('Se lo vedi, contatta subito il proprietario:', style: TextStyle(fontWeight: FontWeight.bold)),
+                 const Text('Se lo vedi, contatta subito il proprietario:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                  const SizedBox(height: 8),
-                 Text(next.contactPhone, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                 Text(next.contactPhone, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
               ],
             ),
             actions: [
