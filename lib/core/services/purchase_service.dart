@@ -90,6 +90,14 @@ class PurchaseService {
     }
   }
   
+  Future<void> logout() async {
+    try {
+      await Purchases.logOut();
+    } catch (e) {
+      print('Error logging out of RevenueCat: $e');
+    }
+  }
+  
   Future<bool> _syncWithFirestore(CustomerInfo customerInfo) async {
     final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
     final isBusiness = customerInfo.entitlements.all['business_pro']?.isActive ?? false;
