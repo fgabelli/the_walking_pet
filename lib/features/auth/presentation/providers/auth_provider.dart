@@ -87,7 +87,7 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       await _authService.signOut();
       // Optionally reset purchases identity? RevenueCat handles logOut automatically if we want
-      // await Purchases.logOut(); 
+      await Purchases.logOut(); 
       state = AuthState(isLoading: false);
     } catch (e) {
       state = AuthState(isLoading: false, error: e.toString());

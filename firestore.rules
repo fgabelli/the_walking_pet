@@ -58,5 +58,20 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
     }
+
+    // SOS ALERTS Collection
+    match /sos_alerts/{alertId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated(); // For resolving
+    }
+
+    // EVENTS Collection
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated(); // For joining/leaving
+      allow delete: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
+    }
   }
 }

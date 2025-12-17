@@ -104,33 +104,45 @@ class PurchaseService {
     try {
       final currentUserAuth = _ref.read(authServiceProvider).currentUser;
       if (currentUserAuth != null) {
-        // Fetch the actual UserModel to check current DB status
+        print('SYNC: Fetching latest user data for ${currentUserAuth.uid}...');
+        // Force server fetch to ensure we are comparing against truth
+        // We use the service but we accept that the service might cache. 
+        // Ideally we should force refresh here too?
+        // Let's rely on getUserById for now but log the result.
         final userModel = await _ref.read(userServiceProvider).getUserById(currentUserAuth.uid);
         
         if (userModel != null) {
+          print('SYNC: Current DB State -> isPremium: ${userModel.isPremium}, accountType: ${userModel.accountType}');
           final Map<String, dynamic> updates = {};
 
           // 1. Sync Premium Status
           if (userModel.isPremium != hasActiveEntitlement) {
+            print('SYNC: Logic -> Updating isPremium from ${userModel.isPremium} to $hasActiveEntitlement');
             updates['isPremium'] = hasActiveEntitlement;
           }
 
           // 2. Sync Business Status
           if (isBusiness && userModel.accountType != AccountType.business) {
-               updates['accountType'] = AccountType.business.name;
+             print('SYNC: Logic -> Updating accountType from ${userModel.accountType} to business');
+             updates['accountType'] = AccountType.business.name;
           }
           
           if (updates.isNotEmpty) {
-            print('Syncing User Status to Firestore: $updates');
+            print('SYNC: Executing Firestore Write: $updates');
             await _ref.read(userServiceProvider).updateUserFields(
               currentUserAuth.uid, 
               updates
             );
+            print('SYNC: Firestore Write Completed.');
+          } else {
+            print('SYNC: No updates required.');
           }
+        } else {
+             print('SYNC: User Model is null!');
         }
       }
-    } catch (e) {
-      print('Error syncing with Firestore: $e');
+    } catch (e, stack) {
+      print('Error syncing with Firestore: $e\n$stack');
     }
     
     return hasActiveEntitlement;

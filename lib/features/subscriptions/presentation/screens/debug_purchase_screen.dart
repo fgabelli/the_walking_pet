@@ -5,6 +5,7 @@ import '../../../../core/services/purchase_service.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DebugPurchaseScreen extends ConsumerStatefulWidget {
   const DebugPurchaseScreen({super.key});
@@ -61,6 +62,19 @@ class _DebugPurchaseScreenState extends ConsumerState<DebugPurchaseScreen> {
 
       // Check Firestore
       _appendLog("3. Verifica Firestore...");
+      // Check Server Data (Bypass Cache)
+      final docRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+      final serverDoc = await docRef.get(const GetOptions(source: Source.server));
+      
+      if (serverDoc.exists) {
+        final data = serverDoc.data();
+        _appendLog("   [SERVER] isPremium: ${data?['isPremium']}");
+        _appendLog("   [SERVER] accountType: ${data?['accountType']}");
+      } else {
+        _appendLog("   [SERVER] Doc non trovato.");
+      }
+
+      // Check Local/Service Data
       final userModel = await ref.read(userServiceProvider).getUserById(currentUser.uid);
       
       if (userModel != null) {

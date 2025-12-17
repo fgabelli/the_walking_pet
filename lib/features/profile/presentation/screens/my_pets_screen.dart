@@ -58,7 +58,7 @@ class MyPetsScreen extends ConsumerWidget {
                 icon: const Icon(Icons.sos, size: 28),
                 label: const Column(
                   children: [
-                    Text('SOS PET SMARRITO', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('PET SMARRITO', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     SizedBox(height: 4),
                     Text('Segnala smarrimento alla community', style: TextStyle(fontSize: 12)),
                   ],
