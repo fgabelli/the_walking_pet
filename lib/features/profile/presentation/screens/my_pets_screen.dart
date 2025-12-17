@@ -55,7 +55,7 @@ class MyPetsScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () => _showSOSDialog(context, ref, currentUser.uid),
-                icon: const Icon(Icons.support, size: 32),
+                icon: const Icon(Icons.pets, size: 32),
                 label: const Column(
                   children: [
                     Text('PET SMARRITO', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
