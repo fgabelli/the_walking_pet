@@ -123,7 +123,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             backgroundColor: Colors.red[50],
             title: const Row(
               children: [
-                Icon(Icons.campaign, color: Colors.red, size: 32),
+                Icon(Icons.warning_rounded, color: Colors.red, size: 32),
                 SizedBox(width: 8),
                 Text('PET SMARRITO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
               ],
