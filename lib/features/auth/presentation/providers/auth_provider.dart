@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/purchase_service.dart'; // import moved to top
 
 /// Auth Service Provider
 final authServiceProvider = Provider<AuthService>((ref) {
@@ -20,21 +21,20 @@ class AuthState {
   AuthState({this.isLoading = false, this.error});
 }
 
-import '../../../../core/services/purchase_service.dart'; // Added import
-
 /// Auth Controller
 class AuthController extends StateNotifier<AuthState> {
   final AuthService _authService;
-  final PurchaseService _purchaseService; // Added
+  final PurchaseService _purchaseService; 
 
   AuthController(this._authService, this._purchaseService) : super(AuthState());
 
   Future<void> signInWithEmail(String email, String password) async {
     state = AuthState(isLoading: true);
     try {
-      final user = await _authService.signInWithEmail(email: email, password: password);
-      if (user != null) {
-        await _purchaseService.identifyUser(user.uid);
+      final credential = await _authService.signInWithEmail(email: email, password: password);
+      // Access .user property
+      if (credential.user != null) {
+        await _purchaseService.identifyUser(credential.user!.uid);
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -45,9 +45,9 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> registerWithEmail(String email, String password) async {
     state = AuthState(isLoading: true);
     try {
-      final user = await _authService.registerWithEmail(email: email, password: password);
-       if (user != null) {
-        await _purchaseService.identifyUser(user.uid);
+      final credential = await _authService.registerWithEmail(email: email, password: password);
+       if (credential.user != null) {
+        await _purchaseService.identifyUser(credential.user!.uid);
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -58,9 +58,9 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signInWithGoogle() async {
     state = AuthState(isLoading: true);
     try {
-      final user = await _authService.signInWithGoogle();
-       if (user != null) {
-        await _purchaseService.identifyUser(user.uid);
+      final credential = await _authService.signInWithGoogle();
+       if (credential.user != null) {
+        await _purchaseService.identifyUser(credential.user!.uid);
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -71,9 +71,9 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signInWithApple() async {
     state = AuthState(isLoading: true);
     try {
-      final user = await _authService.signInWithApple();
-       if (user != null) {
-        await _purchaseService.identifyUser(user.uid);
+      final credential = await _authService.signInWithApple();
+       if (credential.user != null) {
+        await _purchaseService.identifyUser(credential.user!.uid);
       }
       state = AuthState(isLoading: false);
     } catch (e) {
