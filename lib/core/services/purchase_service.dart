@@ -156,6 +156,9 @@ class PurchaseService {
           if (isBusiness && userModel.accountType != AccountType.business) {
              print('SYNC: Logic -> Updating accountType from ${userModel.accountType} to business');
              updates['accountType'] = AccountType.business.name;
+          } else if (!isBusiness && userModel.accountType == AccountType.business) {
+             print('SYNC: WARNING -> User is Business in DB but RC says NOT Business. (Expired?) keeping DB as Business for grace period or manual downgrade?');
+             // Optionally we could downgrade here: updates['accountType'] = AccountType.personal.name;
           }
           
           if (updates.isNotEmpty) {
