@@ -115,20 +115,6 @@ class PurchaseService {
   }
   
   Future<bool> _syncWithFirestore(CustomerInfo customerInfo) async {
-    final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
-    
-    // Support both 'business' and 'business_pro' entitlement IDs
-    final businessProEntitlement = customerInfo.entitlements.all['business_pro'];
-    final businessEntitlement = customerInfo.entitlements.all['business'];
-    
-    final isBusinessProActive = businessProEntitlement?.isActive ?? false;
-    final isBusinessActive = businessEntitlement?.isActive ?? false;
-    
-    final isBusiness = isBusinessProActive || isBusinessActive;
-    
-    // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
-    final hasActiveEntitlement = isPremium || isBusiness;
-    
     print('PURCHASE SYNC:');
     print('  - App User ID: ${customerInfo.originalAppUserId}');
     print('  - Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}');
