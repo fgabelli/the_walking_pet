@@ -58,14 +58,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
          // FINAL Fallback to current
          offering ??= offerings.current;
          
-         if (offering != null) {
-            buffer.writeln('Selected: ${offering.identifier}');
-            buffer.writeln('Pkgs count: ${offering.availablePackages.length}');
-            if (offering.availablePackages.isEmpty) {
+         final selectedOffering = offering;
+         
+         if (selectedOffering != null) {
+            buffer.writeln('Selected: ${selectedOffering.identifier}');
+            buffer.writeln('Pkgs count: ${selectedOffering.availablePackages.length}');
+            if (selectedOffering.availablePackages.isEmpty) {
               buffer.writeln('WARNING: Selected offering has 0 packages!');
             }
             setState(() {
-             _packages = offering.availablePackages;
+             _packages = selectedOffering.availablePackages;
              _debugInfo = buffer.toString();
             });
          } else {
