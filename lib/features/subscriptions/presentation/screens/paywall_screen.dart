@@ -47,18 +47,27 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
          buffer.writeln('All Offerings: $keys');
          buffer.writeln('Current Default: $currentId');
          
-         final offering = offerings.all[widget.offeringId] ?? offerings.current;
+         var offering = offerings.all[widget.offeringId];
+         
+         // Fallback logic for Business
+         if (offering == null && widget.offeringId == 'business_pro') {
+            buffer.writeln('Offering "business_pro" not found, trying "business"...');
+            offering = offerings.all['business'];
+         }
+         
+         // FINAL Fallback to current
+         offering ??= offerings.current;
          
          if (offering != null) {
-           buffer.writeln('Selected: ${offering.identifier}');
-           buffer.writeln('Pkgs count: ${offering.availablePackages.length}');
-           if (offering.availablePackages.isEmpty) {
-             buffer.writeln('WARNING: Selected offering has 0 packages!');
-           }
-           setState(() {
-            _packages = offering.availablePackages;
-            _debugInfo = buffer.toString();
-           });
+            buffer.writeln('Selected: ${offering.identifier}');
+            buffer.writeln('Pkgs count: ${offering.availablePackages.length}');
+            if (offering.availablePackages.isEmpty) {
+              buffer.writeln('WARNING: Selected offering has 0 packages!');
+            }
+            setState(() {
+             _packages = offering.availablePackages;
+             _debugInfo = buffer.toString();
+            });
          } else {
            buffer.writeln('ERROR: Offering "${widget.offeringId}" NOT FOUND!');
            setState(() => _debugInfo = buffer.toString());

@@ -85,7 +85,7 @@ class _SubscriptionSettingsScreenState extends ConsumerState<SubscriptionSetting
                           children: [
                             Text(
                               isActive 
-                                  ? (entitlement?.identifier == 'business_pro' ? 'Business Pro' : 'Premium')
+                                  ? ((entitlement?.identifier == 'business_pro' || entitlement?.identifier == 'business') ? 'Business Pro' : 'Premium')
                                   : 'Piano Gratuito',
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,

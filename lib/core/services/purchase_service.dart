@@ -116,21 +116,36 @@ class PurchaseService {
   
   Future<bool> _syncWithFirestore(CustomerInfo customerInfo) async {
     final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
-    final isBusiness = customerInfo.entitlements.all['business_pro']?.isActive ?? false;
+    
+    // Support both 'business' and 'business_pro' entitlement IDs
+    final businessProEntitlement = customerInfo.entitlements.all['business_pro'];
+    final businessEntitlement = customerInfo.entitlements.all['business'];
+    
+    final isBusinessProActive = businessProEntitlement?.isActive ?? false;
+    final isBusinessActive = businessEntitlement?.isActive ?? false;
+    
+    final isBusiness = isBusinessProActive || isBusinessActive;
     
     // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
-    // Strict check for specific entitlements to distinguish account types
-    // Business includes Premium benefits usually, or at least we treat them as "Premium" for unlocking features
-    // Strict check for specific entitlements to distinguish account types
     final hasActiveEntitlement = isPremium || isBusiness;
     
-    if (!isBusiness && customerInfo.entitlements.all.containsKey('business_pro')) {
-       print('PURCHASE: business_pro FOUND but not active. Expiration: ${customerInfo.entitlements.all['business_pro']?.expirationDate}');
+    print('PURCHASE SYNC:');
+    print('  - Active Entitlements: ${customerInfo.entitlements.active.keys}');
+    print('  - All Entitlements: ${customerInfo.entitlements.all.keys}');
+    print('  - Premium: $isPremium');
+    print('  - Business Pro Active: $isBusinessProActive');
+    print('  - Business Active: $isBusinessActive');
+    print('  - Total Business status: $isBusiness');
+    print('  - Unlock Features status: $hasActiveEntitlement');
+
+    if (!isBusiness) {
+       if (businessProEntitlement != null) {
+          print('  - business_pro FOUND but NOT active. Exp: ${businessProEntitlement.expirationDate}');
+       }
+       if (businessEntitlement != null) {
+          print('  - business FOUND but NOT active. Exp: ${businessEntitlement.expirationDate}');
+       }
     }
-    
-    print('Purchase Sync: Active Entitlements=${customerInfo.entitlements.active.keys}');
-    print('Purchase Sync: ALL Entitlements=${customerInfo.entitlements.all.keys}');
-    print('Status: Premium=$isPremium, Business=$isBusiness => Unlock Features=$hasActiveEntitlement');
 
     try {
       final currentUserAuth = _ref.read(authServiceProvider).currentUser;
@@ -183,7 +198,9 @@ class PurchaseService {
   }
   
   bool isPremium(CustomerInfo info) => info.entitlements.all['premium']?.isActive ?? false;
-  bool isBusiness(CustomerInfo info) => info.entitlements.all['business_pro']?.isActive ?? false;
+  bool isBusiness(CustomerInfo info) => 
+      (info.entitlements.all['business_pro']?.isActive ?? false) || 
+      (info.entitlements.all['business']?.isActive ?? false);
   
   /// Returns the management URL for the active platform store
   /// Note: RevenueCat's customerInfo.managementURL is often null on Android until configured or specific cases.
@@ -205,6 +222,9 @@ class PurchaseService {
   EntitlementInfo? getActiveEntitlement(CustomerInfo info) {
     if (info.entitlements.all['business_pro']?.isActive ?? false) {
       return info.entitlements.all['business_pro'];
+    }
+    if (info.entitlements.all['business']?.isActive ?? false) {
+      return info.entitlements.all['business'];
     }
     if (info.entitlements.all['premium']?.isActive ?? false) {
       return info.entitlements.all['premium'];
