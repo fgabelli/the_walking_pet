@@ -130,20 +130,25 @@ class PurchaseService {
     final hasActiveEntitlement = isPremium || isBusiness;
     
     print('PURCHASE SYNC:');
-    print('  - Active Entitlements: ${customerInfo.entitlements.active.keys}');
-    print('  - All Entitlements: ${customerInfo.entitlements.all.keys}');
-    print('  - Premium: $isPremium');
-    print('  - Business Pro Active: $isBusinessProActive');
-    print('  - Business Active: $isBusinessActive');
-    print('  - Total Business status: $isBusiness');
-    print('  - Unlock Features status: $hasActiveEntitlement');
+    print('  - App User ID: ${customerInfo.originalAppUserId}');
+    print('  - Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}');
+    print('  - All Entitlement IDs: ${customerInfo.entitlements.all.keys.toList()}');
+    
+    final isPremiumActive = infoIsPremium(customerInfo);
+    final isBusinessActive = infoIsBusiness(customerInfo);
+    
+    // Business includes Premium benefits usually
+    final hasActiveEntitlement = isPremiumActive || isBusinessActive;
+    
+    print('  - Premium Result: $isPremiumActive');
+    print('  - Business Result: $isBusinessActive');
+    print('  - Overall Unlock Status: $hasActiveEntitlement');
 
-    if (!isBusiness) {
-       if (businessProEntitlement != null) {
-          print('  - business_pro FOUND but NOT active. Exp: ${businessProEntitlement.expirationDate}');
-       }
-       if (businessEntitlement != null) {
-          print('  - business FOUND but NOT active. Exp: ${businessEntitlement.expirationDate}');
+    if (!isBusinessActive) {
+       for (var entry in customerInfo.entitlements.all.entries) {
+          if (entry.key.toLowerCase().contains('business')) {
+             print('  - FOUND POTENTIAL BUSINESS ENTITLEMENT: ${entry.key} (Active: ${entry.value.isActive}, Exp: ${entry.value.expirationDate})');
+          }
        }
     }
 
@@ -168,12 +173,12 @@ class PurchaseService {
           }
 
           // 2. Sync Business Status
-          if (isBusiness && userModel.accountType != AccountType.business) {
+          if (isBusinessActive && userModel.accountType != AccountType.business) {
              print('SYNC: Logic -> Updating accountType from ${userModel.accountType} to business');
              updates['accountType'] = AccountType.business.name;
-          } else if (!isBusiness && userModel.accountType == AccountType.business) {
-             print('SYNC: WARNING -> User is Business in DB but RC says NOT Business. (Expired?) keeping DB as Business for grace period or manual downgrade?');
-             // Optionally we could downgrade here: updates['accountType'] = AccountType.personal.name;
+          } else if (!isBusinessActive && userModel.accountType == AccountType.business) {
+             print('SYNC: WARNING -> User is Business in DB but RC says NOT Business. (Expired?)');
+             // We keep them as Business for now to avoid accidental lockouts if RC is slow
           }
           
           if (updates.isNotEmpty) {
@@ -197,10 +202,20 @@ class PurchaseService {
     return hasActiveEntitlement;
   }
   
-  bool isPremium(CustomerInfo info) => info.entitlements.all['premium']?.isActive ?? false;
-  bool isBusiness(CustomerInfo info) => 
-      (info.entitlements.all['business_pro']?.isActive ?? false) || 
-      (info.entitlements.all['business']?.isActive ?? false);
+  bool infoIsPremium(CustomerInfo info) {
+    if (info.entitlements.all['premium']?.isActive ?? false) return true;
+    return info.entitlements.active.values.any((e) => e.identifier.toLowerCase().contains('premium'));
+  }
+
+  bool infoIsBusiness(CustomerInfo info) {
+    if (info.entitlements.all['business_pro']?.isActive ?? false) return true;
+    if (info.entitlements.all['business']?.isActive ?? false) return true;
+    return info.entitlements.active.values.any((e) => e.identifier.toLowerCase().contains('business'));
+  }
+  
+  // Keep original methods for compatibility but update them to use our new robust logic
+  bool isPremium(CustomerInfo info) => infoIsPremium(info);
+  bool isBusiness(CustomerInfo info) => infoIsBusiness(info);
   
   /// Returns the management URL for the active platform store
   /// Note: RevenueCat's customerInfo.managementURL is often null on Android until configured or specific cases.

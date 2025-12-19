@@ -70,6 +70,13 @@ class ProfileController extends StateNotifier<ProfileState> {
 
   Future<void> _initPurchases() async {
      await _purchaseService.init();
+     
+     // Ensure user is identified if already logged in
+     final user = _ref.read(authServiceProvider).currentUser;
+     if (user != null) {
+       await _purchaseService.identifyUser(user.uid);
+     }
+     
      await refreshEntitlements();
   }
 
