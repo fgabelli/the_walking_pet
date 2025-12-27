@@ -1,26 +1,78 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum EventType {
+  news,
+  lost,
   walk,
   training,
   social,
-  litter, // Added
-  other
+  litter,
+  advice,
+  other,
 }
 
 extension EventTypeExtension on EventType {
   String get displayName {
     switch (this) {
+      case EventType.news:
+        return 'Novità';
+      case EventType.lost:
+        return 'Smarrito';
       case EventType.walk:
         return 'Passeggiata';
       case EventType.training:
         return 'Addestramento';
       case EventType.social:
-        return 'Raduno Social';
+        return 'Raduno / Incontri';
       case EventType.litter:
-        return 'Cucciolata 🐾'; // Added emoji as requested
+        return 'Cucciolata 🐾';
+      case EventType.advice:
+        return 'Consiglio';
       case EventType.other:
         return 'Altro';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case EventType.news:
+        return Icons.campaign;
+      case EventType.lost:
+        return Icons.warning;
+      case EventType.walk:
+        return Icons.directions_walk;
+      case EventType.training:
+        return Icons.school;
+      case EventType.social:
+        return Icons.people;
+      case EventType.litter:
+        return Icons.pets;
+      case EventType.advice:
+        return Icons.lightbulb;
+      case EventType.other:
+        return Icons.more_horiz;
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case EventType.news:
+        return Colors.blue;
+      case EventType.lost:
+        return Colors.red;
+      case EventType.walk:
+        return Colors.green;
+      case EventType.training:
+        return Colors.orange;
+      case EventType.social:
+        return Colors.purple;
+      case EventType.litter:
+        return Colors.pink;
+      case EventType.advice:
+        return Colors.amber;
+      case EventType.other:
+        return Colors.grey;
     }
   }
 }

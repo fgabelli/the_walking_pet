@@ -11,12 +11,13 @@ import '../../../../core/services/purchase_service.dart'; // Added
 import 'create_dog_profile_screen.dart';
 import 'create_profile_screen.dart';
 
-import '../providers/friend_provider.dart';
 import 'privacy_settings_screen.dart';
-import 'friends_list_screen.dart';
-import 'blocked_users_screen.dart';
-import '../../../subscriptions/presentation/screens/paywall_screen.dart';
-import 'business_profile_edit_screen.dart'; // Import
+import 'business_profile_edit_screen.dart'; // Added
+import 'business_profile_screen.dart';
+import 'following_list_screen.dart'; // Changed
+import 'blocked_users_screen.dart'; // Added
+import 'who_viewed_me_screen.dart'; // Added
+import '../../../subscriptions/presentation/screens/paywall_screen.dart'; // Added
 import '../../../../core/services/user_service.dart';
 import '../../../../features/map/presentation/providers/map_provider.dart'; // For LocationService via ref/provider
 // Actually we need location service provider directly or import the class
@@ -25,7 +26,6 @@ import '../../../../core/services/location_service.dart'; // Assuming we need th
 // Let's add the provider import.
 import '../../../../features/map/presentation/providers/map_provider.dart'; // Contains locationServiceProvider
 import '../../../subscriptions/presentation/screens/subscription_settings_screen.dart'; // Added
-import '../../../subscriptions/presentation/screens/debug_purchase_screen.dart'; // Added
 
 
 class ProfileScreen extends ConsumerWidget {
@@ -40,7 +40,7 @@ class ProfileScreen extends ConsumerWidget {
     
     final userAsync = isMe 
         ? ref.watch(currentUserProfileProvider)
-        : ref.watch(userStreamProvider(userId!));
+        : ref.watch(userProfileStreamProvider(userId!));
     
     final authController = ref.read(authControllerProvider.notifier);
 
@@ -49,15 +49,6 @@ class ProfileScreen extends ConsumerWidget {
         title: Text(isMe ? 'Il mio Profilo' : 'Profilo Utente'),
         actions: [
           if (isMe) ...[
-             IconButton(
-              icon: const Icon(Icons.privacy_tip),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PrivacySettingsScreen()),
-                );
-              },
-            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
@@ -98,10 +89,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// Provider for fetching other user stream
-final userStreamProvider = StreamProvider.family<UserModel?, String>((ref, uid) {
-  return ref.watch(userServiceProvider).getUserStream(uid);
-});
+// Provider for fetching other user stream is now in profile_provider.dart (userProfileStreamProvider)
 
 class _ProfileContent extends ConsumerWidget {
   final UserModel user;
@@ -204,7 +192,7 @@ class _ProfileContent extends ConsumerWidget {
                   ),
                   if (!isMe && currentUserProfile != null) ...[
                     const SizedBox(height: 16),
-                    _buildFriendAction(context, ref, currentUserProfile),
+                    _buildFollowAction(context, ref, currentUserProfile, user),
                   ],
                 ],
               ),
@@ -227,17 +215,31 @@ class _ProfileContent extends ConsumerWidget {
           // Friends List
           ListTile(
             leading: const Icon(Icons.people),
-            title: const Text('I miei Amici'),
+            title: const Text('Profili Seguiti'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FriendsListScreen(),
+                  builder: (context) => const FollowingListScreen(),
                 ),
               );
             },
           ),
+          
+          // Visitors (Premium Feature Entry)
+          if (isMe)
+            ListTile(
+              leading: const Icon(Icons.visibility),
+              title: const Text('Visite al Profilo'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const WhoViewedMeScreen()),
+                );
+              },
+            ),
           const Divider(),
           
           // Privacy Settings
@@ -351,7 +353,7 @@ class _ProfileContent extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PaywallScreen(offeringId: 'business_pro'),
+                        builder: (context) => PaywallScreen(offeringId: 'business_pro'),
                       ),
                     );
                   }
@@ -370,7 +372,7 @@ class _ProfileContent extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const BlockedUsersScreen(),
+                    builder: (context) => BlockedUsersScreen(),
                   ),
                 );
               },
@@ -435,20 +437,6 @@ class _ProfileContent extends ConsumerWidget {
               },
             ),
 
-            // Debug Option (Visible for now)
-            ListTile(
-              leading: const Icon(Icons.bug_report, color: Colors.grey),
-              title: const Text('Diagnostica Acquisti', style: TextStyle(color: Colors.grey)),
-              onTap: () {
-                Navigator.push(
-                   context,
-                   MaterialPageRoute(
-                     builder: (context) => const DebugPurchaseScreen(),
-                   ),
-                 );
-              },
-            ),
-
           ],
           const SizedBox(height: 24),
 
@@ -489,87 +477,25 @@ class _ProfileContent extends ConsumerWidget {
   }
 
 
-  Widget _buildFriendAction(BuildContext context, WidgetRef ref, UserModel currentUserProfile) {
-    final isFriend = currentUserProfile.friends.contains(user.uid);
-    final isRequestSent = user.friendRequests.contains(currentUserProfile.uid);
-    final isRequestReceived = currentUserProfile.friendRequests.contains(user.uid);
-
-    if (isFriend) {
-      return SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Rimuovi Amico'),
-                content: Text('Vuoi rimuovere ${user.firstName} dagli amici?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Annulla'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      ref.read(friendControllerProvider.notifier).removeFriend(user.uid);
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Rimuovi'),
-                  ),
-                ],
-              ),
-            );
-          },
-          icon: const Icon(Icons.person_remove),
-          label: const Text('Rimuovi Amico'),
-          style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
-        ),
-      );
-    }
-
-    if (isRequestReceived) {
-      return Row(
-        children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                ref.read(friendControllerProvider.notifier).declineFriendRequest(user.uid);
-              },
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
-              child: const Text('Rifiuta'),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                ref.read(friendControllerProvider.notifier).acceptFriendRequest(user.uid);
-              },
-              child: const Text('Accetta'),
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (isRequestSent) {
-      return const SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: null, // Disable or allow cancel
-          child: Text('Richiesta Inviata'),
-        ),
-      );
-    }
+  Widget _buildFollowAction(BuildContext context, WidgetRef ref, UserModel currentUserProfile, UserModel targetUser) {
+    final isFollowing = currentUserProfile.following.contains(targetUser.uid);
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-          ref.read(friendControllerProvider.notifier).sendFriendRequest(user.uid);
+          if (isFollowing) {
+            ref.read(userServiceProvider).unfollowUser(currentUserProfile.uid, targetUser.uid);
+          } else {
+            ref.read(userServiceProvider).followUser(currentUserProfile.uid, targetUser.uid);
+          }
         },
-        icon: const Icon(Icons.person_add),
-        label: const Text('Aggiungi Amico'),
+        icon: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
+        label: Text(isFollowing ? 'Smetti di seguire' : 'Segui'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isFollowing ? Colors.grey[200] : AppColors.primary,
+          foregroundColor: isFollowing ? Colors.black87 : Colors.white,
+        ),
       ),
     );
   }

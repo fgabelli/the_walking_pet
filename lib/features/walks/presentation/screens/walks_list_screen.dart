@@ -7,7 +7,6 @@ import '../providers/walk_provider.dart';
 import 'create_walk_screen.dart';
 import 'walk_detail_screen.dart';
 
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 
 class WalksListScreen extends ConsumerStatefulWidget {

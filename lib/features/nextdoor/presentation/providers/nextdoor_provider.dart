@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../shared/models/announcement_model.dart';
+import '../../../../shared/models/user_model.dart'; // Added
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/nextdoor_service.dart';
 import '../../../map/presentation/providers/map_provider.dart';
@@ -19,6 +20,7 @@ final nextdoorServiceProvider = Provider<NextdoorService>((ref) {
 /// Nextdoor State
 class NextdoorState {
   final List<AnnouncementModel> announcements;
+  final List<UserModel> businesses; // Added
   final bool isLoading;
   final bool isSubmitting;
   final String? error;
@@ -26,6 +28,7 @@ class NextdoorState {
 
   NextdoorState({
     this.announcements = const [],
+    this.businesses = const [], // Added
     this.isLoading = true,
     this.isSubmitting = false,
     this.error,
@@ -34,6 +37,7 @@ class NextdoorState {
 
   NextdoorState copyWith({
     List<AnnouncementModel>? announcements,
+    List<UserModel>? businesses, // Added
     bool? isLoading,
     bool? isSubmitting,
     String? error,
@@ -41,6 +45,7 @@ class NextdoorState {
   }) {
     return NextdoorState(
       announcements: announcements ?? this.announcements,
+      businesses: businesses ?? this.businesses, // Added
       isLoading: isLoading ?? this.isLoading,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       error: error,
@@ -104,32 +109,24 @@ class NextdoorController extends StateNotifier<NextdoorState> {
   void _init() async {
     try {
       final position = await _locationService.getCurrentPosition();
-      if (position != null) {
-        _startListening(position);
-      } else {
-        state = state.copyWith(isLoading: false, error: 'Posizione non disponibile');
-      }
-    } catch (e) {
+      _startListening(position);
+        } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   void _startListening(Position position) {
+    // 1. Listen to Announcements
     _nextdoorService
         .getNearbyAnnouncements(
       latitude: position.latitude,
       longitude: position.longitude,
-      radiusInKm: 10.0, // 10km radius for announcements
+      radiusInKm: 10.0,
     )
         .listen(
       (announcements) {
-        // Filter expired announcements
         final activeAnnouncements = announcements.where((a) => a.isActive).toList();
-        
-        // Filter blocked content
         final filteredAnnouncements = _filterAnnouncements(activeAnnouncements);
-
-        // Sort by creation date (newest first)
         filteredAnnouncements.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         
         state = state.copyWith(
@@ -141,12 +138,35 @@ class NextdoorController extends StateNotifier<NextdoorState> {
         state = state.copyWith(isLoading: false, error: e.toString());
       },
     );
+
+    // 2. Fetch Local Businesses (Horizontal Showcase replacements)
+    _fetchBusinesses();
+  }
+
+  Future<void> _fetchBusinesses() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('accountType', isEqualTo: 'business')
+          .limit(20)
+          .get();
+      
+      final businesses = snapshot.docs
+          .map((doc) => UserModel.fromFirestore(doc))
+          .where((user) => !state.blockedUsers.contains(user.uid))
+          .toList();
+      
+      state = state.copyWith(businesses: businesses);
+    } catch (e) {
+      print('Error fetching businesses: $e');
+    }
   }
 
   Future<void> createAnnouncement({
     required String message,
     required String zone,
     required int durationInHours,
+    AnnouncementCategory category = AnnouncementCategory.news,
     File? imageFile,
     double? latitude,
     double? longitude,
@@ -162,7 +182,6 @@ class NextdoorController extends StateNotifier<NextdoorState> {
         lng = longitude;
       } else {
         final position = await _locationService.getCurrentPosition();
-        if (position == null) throw Exception('Posizione non disponibile');
         lat = position.latitude;
         lng = position.longitude;
       }
@@ -195,6 +214,7 @@ class NextdoorController extends StateNotifier<NextdoorState> {
         authorPhotoUrl: authorPhotoUrl,
         createdAt: now,
         expiresAt: expiresAt,
+        category: category,
       );
 
       // 2. Save to Firestore to get ID

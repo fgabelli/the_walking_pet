@@ -61,15 +61,29 @@ class FriendService {
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
     batch.update(currentUserRef, {
       'friends': FieldValue.arrayRemove([friendId]),
+      'closeFriends': FieldValue.arrayRemove([friendId]), // Also remove from close friends
     });
 
     // Remove from friend
     final friendRef = _firestore.collection('users').doc(friendId);
     batch.update(friendRef, {
       'friends': FieldValue.arrayRemove([currentUser.uid]),
+      'closeFriends': FieldValue.arrayRemove([currentUser.uid]), // Also remove from close friends
     });
 
     await batch.commit();
+  }
+
+  // Toggle Close Friend status
+  Future<void> toggleCloseFriend(String friendId, bool isClose) async {
+    final currentUser = _authService.currentUser;
+    if (currentUser == null) throw Exception('Utente non autenticato');
+
+    await _firestore.collection('users').doc(currentUser.uid).update({
+      'closeFriends': isClose 
+          ? FieldValue.arrayUnion([friendId])
+          : FieldValue.arrayRemove([friendId]),
+    });
   }
 
   // Update Location Privacy

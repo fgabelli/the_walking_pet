@@ -6,19 +6,29 @@ import '../../../../shared/models/event_model.dart';
 import 'create_event_screen.dart';
 import 'event_detail_screen.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Added
+import '../../../profile/presentation/providers/profile_provider.dart'; // Added
+import 'package:google_mobile_ads/google_mobile_ads.dart'; // Added
 
-class EventsListScreen extends ConsumerWidget {
+class EventsListScreen extends ConsumerStatefulWidget {
   const EventsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EventsListScreen> createState() => _EventsListScreenState();
+}
+
+class _EventsListScreenState extends ConsumerState<EventsListScreen> {
+  EventType? _selectedCategory;
+
+  @override
+  Widget build(BuildContext context) {
     final eventService = ref.watch(eventServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Eventi & Raduni'),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -26,9 +36,50 @@ class EventsListScreen extends ConsumerWidget {
           );
         },
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Nuovo Evento', style: TextStyle(color: Colors.white)),
       ),
-      body: StreamBuilder<List<EventModel>>(
+      body: Column(
+        children: [
+          // Category Chips (Unified with Nextdoor)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('Tutti'),
+                  selected: _selectedCategory == null,
+                  onSelected: (selected) {
+                    setState(() => _selectedCategory = null);
+                  },
+                  visualDensity: VisualDensity.compact,
+                ),
+                ...EventType.values.map((type) => Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: ChoiceChip(
+                    label: Text(type.displayName),
+                    selected: _selectedCategory == type,
+                    onSelected: (selected) {
+                      setState(() => _selectedCategory = selected ? type : null);
+                    },
+                    visualDensity: VisualDensity.compact,
+                    avatar: Icon(
+                      type.icon, 
+                      size: 14, 
+                      color: _selectedCategory == type ? Colors.white : type.color
+                    ),
+                    selectedColor: type.color,
+                    labelStyle: TextStyle(
+                      color: _selectedCategory == type ? Colors.white : AppColors.textPrimary,
+                    ),
+                  ),
+                )),
+              ],
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<EventModel>>(
         stream: eventService.getUpcomingEventsStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -38,39 +89,94 @@ class EventsListScreen extends ConsumerWidget {
             return Center(child: Text('Errore: ${snapshot.error}'));
           }
 
-          final events = snapshot.data ?? [];
+          final currentUserAsync = ref.watch(currentUserProfileProvider);
+          final currentUser = currentUserAsync.value;
+          final showAds = currentUser != null && !currentUser.isPremium;
+
+          final events = (snapshot.data ?? []).where((e) {
+            if (_selectedCategory == null) return true;
+            return e.type == _selectedCategory;
+          }).toList();
 
           if (events.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                   Icon(Icons.event_busy, size: 64, color: Colors.grey),
-                   SizedBox(height: 16),
-                   Text(
-                    'Nessun evento in programma',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                   ),
-                   SizedBox(height: 8),
-                   Text('Sii il primo ad organizzarne uno!', style: TextStyle(color: Colors.grey)),
-                ],
-              ),
+            return Column(
+              children: [
+                if (showAds)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: UnifiedAdCard(
+                      zone: 'events_empty',
+                      adSize: AdSize.largeBanner,
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.event_busy, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'Nessun evento in programma',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8),
+                        Text('Sii il primo ad organizzarne uno!', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           }
+  
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: events.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final event = events[index];
-              return _EventCard(event: event);
-            },
-          );
-        },
+
+            return Column(
+              children: [
+                if (showAds && events.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: UnifiedAdCard(
+                      zone: 'events_top',
+                      adSize: AdSize.largeBanner,
+                    ),
+                  ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: showAds 
+                        ? events.length + (events.length ~/ 4)
+                        : events.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      if (showAds) {
+                        // Ad Injection Logic (Every 4 items)
+                        if (index > 0 && (index + 1) % 5 == 0) {
+                          return UnifiedAdCard(
+                            zone: 'events_list',
+                            adSize: AdSize.largeBanner,
+                          );
+                        }
+                        final itemIndex = index - (index ~/ 5);
+                        if (itemIndex >= events.length) return const SizedBox.shrink();
+                        return _EventCard(event: events[itemIndex]);
+                      } else {
+                        final event = events[index];
+                        return _EventCard(event: event);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
-    );
-  }
+    ],
+  ),
+);
+}
 }
 
 class _EventCard extends StatelessWidget {
@@ -134,9 +240,10 @@ class _EventCard extends StatelessWidget {
                           event.type.displayName,
                           style: const TextStyle(fontSize: 10, color: Colors.white),
                         ),
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: event.type.color,
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
+                        avatar: Icon(event.type.icon, size: 12, color: Colors.white),
                       ),
                       Text(
                         dateFormat.format(event.date),
@@ -187,16 +294,5 @@ class _EventCard extends StatelessWidget {
     );
   }
 
-  IconData _getIconForType(EventType type) {
-    switch (type) {
-      case EventType.walk:
-        return Icons.directions_walk;
-      case EventType.training:
-        return Icons.sports_baseball;
-      case EventType.social:
-        return Icons.coffee;
-      case EventType.other:
-        return Icons.event;
-    }
-  }
+  IconData _getIconForType(EventType type) => type.icon;
 }

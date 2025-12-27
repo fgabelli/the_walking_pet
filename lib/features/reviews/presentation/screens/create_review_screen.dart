@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/review_model.dart';
-import 'package:the_walking_pet/features/auth/presentation/providers/auth_provider.dart';
 import 'package:the_walking_pet/features/profile/presentation/providers/profile_provider.dart';
 
 final reviewServiceProvider = Provider((ref) => ReviewService());

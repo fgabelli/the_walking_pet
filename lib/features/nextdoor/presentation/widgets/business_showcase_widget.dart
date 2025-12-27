@@ -14,27 +14,28 @@ class BusinessShowcaseWidget extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.star, color: AppColors.secondary, size: 20),
-              const SizedBox(width: 8),
               Text(
-                'Negozi Consigliati',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                'Attività Locali Partner',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
                 ),
               ),
+              const Icon(Icons.verified_user, color: Colors.blue, size: 16),
             ],
           ),
         ),
         SizedBox(
-          height: 160,
+          height: 180,
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('users')
                 .where('accountType', isEqualTo: 'business')
-                .limit(10) // Limit to 10 for now
+                .limit(10)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return const SizedBox();
@@ -43,21 +44,11 @@ class BusinessShowcaseWidget extends ConsumerWidget {
               }
               
               final docs = snapshot.data?.docs ?? [];
-              if (docs.isEmpty) {
-                 return Center(
-                   child: Padding(
-                     padding: const EdgeInsets.all(16.0),
-                     child: Text(
-                       'Nessuna attività in evidenza',
-                       style: TextStyle(color: Colors.grey[400]),
-                     ),
-                   ),
-                 );
-              }
+              if (docs.isEmpty) return const SizedBox();
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   final user = UserModel.fromFirestore(docs[index]);
@@ -67,6 +58,7 @@ class BusinessShowcaseWidget extends ConsumerWidget {
             },
           ),
         ),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -88,57 +80,108 @@ class _BusinessCard extends StatelessWidget {
         );
       },
       child: Container(
-        width: 140,
-        margin: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+        width: 160,
+        margin: const EdgeInsets.only(right: 12, bottom: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cover Image / Header
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: SizedBox(
-                height: 80,
-                width: double.infinity,
-                child: user.coverImageUrl != null
-                    ? Image.network(user.coverImageUrl!, fit: BoxFit.cover)
-                    : Container(
-                        color: AppColors.primary.withOpacity(0.1),
-                        child: Icon(Icons.store, color: AppColors.primary.withOpacity(0.5)),
+            // Cover Image
+            Expanded(
+              flex: 5,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: user.coverImageUrl != null
+                          ? Image.network(user.coverImageUrl!, fit: BoxFit.cover)
+                          : Container(
+                              color: AppColors.primary.withOpacity(0.05),
+                              child: Icon(Icons.storefront, color: AppColors.primary.withOpacity(0.3), size: 32),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 10),
+                          const SizedBox(width: 2),
+                          Text(
+                            '4.9', // Placeholder for actual rating if available
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             // Info
             Expanded(
+              flex: 4,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      user.businessCategory ?? user.firstName,
+                      user.businessCategory ?? 'Negozio',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary.withOpacity(0.7),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     const SizedBox(height: 2),
-                    if (user.address != null)
-                      Text(
-                        user.address!, // Simplified zone/address
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 10, color: AppColors.textSecondary),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            user.address?.split(',').first ?? 'Zona locale',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

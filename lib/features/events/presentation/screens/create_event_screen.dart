@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 import '../../../../core/services/event_service.dart';
 import '../../../../shared/models/event_model.dart';
-import '../../../../core/services/location_service.dart'; // For initial location
-import '../../../../features/map/presentation/providers/map_provider.dart';
+// For initial location
 import '../../../../features/map/presentation/providers/map_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class CreateEventScreen extends ConsumerStatefulWidget {
@@ -70,14 +67,13 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               
               // Type
               DropdownButtonFormField<EventType>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   labelText: 'Tipo di Evento',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.category),
                 ),
                 items: EventType.values
-                    .where((type) => type != EventType.walk)
                     .map((type) => DropdownMenuItem(
                       value: type,
                       child: Text(type.displayName),
@@ -185,7 +181,6 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
         // Use current location for now (Simplification)
         // Ideally we would have a Location Picker on map
         final position = await ref.read(locationServiceProvider).getCurrentPosition();
-        if (position == null) throw Exception('Impossibile ottenere la posizione');
 
         final eventDateTime = DateTime(
           _selectedDate.year,

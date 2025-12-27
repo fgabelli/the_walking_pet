@@ -197,4 +197,24 @@ class UserService {
       rethrow;
     }
   }
+
+  // Update Location Privacy
+  Future<void> updateLocationPrivacy(String uid, {
+    required LocationPrivacy privacy,
+    List<String>? whitelist,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {
+        'locationPrivacy': privacy.name,
+      };
+
+      if (whitelist != null) {
+        data['locationWhitelist'] = whitelist;
+      }
+
+      await _firestore.collection(_collection).doc(uid).update(data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/models/dog_model.dart'; // Added
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/profile/presentation/providers/profile_provider.dart';
 import '../../../../features/subscriptions/presentation/screens/paywall_screen.dart';
@@ -53,6 +54,19 @@ class MapFilterBottomSheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
+
+          // --- Custom User Filter (Species) ---
+          Text('Specie', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          Wrap(
+             spacing: 8,
+             children: [
+                _buildSpeciesChip(context, ref, mapState, null, 'Tutti'),
+                _buildSpeciesChip(context, ref, mapState, PetSpecies.dog, 'Cani'),
+                _buildSpeciesChip(context, ref, mapState, PetSpecies.cat, 'Gatti'),
+             ],
+          ),
+          const SizedBox(height: 24),
           
           if (!isPremium) ...[
              _buildLockedFeature(context, 'Filtri Avanzati Disponibili con Premium'),
@@ -78,7 +92,8 @@ class MapFilterBottomSheet extends ConsumerWidget {
              const SizedBox(height: 12),
            ],
           
-          // Filters UI (always visible to tease, but disabled if !isPremium)
+
+          // --- Premium Filters UI ---
           Opacity(
             opacity: isPremium ? 1.0 : 0.5,
             child: IgnorePointer(
@@ -86,49 +101,84 @@ class MapFilterBottomSheet extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Sesso', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _buildGenderChip(context, ref, mapState, null, 'Tutti'),
-                      const SizedBox(width: 8),
-                      _buildGenderChip(context, ref, mapState, Gender.male, 'Uomo'),
-                      const SizedBox(width: 8),
-                      _buildGenderChip(context, ref, mapState, Gender.female, 'Donna'),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Ghost Mode Toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Row(
-                         children: [
-                           Icon(Icons.visibility_off, color: isDarkMode ? Colors.grey[400] : Colors.grey),
-                           const SizedBox(width: 8),
-                           Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               const Text('Ghost Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-                               Text(
-                                 'Diventa invisibile sulla mappa', 
-                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                   color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                                 ),
-                               ),
-                             ],
-                           ),
-                         ],
-                       ),
-                       Switch(
-                         value: mapState.isGhostModeEnabled, 
-                         onChanged: (val) {
-                           ref.read(mapControllerProvider.notifier).toggleGhostMode(val); 
-                         },
-                         activeColor: AppColors.primary,
-                       )
-                    ],
-                  ),
+                   // Dog Size
+                   Text('Taglia del Cane', style: Theme.of(context).textTheme.titleMedium),
+                   const SizedBox(height: 12),
+                   Wrap(
+                     spacing: 8,
+                     children: DogSize.values.map((size) {
+                        final isSelected = mapState.filterDogSizes.contains(size);
+                        return FilterChip(
+                          label: Text(size.displayName),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                             final newSizes = List<DogSize>.from(mapState.filterDogSizes);
+                             if (selected) {
+                               newSizes.add(size);
+                             } else {
+                               newSizes.remove(size);
+                             }
+                             ref.read(mapControllerProvider.notifier).setDogFilters(sizes: newSizes);
+                          },
+                          checkedIcon: const Icon(Icons.check, size: 18),
+                        );
+                     }).toList(),
+                   ),
+                   const SizedBox(height: 24),
+
+                   // Dog Gender
+                   Text('Sesso del Cane', style: Theme.of(context).textTheme.titleMedium),
+                   const SizedBox(height: 12),
+                   Wrap(
+                     spacing: 8,
+                     children: DogGender.values.map((gender) {
+                        final isSelected = mapState.filterDogGenders.contains(gender);
+                        return FilterChip(
+                          label: Text(gender.displayName),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                             final newGenders = List<DogGender>.from(mapState.filterDogGenders);
+                             if (selected) {
+                               newGenders.add(gender);
+                             } else {
+                               newGenders.remove(gender);
+                             }
+                             ref.read(mapControllerProvider.notifier).setDogFilters(genders: newGenders);
+                          },
+                          checkedIcon: const Icon(Icons.check, size: 18),
+                        );
+                     }).toList(),
+                   ),
+                   const SizedBox(height: 24),
+                   
+                   // Dog Breed (Simple Text Filter for now)
+                   Text('Razza', style: Theme.of(context).textTheme.titleMedium),
+                   const SizedBox(height: 12),
+                   TextField(
+                     decoration: InputDecoration(
+                       hintText: 'Cerca razza (es. Labrador)...',
+                       prefixIcon: const Icon(Icons.search),
+                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                     ),
+                     onChanged: (value) {
+                       // Debounce ideally, but for now updates on typing
+                       // We treat non-empty string as a single filter item for simplicity in this UI
+                       // If empty, clear list.
+                       final list = value.trim().isEmpty ? <String>[] : [value.trim()];
+                       ref.read(mapControllerProvider.notifier).setDogFilters(breeds: list);
+                     },
+                     // If existing filter, populate it? 
+                     // Hard with TextField. Just simpler to be a search bar.
+                   ),
+                   if (mapState.filterDogBreeds.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "Filtro attivo: ${mapState.filterDogBreeds.join(', ')}",
+                          style: const TextStyle(fontSize: 12, color: Colors.blue),
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -173,6 +223,36 @@ class MapFilterBottomSheet extends ConsumerWidget {
              gender: value,
              breed: state.filterBreed,
            );
+        }
+      },
+      selectedColor: AppColors.primary.withOpacity(0.2),
+      backgroundColor: isDarkMode ? Colors.grey[800] : null,
+      labelStyle: TextStyle(
+        color: textColor,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
+  }
+  Widget _buildSpeciesChip(BuildContext context, WidgetRef ref, MapState state, PetSpecies? value, String label) {
+    final isSelected = state.filterPetSpecies == value;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isSelected 
+        ? AppColors.primary 
+        : (isDarkMode ? Colors.white : Colors.black87);
+        
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+           ref.read(mapControllerProvider.notifier).setPetSpeciesFilter(value);
+        } else {
+           // Deselecting applies null (Tutti) ONLY if we are clicking a specific one?
+           // ChoiceChip behavior: toggle. If we unselect, we go back to null?
+           // But 'Tutti' implies null.
+           if (value != null) {
+              ref.read(mapControllerProvider.notifier).setPetSpeciesFilter(null);
+           }
         }
       },
       selectedColor: AppColors.primary.withOpacity(0.2),

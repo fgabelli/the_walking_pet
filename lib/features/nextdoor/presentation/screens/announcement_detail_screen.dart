@@ -161,6 +161,15 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                 ),
               ],
             ),
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            onPressed: () {
+              // Share implementation
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Funzionalità di condivisione in arrivo!')),
+              );
+            },
+          ),
         ],
       ),
       body: Column(
@@ -208,6 +217,18 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  const SizedBox(width: 4),
+                                  // Close Friends Star
+                                  FutureBuilder<UserModel?>(
+                                    future: UserService().getUserById(ref.read(authServiceProvider).currentUser?.uid ?? ''),
+                                    builder: (context, snapshot) {
+                                      final currentUser = snapshot.data;
+                                      if (currentUser?.closeFriends.contains(updatedAnnouncement.userId) ?? false) {
+                                        return const Icon(Icons.star, size: 16, color: Colors.amber);
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
                                   const SizedBox(width: 8),
                                   // User average rating stars
                                   FutureBuilder<double>(
@@ -219,12 +240,7 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                       return Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                            size: 16,
-                                          ),
-                                          const SizedBox(width: 2),
+                                          const Icon(Icons.star_rate_rounded, color: Colors.amber, size: 14),
                                           Text(
                                             avgRating.toStringAsFixed(1),
                                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -238,7 +254,7 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                 ],
                               ),
                               Text(
-                                'Vicino a ${updatedAnnouncement.zone} • ${timeago.format(updatedAnnouncement.createdAt, locale: 'it')}',
+                                '${updatedAnnouncement.zone} • ${timeago.format(updatedAnnouncement.createdAt, locale: 'it')}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.textSecondary,
                                     ),
@@ -246,47 +262,74 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                             ],
                           ),
                         ),
-                        // Review Button
-                        if (updatedAnnouncement.userId != ref.read(authServiceProvider).currentUser?.uid)
-                          FutureBuilder<bool>(
-                            future: ReviewService().hasUserReviewedAnnouncement(
-                              ref.read(authServiceProvider).currentUser?.uid ?? '',
-                              updatedAnnouncement.id,
-                            ),
-                            builder: (context, snapshot) {
-                              final hasReviewed = snapshot.data ?? false;
-                              
-                              return TextButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CreateReviewScreen(
-                                          announcementId: updatedAnnouncement.id,
-                                          targetUserId: updatedAnnouncement.userId,
-                                          announcementTitle: updatedAnnouncement.message.length > 50
-                                            ? '${updatedAnnouncement.message.substring(0, 50)}...'
-                                            : updatedAnnouncement.message,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                icon: Icon(
-                                  hasReviewed ? Icons.edit : Icons.star_rate_rounded,
-                                  size: 18,
-                                ),
-                                label: Text(hasReviewed ? 'Modifica' : 'Recensisci'),
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              );
-                            },
+                        // Category Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: updatedAnnouncement.category.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(updatedAnnouncement.category.icon, size: 12, color: updatedAnnouncement.category.color),
+                              const SizedBox(width: 4),
+                              Text(
+                                updatedAnnouncement.category.displayName,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: updatedAnnouncement.category.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
+
+                  // Review Button
+                  if (updatedAnnouncement.userId != ref.read(authServiceProvider).currentUser?.uid)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: FutureBuilder<bool>(
+                        future: ReviewService().hasUserReviewedAnnouncement(
+                          ref.read(authServiceProvider).currentUser?.uid ?? '',
+                          updatedAnnouncement.id,
+                        ),
+                        builder: (context, snapshot) {
+                          final hasReviewed = snapshot.data ?? false;
+                          
+                          return TextButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateReviewScreen(
+                                      announcementId: updatedAnnouncement.id,
+                                      targetUserId: updatedAnnouncement.userId,
+                                      announcementTitle: updatedAnnouncement.message.length > 50
+                                        ? '${updatedAnnouncement.message.substring(0, 50)}...'
+                                        : updatedAnnouncement.message,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              hasReviewed ? Icons.edit : Icons.star_rate_rounded,
+                              size: 18,
+                            ),
+                            label: Text(hasReviewed ? 'Modifica' : 'Recensisci'),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
 
                   // Message
                   Padding(
@@ -300,10 +343,16 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
 
                   // Image
                   if (updatedAnnouncement.imageUrl != null)
-                    Image.network(
-                      updatedAnnouncement.imageUrl!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          updatedAnnouncement.imageUrl!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   
                   const SizedBox(height: 16),
@@ -314,13 +363,25 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${updatedAnnouncement.responses.where((r) => r.type == ResponseType.watching).length} stanno guardando',
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Row(
+                          children: [
+                            const Icon(Icons.pets, size: 14, color: Colors.orange),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${updatedAnnouncement.responses.where((r) => r.type == ResponseType.watching).length} zampate',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${comments.length} commenti',
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Row(
+                          children: [
+                            const Icon(Icons.chat_bubble_outline, size: 14, color: AppColors.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${comments.length} commenti',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
                         ),
                       ],
                     ),

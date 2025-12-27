@@ -22,6 +22,7 @@ class UserModel {
   final List<String> blockedUsers; // New field for blocked users
   final List<String> followers; // Users following this profile (Business)
   final List<String> following; // Profiles this user is following
+  final List<String> closeFriends; // New field for Close Friends
   final bool isGhost; // New field for Ghost Mode (Premium)
 
   // Monetization Fields
@@ -42,6 +43,8 @@ class UserModel {
   final Gender? gender;
   final DateTime? birthDate;
   final String? address;
+  final double? homeLatitude;
+  final double? homeLongitude;
   
   // Reviews
   final double averageRating;
@@ -66,6 +69,7 @@ class UserModel {
     this.blockedUsers = const [],
     this.followers = const [],
     this.following = const [],
+    this.closeFriends = const [],
     this.isGhost = false,
     this.isPremium = false,
     this.accountType = AccountType.personal,
@@ -80,6 +84,8 @@ class UserModel {
     this.gender,
     this.birthDate,
     this.address,
+    this.homeLatitude,
+    this.homeLongitude,
     this.averageRating = 0.0,
     this.reviewCount = 0,
   });
@@ -108,6 +114,7 @@ class UserModel {
       blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
       followers: List<String>.from(data['followers'] ?? []),
       following: List<String>.from(data['following'] ?? []),
+      closeFriends: List<String>.from(data['closeFriends'] ?? []),
       isGhost: data['isGhost'] ?? false,
       isPremium: data['isPremium'] ?? false,
       accountType: AccountType.values.firstWhere(
@@ -127,6 +134,8 @@ class UserModel {
           : null,
       birthDate: data['birthDate'] != null ? (data['birthDate'] as Timestamp).toDate() : null,
       address: data['address'],
+      homeLatitude: (data['homeLatitude'] as num?)?.toDouble(),
+      homeLongitude: (data['homeLongitude'] as num?)?.toDouble(),
       averageRating: (data['averageRating'] ?? 0.0).toDouble(),
       reviewCount: data['reviewCount'] ?? 0,
     );
@@ -151,6 +160,7 @@ class UserModel {
       'blockedUsers': blockedUsers,
       'followers': followers,
       'following': following,
+      'closeFriends': closeFriends,
       'isGhost': isGhost,
       'isPremium': isPremium,
       'accountType': accountType.name,
@@ -165,6 +175,8 @@ class UserModel {
       'gender': gender?.name,
       'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'address': address,
+      'homeLatitude': homeLatitude,
+      'homeLongitude': homeLongitude,
       'averageRating': averageRating,
       'reviewCount': reviewCount,
     };
@@ -191,6 +203,7 @@ class UserModel {
     List<String>? blockedUsers,
     List<String>? followers,
     List<String>? following,
+    List<String>? closeFriends,
     bool? isGhost,
     bool? isPremium,
     AccountType? accountType,
@@ -205,6 +218,8 @@ class UserModel {
     Gender? gender,
     DateTime? birthDate,
     String? address,
+    double? homeLatitude,
+    double? homeLongitude,
     double? averageRating,
     int? reviewCount,
   }) {
@@ -227,6 +242,7 @@ class UserModel {
       blockedUsers: blockedUsers ?? this.blockedUsers,
       followers: followers ?? this.followers,
       following: following ?? this.following,
+      closeFriends: closeFriends ?? this.closeFriends,
       isGhost: isGhost ?? this.isGhost,
       isPremium: isPremium ?? this.isPremium,
       accountType: accountType ?? this.accountType,
@@ -241,6 +257,8 @@ class UserModel {
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,
+      homeLatitude: homeLatitude ?? this.homeLatitude,
+      homeLongitude: homeLongitude ?? this.homeLongitude,
       averageRating: averageRating ?? this.averageRating,
       reviewCount: reviewCount ?? this.reviewCount,
     );
@@ -300,6 +318,7 @@ enum Visibility {
 enum LocationPrivacy {
   everyone,
   friends,
+  closeFriends, // Added
   custom,
 }
 

@@ -99,7 +99,7 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
             children: [
               // Type Selector
               DropdownButtonFormField<HealthRecordType>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   labelText: 'Tipo di evento',
                   border: OutlineInputBorder(),

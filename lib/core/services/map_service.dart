@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
-import '../../shared/models/user_model.dart';
 
 class MapService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

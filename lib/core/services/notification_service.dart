@@ -1,7 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class NotificationService {
@@ -22,13 +21,12 @@ class NotificationService {
       print('User granted permission');
       
       // 2. Get and Save Token
-      String? token = await _firebaseMessaging.getToken();
-      if (token != null) {
-        await _saveTokenToDatabase(token);
-      }
+      await updateToken();
 
       // 3. Listen for token refreshes
-      _firebaseMessaging.onTokenRefresh.listen(_saveTokenToDatabase);
+      _firebaseMessaging.onTokenRefresh.listen((token) {
+        _saveTokenToDatabase(token);
+      });
 
       // 4. Foreground Message Handling
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -52,6 +50,17 @@ class NotificationService {
       );
     } else {
       print('User declined or has not accepted permission');
+    }
+  }
+
+  Future<void> updateToken() async {
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      if (token != null) {
+        await _saveTokenToDatabase(token);
+      }
+    } catch (e) {
+      print('Error getting FCM token: $e');
     }
   }
 

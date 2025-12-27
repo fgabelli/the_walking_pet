@@ -147,7 +147,7 @@ class MyPetsScreen extends ConsumerWidget {
                     
                     // Pet Selector
                     DropdownButtonFormField<String>(
-                      value: selectedPetId,
+                      initialValue: selectedPetId,
                       decoration: const InputDecoration(labelText: 'Quale pet hai smarrito?'),
                       items: dogs.map((dog) => DropdownMenuItem(
                         value: dog.id,
@@ -203,7 +203,7 @@ class MyPetsScreen extends ConsumerWidget {
                     // Get current location
                     try {
                       final position = await ref.read(locationServiceProvider).getCurrentPosition();
-                      if (position != null && selectedPetId != null) {
+                      if (selectedPetId != null) {
                         await ref.read(sosServiceProvider).triggerSOS(
                           ownerId: userId,
                           petId: selectedPetId!,

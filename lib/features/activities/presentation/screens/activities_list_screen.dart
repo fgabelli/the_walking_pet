@@ -14,6 +14,7 @@ import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../walks/presentation/screens/create_walk_screen.dart';
 import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Added
 import '../../../profile/presentation/providers/profile_provider.dart'; // Added
+import 'package:google_mobile_ads/google_mobile_ads.dart'; // Added
 
 class ActivitiesListScreen extends ConsumerStatefulWidget {
   const ActivitiesListScreen({super.key});
@@ -95,42 +96,58 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
               allItems = ActivityItem.sort(allItems);
               
               if (allItems.isEmpty) {
-                return _buildEmptyState();
+                return _buildEmptyState(showAds);
               }
 
-              return ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: showAds 
-                    ? allItems.length + (allItems.length ~/ 8) 
-                    : allItems.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  if (showAds) {
-                    // Ad Injection Logic: Every 8 items (indices 8, 17...)
-                    // Based on my previous logic: index > 0 && (index + 1) % 9 == 0
-                    if (index > 0 && (index + 1) % 9 == 0) {
-                       return const UnifiedAdCard(zone: 'activities_list');
-                    }
+              return Column(
+                children: [
+                  if (showAds && allItems.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: UnifiedAdCard(
+                        zone: 'activities_top',
+                        adSize: AdSize.largeBanner,
+                      ),
+                    ),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: showAds 
+                          ? allItems.length + (allItems.length ~/ 4) 
+                          : allItems.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        if (showAds) {
+                          // Ad Injection Logic: Every 4 items
+                          if (index > 0 && (index + 1) % 5 == 0) {
+                             return UnifiedAdCard(
+                               zone: 'activities_list',
+                               adSize: AdSize.largeBanner,
+                             );
+                          }
 
-                    final itemIndex = index - (index ~/ 9);
-                    if (itemIndex >= allItems.length) return const SizedBox.shrink();
+                          final itemIndex = index - (index ~/ 5);
+                          if (itemIndex >= allItems.length) return const SizedBox.shrink();
 
-                    final item = allItems[itemIndex];
-                    if (item.type == ActivityType.walk) {
-                      return _WalkCard(walk: item.walk!);
-                    } else {
-                      return _EventCard(event: item.event!);
-                    }
-                  } else {
-                    // No Ads logic
-                    final item = allItems[index];
-                    if (item.type == ActivityType.walk) {
-                      return _WalkCard(walk: item.walk!);
-                    } else {
-                      return _EventCard(event: item.event!);
-                    }
-                  }
-                },
+                          final item = allItems[itemIndex];
+                          if (item.type == ActivityType.walk) {
+                            return _WalkCard(walk: item.walk!);
+                          } else {
+                            return _EventCard(event: item.event!);
+                          }
+                        } else {
+                          // No Ads logic
+                          final item = allItems[index];
+                          if (item.type == ActivityType.walk) {
+                            return _WalkCard(walk: item.walk!);
+                          } else {
+                            return _EventCard(event: item.event!);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ],
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -196,21 +213,35 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
     );
   }
   
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-           Icon(Icons.calendar_today, size: 64, color: Colors.grey.shade400),
-           const SizedBox(height: 16),
-           Text(
-            'Nessuna attività in programma',
-            style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-           ),
-           const SizedBox(height: 8),
-           const Text('Sii il primo ad organizzarne una!', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
+  Widget _buildEmptyState(bool showAds) {
+    return Column(
+      children: [
+        if (showAds)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: UnifiedAdCard(
+              zone: 'activities_empty',
+              adSize: AdSize.largeBanner,
+            ),
+          ),
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.calendar_today, size: 64, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                Text(
+                  'Nessuna attività in programma',
+                  style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 8),
+                const Text('Sii il primo ad organizzarne una!', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -347,7 +378,7 @@ class _EventCard extends StatelessWidget {
              Container(
                height: 6,
                width: double.infinity,
-               color: Colors.deepPurple,
+               color: event.type.color,
              ),
              Padding(
               padding: const EdgeInsets.all(16),
@@ -359,10 +390,10 @@ class _EventCard extends StatelessWidget {
                        Container(
                          padding: const EdgeInsets.all(8),
                          decoration: BoxDecoration(
-                           color: Colors.deepPurple.withOpacity(0.1),
+                           color: event.type.color.withOpacity(0.1),
                            borderRadius: BorderRadius.circular(8),
                          ),
-                         child: Icon(_getIconForType(event.type), color: Colors.deepPurple),
+                         child: Icon(event.type.icon, color: event.type.color),
                        ),
                        const SizedBox(width: 12),
                        Expanded(
@@ -406,18 +437,5 @@ class _EventCard extends StatelessWidget {
     );
   }
   
-  IconData _getIconForType(EventType type) {
-    switch (type) {
-      case EventType.walk:
-        return Icons.directions_walk;
-      case EventType.training:
-        return Icons.sports_baseball;
-      case EventType.social:
-        return Icons.coffee;
-      case EventType.other:
-        return Icons.event;
-      case EventType.litter:
-        return Icons.cleaning_services;
-    }
-  }
+  IconData _getIconForType(EventType type) => type.icon;
 }

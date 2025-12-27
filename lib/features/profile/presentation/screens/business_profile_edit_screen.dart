@@ -233,7 +233,7 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
 
                     // Categoria
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: const InputDecoration(
                         labelText: 'Categoria',
                         prefixIcon: Icon(Icons.category),

@@ -3,12 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/models/chat_model.dart';
-import '../../../../core/services/friend_service.dart';
-import '../../../../core/services/user_service.dart';
 import '../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../features/chat/presentation/providers/chat_provider.dart';
 import '../../../features/chat/presentation/screens/chat_screen.dart';
 import '../../../features/profile/presentation/screens/business_profile_screen.dart';
+import '../../../features/profile/presentation/providers/profile_provider.dart';
 
 class UserProfileBottomSheet extends ConsumerWidget {
   final UserModel user;
@@ -17,6 +16,10 @@ class UserProfileBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final myUid = authState.value?.uid;
+    final isMe = myUid == user.uid;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -77,139 +80,116 @@ class UserProfileBottomSheet extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Options Menu (Block/Report)
-              PopupMenuButton<String>(
-                onSelected: (value) async {
-                  if (value == 'block') {
-                    _confirmBlockUser(context, ref);
-                  }
-                },
-                itemBuilder: (context) => [
-                   const PopupMenuItem(
-                    value: 'block',
-                    child: Row(
-                      children: [
-                        Icon(Icons.block, color: AppColors.error),
-                        SizedBox(width: 8),
-                        Text('Blocca utente', style: TextStyle(color: AppColors.error)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
           const SizedBox(height: 24),
           
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final currentUser = ref.watch(authServiceProvider).currentUser;
-                    
-                    final myUid = currentUser?.uid;
-                    final isMe = myUid == user.uid;
-                    
-                    // We need real-time data for friendship status, not just what's in 'user' model passed in
-                    // which might be stale.
-                    final friendService = FriendService(); // Or provider if available
-                    // But checking firestore for every button render is expensive/complex in build.
-                    // For now, let's rely on user model passed, BUT we should verify 'isFriend' against MY list.
-                    
-                    // To do this correctly, we need the CURRENT USER's full model.
-                    // Let's fetch it or watch it.
-                    // Assuming we don't have a provider that streams the full current user model yet exposed easily here.
-                    // We can use the 'user' passed in for THEY -> ME relationship?
-                    
-                    final isFriend = myUid != null && user.friends.contains(myUid);
-                    final isRequestSent = myUid != null && user.friendRequests.contains(myUid);
-                    
-                    if (isMe) return const SizedBox(); 
+          if (!isMe && myUid != null) ...[
+            ref.watch(currentUserProfileProvider).when(
+              data: (currentUserProfile) {
+                if (currentUserProfile == null) return const SizedBox();
 
-                    // BUSINESS PAGE BUTTON
-                    if (user.accountType == AccountType.business) {
-                       return ElevatedButton.icon(
+                final isBusiness = user.accountType == AccountType.business;
+                final isFollowing = user.followers.contains(myUid);
+
+                return Column(
+                  children: [
+                    if (isBusiness) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BusinessProfileScreen(businessUser: user),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.store),
+                          label: const Text('Visita Pagina'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                             if (isFollowing) {
+                               ref.read(userServiceProvider).unfollowUser(myUid, user.uid);
+                             } else {
+                               ref.read(userServiceProvider).followUser(myUid, user.uid);
+                             }
+                          },
+                          icon: Icon(isFollowing ? Icons.check : Icons.add),
+                          label: Text(isFollowing ? 'Seguito' : 'Segui'),
+                        ),
+                      ),
+                    ] else ...[
+                      _buildFriendAction(context, ref, currentUserProfile, user),
+                    ],
+
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _navigateToChat(context, ref, myUid),
+                        icon: const Icon(Icons.message_outlined),
+                        label: const Text('Messaggio'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BusinessProfileScreen(businessUser: user),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.store),
-                        label: const Text('Visita Pagina'),
-                      );
-                    }
-
-                    if (isFriend) {
-                       return OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.check),
-                        label: const Text('Amici'),
-                      );
-                    }
-
-                    if (isRequestSent) {
-                       return OutlinedButton.icon(
-                        onPressed: null, 
-                        icon: const Icon(Icons.hourglass_empty),
-                        label: const Text('Inviata'),
-                      );
-                    }
-
-                    return OutlinedButton.icon(
-                      onPressed: () async {
-                         try {
-                           await FriendService().sendFriendRequest(user.uid);
-                           if (context.mounted) {
-                             Navigator.pop(context);
-                             ScaffoldMessenger.of(context).showSnackBar(
-                               const SnackBar(content: Text('Richiesta inviata!')),
-                             );
-                           }
-                         } catch (e) {
-                           if (context.mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(content: Text('Errore: $e')),
-                             );
-                           }
-                         }
-                      },
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Aggiungi'),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    _navigateToChat(context, ref);
-                  },
-                  child: const Text('Messaggio'),
-                ),
-              ),
-            ],
-          ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: () => _confirmBlockUser(context, ref, myUid),
+                      icon: const Icon(Icons.block, color: AppColors.error),
+                      label: const Text('Blocca utente', style: TextStyle(color: AppColors.error)),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, __) => Text('Errore: $e'),
+            ),
+          ],
           const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  void _confirmBlockUser(BuildContext context, WidgetRef ref) async {
-    final currentUser = ref.read(authServiceProvider).currentUser;
-    if (currentUser == null) return;
+  Widget _buildFriendAction(BuildContext context, WidgetRef ref, UserModel currentUser, UserModel targetUser) {
+    final isFollowing = targetUser.followers.contains(currentUser.uid);
 
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          if (isFollowing) {
+            ref.read(userServiceProvider).unfollowUser(currentUser.uid, targetUser.uid);
+          } else {
+            ref.read(userServiceProvider).followUser(currentUser.uid, targetUser.uid);
+          }
+        },
+        icon: Icon(isFollowing ? Icons.check : Icons.person_add),
+        label: Text(isFollowing ? 'Seguito' : 'Segui'),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: isFollowing ? Colors.grey : AppColors.primary),
+          foregroundColor: isFollowing ? Colors.grey : AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  void _confirmBlockUser(BuildContext context, WidgetRef ref, String myUid) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -231,7 +211,7 @@ class UserProfileBottomSheet extends ConsumerWidget {
 
     if (confirm == true) {
       try {
-        await UserService().blockUser(currentUser.uid, user.uid);
+        await ref.read(userServiceProvider).blockUser(myUid, user.uid);
         if (context.mounted) {
           Navigator.pop(context); // Close sheet
           ScaffoldMessenger.of(context).showSnackBar(
@@ -248,16 +228,12 @@ class UserProfileBottomSheet extends ConsumerWidget {
     }
   }
 
-  void _navigateToChat(BuildContext context, WidgetRef ref) async {
+  void _navigateToChat(BuildContext context, WidgetRef ref, String myUid) async {
     Navigator.pop(context); // Close bottom sheet
     
     final chatController = ref.read(chatControllerProvider.notifier);
-    final currentUser = ref.read(authServiceProvider).currentUser;
-    final myUid = currentUser?.uid;
-    
     final isMe = myUid == user.uid;
-    final isFriend = myUid != null && user.friends.contains(myUid);
-    final status = (isFriend || isMe) ? ChatStatus.accepted : ChatStatus.pending;
+    final status = isMe ? ChatStatus.accepted : ChatStatus.pending;
     
     try {
       final chatId = await chatController.createChat(
@@ -265,7 +241,6 @@ class UserProfileBottomSheet extends ConsumerWidget {
         initialStatus: status,
       );
       
-      // If it's a self-chat, ensure it's accepted (fixes existing pending self-chats)
       if (chatId != null && isMe) {
         await chatController.acceptChat(chatId);
       }

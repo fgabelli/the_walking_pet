@@ -15,7 +15,7 @@ final subscriptionServiceProvider = Provider<SubscriptionService>((ref) {
 
 class SubscriptionService {
   final Ref _ref;
-  bool _isInitialized = false;
+  final bool _isInitialized = false;
 
   SubscriptionService(this._ref);
 
@@ -32,13 +32,8 @@ class SubscriptionService {
     }
     
     // Skip init if no keys provided yet to prevent crash
-    if (configuration != null) {
-      await Purchases.configure(configuration);
-      _isInitialized = true;
-    } else {
-        print("RevenueCat not configured: Missing Keys");
+      print("RevenueCat not configured: Missing Keys");
     }
-  }
 
   Future<void> logIn(String userId) async {
     if (!_isInitialized) return;

@@ -126,7 +126,7 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
                     
                     // Zone Selector
                     DropdownButtonFormField<String>(
-                      value: _selectedZone,
+                      initialValue: _selectedZone,
                       decoration: const InputDecoration(labelText: 'Posizionamento (Zone)', border: OutlineInputBorder()),
                       items: _zones.map((z) => DropdownMenuItem(value: z['value'], child: Text(z['label']!))).toList(),
                       onChanged: (v) => setState(() => _selectedZone = v!),

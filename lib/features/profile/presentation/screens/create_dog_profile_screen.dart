@@ -329,7 +329,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
 
               // Gender Dropdown
               DropdownButtonFormField<DogGender>(
-                value: _selectedGender,
+                initialValue: _selectedGender,
                 decoration: const InputDecoration(
                   labelText: 'Sesso',
                   prefixIcon: Icon(Icons.wc),
@@ -350,7 +350,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
 
               // Size Dropdown
               DropdownButtonFormField<DogSize>(
-                value: _selectedSize,
+                initialValue: _selectedSize,
                 decoration: const InputDecoration(
                   labelText: 'Taglia',
                   prefixIcon: Icon(Icons.straighten),

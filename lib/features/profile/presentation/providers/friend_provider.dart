@@ -31,6 +31,11 @@ class FriendController extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(() => _friendService.removeFriend(friendId));
   }
 
+  Future<void> toggleCloseFriend(String friendId, bool isClose) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _friendService.toggleCloseFriend(friendId, isClose));
+  }
+
   Future<void> updateLocationPrivacy({
     required LocationPrivacy privacy,
     List<String>? whitelist,

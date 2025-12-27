@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/offer_model.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../data/offers_service.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import 'create_offer_screen.dart';
 

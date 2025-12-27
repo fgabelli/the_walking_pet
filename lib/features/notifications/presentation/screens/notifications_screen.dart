@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/services/friend_service.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
 // Provider for fetching friend requests
@@ -47,7 +46,19 @@ class NotificationsScreen extends ConsumerWidget {
       body: requestsAsync.when(
         data: (requests) {
           if (requests.isEmpty) {
-            return const Center(child: Text('Nessuna nuova notifica'));
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.notifications_none, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'Nessuna nuova notifica',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                ],
+              ),
+            );
           }
           return ListView.builder(
             itemCount: requests.length,

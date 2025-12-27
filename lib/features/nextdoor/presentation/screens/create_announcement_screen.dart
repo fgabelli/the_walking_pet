@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/announcement_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import '../../../../shared/widgets/address_autocomplete_field.dart';
 import '../providers/nextdoor_provider.dart';
 
@@ -28,6 +26,7 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
   bool _isEditing = false;
   double? _latitude;
   double? _longitude;
+  AnnouncementCategory _selectedCategory = AnnouncementCategory.news;
 
   @override
   void initState() {
@@ -43,6 +42,7 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
       // Let's keep default for now or calculate from expiresAt
       final remaining = widget.announcementToEdit!.expiresAt.difference(DateTime.now()).inHours;
       _durationInHours = remaining > 0 ? remaining : 24;
+      _selectedCategory = widget.announcementToEdit!.category;
     }
   }
 
@@ -73,6 +73,7 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
             zone: _zoneController.text.trim(),
             // Update expiresAt based on new duration from NOW
             expiresAt: DateTime.now().add(Duration(hours: _durationInHours)),
+            category: _selectedCategory,
           );
 
           await ref.read(nextdoorControllerProvider.notifier).updateAnnouncement(
@@ -93,6 +94,7 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
                 message: _messageController.text.trim(),
                 zone: _zoneController.text.trim(),
                 durationInHours: _durationInHours,
+                category: _selectedCategory,
                 imageFile: _imageFile,
                 latitude: _latitude,
                 longitude: _longitude,
@@ -206,6 +208,40 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
                             ),
                           ],
                         ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Category Selection
+              Text('Categoria', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: AnnouncementCategory.values.map((category) {
+                    final isSelected = _selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ChoiceChip(
+                        label: Text(category.displayName),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _selectedCategory = category);
+                          }
+                        },
+                        avatar: Icon(
+                          category.icon,
+                          size: 16,
+                          color: isSelected ? Colors.white : category.color,
+                        ),
+                        selectedColor: category.color,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
               const SizedBox(height: 24),

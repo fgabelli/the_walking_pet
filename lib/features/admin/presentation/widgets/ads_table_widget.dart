@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../../../features/ads/presentation/widgets/unified_ad_card.dart'; // Ensure exported
 import '../../../../core/services/ad_service.dart';
 import '../../../../shared/models/ad_campaign_model.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class AdsTableWidget extends ConsumerWidget {
   const AdsTableWidget({super.key});

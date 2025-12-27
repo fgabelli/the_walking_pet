@@ -256,7 +256,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               
               // Gender Dropdown
               DropdownButtonFormField<Gender>(
-                value: _selectedGender,
+                initialValue: _selectedGender,
                 decoration: const InputDecoration(
                   labelText: 'Genere',
                   prefixIcon: Icon(Icons.wc),

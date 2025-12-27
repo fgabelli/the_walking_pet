@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/services/safety_service.dart';
-import '../../../../core/services/sos_service.dart'; 
 import '../../../../core/services/purchase_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -39,7 +39,7 @@ final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
       return ref.watch(userServiceProvider).getUserStream(user.uid);
     },
     loading: () => Stream.value(null),
-    error: (_, __) => Stream.value(null),
+    error: (e, st) => Stream.value(null),
   );
 });
 
@@ -146,6 +146,20 @@ class ProfileController extends StateNotifier<ProfileState> {
         photoUrl = await _storageService.uploadUserProfileImage(user.uid, imageFile);
       }
 
+      double? homeLatitude;
+      double? homeLongitude;
+      if (address != null && address.isNotEmpty) {
+        try {
+          final locations = await locationFromAddress('$address, Italia');
+          if (locations.isNotEmpty) {
+            homeLatitude = locations.first.latitude;
+            homeLongitude = locations.first.longitude;
+          }
+        } catch (e) {
+          print('Geocoding error during profile creation: $e');
+        }
+      }
+
       final newUser = UserModel(
         uid: user.uid,
         firstName: firstName,
@@ -160,6 +174,8 @@ class ProfileController extends StateNotifier<ProfileState> {
         gender: gender,
         birthDate: birthDate,
         address: address,
+        homeLatitude: homeLatitude,
+        homeLongitude: homeLongitude,
       );
 
       await _userService.createUser(newUser);
@@ -206,6 +222,26 @@ class ProfileController extends StateNotifier<ProfileState> {
         coverImageUrl = await _storageService.uploadUserCoverImage(user.uid, coverImageFile);
       }
 
+      double? homeLatitude = currentUserProfile.homeLatitude;
+      double? homeLongitude = currentUserProfile.homeLongitude;
+
+      if (address != null && address != currentUserProfile.address) {
+        if (address.isEmpty) {
+          homeLatitude = null;
+          homeLongitude = null;
+        } else {
+          try {
+            final locations = await locationFromAddress('$address, Italia');
+            if (locations.isNotEmpty) {
+              homeLatitude = locations.first.latitude;
+              homeLongitude = locations.first.longitude;
+            }
+          } catch (e) {
+            print('Geocoding error during profile update: $e');
+          }
+        }
+      }
+
       final updatedUser = currentUserProfile.copyWith(
         firstName: firstName,
         lastName: lastName,
@@ -218,6 +254,8 @@ class ProfileController extends StateNotifier<ProfileState> {
         gender: gender,
         birthDate: birthDate,
         address: address,
+        homeLatitude: homeLatitude,
+        homeLongitude: homeLongitude,
         accountType: accountType,
         businessCategory: businessCategory,
         website: website,
@@ -228,6 +266,26 @@ class ProfileController extends StateNotifier<ProfileState> {
       );
 
       await _userService.updateUser(updatedUser);
+      state = ProfileState(isLoading: false);
+    } catch (e) {
+      state = ProfileState(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> updateLocationPrivacy({
+    required LocationPrivacy privacy,
+    List<String>? whitelist,
+  }) async {
+    state = ProfileState(isLoading: true);
+    try {
+      final user = _ref.read(authServiceProvider).currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      await _userService.updateLocationPrivacy(
+        user.uid,
+        privacy: privacy,
+        whitelist: whitelist,
+      );
       state = ProfileState(isLoading: false);
     } catch (e) {
       state = ProfileState(isLoading: false, error: e.toString());
@@ -267,4 +325,16 @@ final profileControllerProvider = StateNotifierProvider<ProfileController, Profi
     ref.watch(purchaseServiceProvider), // Injected
     ref,
   );
+});
+
+/// Provider to fetch multiple users by ID
+final usersByIdsProvider = FutureProvider.family<List<UserModel>, List<String>>((ref, ids) async {
+  if (ids.isEmpty) return [];
+  final userService = ref.read(userServiceProvider);
+  final List<UserModel> users = [];
+  for (final id in ids) {
+    final user = await userService.getUserById(id);
+    if (user != null) users.add(user);
+  }
+  return users;
 });

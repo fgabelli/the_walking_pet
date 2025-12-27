@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../../core/services/ad_service.dart';
 import '../../../../shared/models/ad_campaign_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/constants/ad_constants.dart';
 
 /// Provider for AdService
 final adServiceProvider = Provider<AdService>((ref) => AdService());
@@ -73,9 +74,9 @@ class _UnifiedAdCardState extends ConsumerState<UnifiedAdCard> {
     // MobileAds.instance.initialize is no-op on web usually but safe.
     
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/2934735716', // iOS Test ID
+      adUnitId: AdConstants.bannerAdUnitId,
       request: const AdRequest(),
-      size: widget.adSize ?? AdSize.mediumRectangle, // Use passed size or default to Rect
+      size: widget.adSize ?? AdSize.mediumRectangle,
       listener: BannerAdListener(
         onAdLoaded: (_) {
           if (mounted) {
@@ -113,14 +114,54 @@ class _UnifiedAdCardState extends ConsumerState<UnifiedAdCard> {
     if (_isBannerAdReady && _bannerAd != null) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         alignment: Alignment.center,
-        width: _bannerAd!.size.width.toDouble(),
-        height: _bannerAd!.size.height.toDouble(),
-        child: AdWidget(ad: _bannerAd!),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: _bannerAd!.size.width.toDouble(),
+            height: _bannerAd!.size.height.toDouble(),
+            child: AdWidget(ad: _bannerAd!),
+          ),
+        ),
       );
     }
 
-    return const SizedBox.shrink();
+    // 3. Fallback: Show a subtle placeholder if AdMob failed (but only if not premium)
+    // This helps verify the space is there.
+    return Container(
+      width: double.infinity,
+      height: widget.adSize?.height.toDouble() ?? 100,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.ads_click, color: Colors.grey[400], size: 24),
+          const SizedBox(height: 4),
+          Text(
+            'In attesa di contenuti pubblicitari...',
+            style: TextStyle(color: Colors.grey[500], fontSize: 10),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildProprietaryAd(AdCampaignModel ad) {
@@ -129,14 +170,13 @@ class _UnifiedAdCardState extends ConsumerState<UnifiedAdCard> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[900] : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),

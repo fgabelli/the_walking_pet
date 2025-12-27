@@ -9,8 +9,6 @@ import 'package:geocoding/geocoding.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/map_service.dart';
 import '../../../../core/services/user_service.dart';
-import '../../../../core/services/walk_service.dart';
-import '../../../../core/services/safety_service.dart';
 import '../../../../core/services/sos_service.dart'; // Added
 import '../../../../core/services/event_service.dart'; // Added
 import '../../../../shared/models/user_model.dart';
@@ -22,8 +20,9 @@ import '../../../../shared/models/walk_model.dart';
 import '../../../../shared/models/announcement_model.dart';
 import '../../../../shared/models/safety_alert_model.dart';
 import '../../../../shared/models/lost_pet_alert_model.dart'; // Added
-import '../../../nextdoor/data/nextdoor_service.dart';
 import '../../../nextdoor/presentation/providers/nextdoor_provider.dart';
+import '../../../../shared/models/dog_model.dart';
+import '../../../../core/services/dog_service.dart';
 
 /// Location Service Provider
 final locationServiceProvider = Provider<LocationService>((ref) {
@@ -35,6 +34,11 @@ final mapServiceProvider = Provider<MapService>((ref) {
   return MapService();
 });
 
+/// Dog Service Provider
+final dogServiceProvider = Provider<DogService>((ref) {
+  return DogService();
+});
+
 /// Map State
 class MapState {
   final Position? currentPosition;
@@ -42,6 +46,7 @@ class MapState {
   final bool isLoading;
   final String? error;
   final bool isLocationEnabled;
+  final bool isMocked;
   final UserModel? selectedUser;
   final String searchQuery;
   final List<UserLocation> allUserLocations;
@@ -57,8 +62,17 @@ class MapState {
   final EventModel? selectedEvent; // Added
   final List<String> blockedUsers;
   // Filters
-  final String? filterBreed;
-  final Gender? filterGender;
+  // User Filters
+  final String? filterBreed; // Legacy/User-based? Or reuse for Dog Breed? Let's use specific ones.
+  final Gender? filterGender; // User Gender
+  final PetSpecies? filterPetSpecies; // Added: Global Species Filter (Free)
+  
+  // Dog Compatibility Filters (Premium)
+  final Map<String, List<DogModel>> dogCache; // ownerId -> List<DogModel>
+  final List<DogSize> filterDogSizes;
+  final List<DogGender> filterDogGenders;
+  final List<String> filterDogBreeds;
+
   final bool isGhostModeEnabled; // Local user setting state
 
   MapState({
@@ -67,22 +81,28 @@ class MapState {
     this.isLoading = true,
     this.error,
     this.isLocationEnabled = false,
+    this.isMocked = false,
     this.selectedUser,
     this.searchQuery = '',
     this.allUserLocations = const [],
     this.allWalks = const [],
     this.allAnnouncements = const [],
     this.allAlerts = const [],
-    this.allSOSAlerts = const [], // Added
-    this.allEvents = const [], // Added
+    this.allSOSAlerts = const [],
+    this.allEvents = const [],
     this.selectedWalk,
     this.selectedAnnouncement,
     this.selectedAlert,
-    this.selectedSOS, // Added
-    this.selectedEvent, // Added
+    this.selectedSOS,
+    this.selectedEvent,
     this.blockedUsers = const [],
     this.filterBreed,
     this.filterGender,
+    this.filterPetSpecies, // Added
+    this.dogCache = const {},
+    this.filterDogSizes = const [],
+    this.filterDogGenders = const [],
+    this.filterDogBreeds = const [],
     this.isGhostModeEnabled = false,
   });
 
@@ -92,22 +112,28 @@ class MapState {
     bool? isLoading,
     String? error,
     bool? isLocationEnabled,
+    bool? isMocked,
     UserModel? selectedUser,
     String? searchQuery,
     List<UserLocation>? allUserLocations,
     List<WalkModel>? allWalks,
     List<AnnouncementModel>? allAnnouncements,
     List<SafetyAlertModel>? allAlerts,
-    List<LostPetAlertModel>? allSOSAlerts, // Added
-    List<EventModel>? allEvents, // Added
+    List<LostPetAlertModel>? allSOSAlerts,
+    List<EventModel>? allEvents,
     WalkModel? selectedWalk,
     AnnouncementModel? selectedAnnouncement,
     SafetyAlertModel? selectedAlert,
-    LostPetAlertModel? selectedSOS, // Added
-    EventModel? selectedEvent, // Added
+    LostPetAlertModel? selectedSOS,
+    EventModel? selectedEvent,
     List<String>? blockedUsers,
     String? filterBreed,
     Gender? filterGender,
+    PetSpecies? filterPetSpecies, // Added
+    Map<String, List<DogModel>>? dogCache,
+    List<DogSize>? filterDogSizes,
+    List<DogGender>? filterDogGenders,
+    List<String>? filterDogBreeds,
     bool? isGhostModeEnabled,
   }) {
     return MapState(
@@ -116,22 +142,28 @@ class MapState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isLocationEnabled: isLocationEnabled ?? this.isLocationEnabled,
+      isMocked: isMocked ?? this.isMocked,
       selectedUser: selectedUser,
       searchQuery: searchQuery ?? this.searchQuery,
       allUserLocations: allUserLocations ?? this.allUserLocations,
       allWalks: allWalks ?? this.allWalks,
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
       allAlerts: allAlerts ?? this.allAlerts,
-      allSOSAlerts: allSOSAlerts ?? this.allSOSAlerts, // Added
-      allEvents: allEvents ?? this.allEvents, // Added
-      selectedWalk: selectedWalk, // No null coalescing to allow clearing
-      selectedAnnouncement: selectedAnnouncement, // No null coalescing to allow clearing
-      selectedAlert: selectedAlert, // No null coalescing
-      selectedSOS: selectedSOS, // Added
-      selectedEvent: selectedEvent, // Added
+      allSOSAlerts: allSOSAlerts ?? this.allSOSAlerts,
+      allEvents: allEvents ?? this.allEvents,
+      selectedWalk: selectedWalk,
+      selectedAnnouncement: selectedAnnouncement,
+      selectedAlert: selectedAlert,
+      selectedSOS: selectedSOS,
+      selectedEvent: selectedEvent,
       blockedUsers: blockedUsers ?? this.blockedUsers,
       filterBreed: filterBreed ?? this.filterBreed,
       filterGender: filterGender ?? this.filterGender,
+      filterPetSpecies: filterPetSpecies ?? this.filterPetSpecies, // Added
+      dogCache: dogCache ?? this.dogCache,
+      filterDogSizes: filterDogSizes ?? this.filterDogSizes,
+      filterDogGenders: filterDogGenders ?? this.filterDogGenders,
+      filterDogBreeds: filterDogBreeds ?? this.filterDogBreeds,
       isGhostModeEnabled: isGhostModeEnabled ?? this.isGhostModeEnabled,
     );
   }
@@ -140,8 +172,10 @@ class MapState {
 /// Map Controller
 class MapStateController extends StateNotifier<MapState> {
   final LocationService _locationService;
+  final LocationService _locationService;
   final MapService _mapService;
   final UserService _userService;
+  final DogService _dogService; // Added
   final Ref _ref;
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<List<UserLocation>>? _nearbyUsersSubscription;
@@ -165,7 +199,20 @@ class MapStateController extends StateNotifier<MapState> {
     _startListeningToEvents(); // Added
   }
 
-  // ... (previous methods)
+  MapStateController(
+    this._locationService,
+    this._mapService,
+    this._userService,
+    this._dogService,
+    this._ref,
+  ) : super(MapState()) {
+    _initLocation();
+    _startListeningToWalks();
+    _startListeningToProfile();
+    _startListeningToAlerts();
+    _startListeningToSOS(); 
+    _startListeningToEvents(); 
+  }
 
   void _startListeningToEvents() {
     _eventsSubscription = _ref.read(eventServiceProvider).getUpcomingEventsStream().listen(
@@ -263,16 +310,11 @@ class MapStateController extends StateNotifier<MapState> {
 
       final hasPermission = await _locationService.requestPermission();
       if (!hasPermission) {
-        print('Permission denied, trying fallback to user address');
-        final fallbackSuccess = await _tryFallbackToUserAddress();
-        
-        if (!fallbackSuccess) {
-          state = state.copyWith(
-            isLoading: false,
-            isLocationEnabled: false,
-            error: 'Permessi di localizzazione negati',
-          );
-        }
+        state = state.copyWith(
+          isLoading: false,
+          isLocationEnabled: false,
+          error: 'Permessi di localizzazione negati',
+        );
         return;
       }
 
@@ -304,45 +346,43 @@ class MapStateController extends StateNotifier<MapState> {
         },
       );
 
-      // 3. If no last known, try to urge a current position fetch (or fallback)
+      // 3. If no last known, try to urge a current position fetch
       if (lastKnown == null) {
         try {
-          final position = await _locationService.getCurrentPosition().timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => null,
-          );
-
-          if (position != null) {
-             _updatePosition(position);
-          } else {
-             // If still null, try fallback address
-             if (state.currentPosition == null) { // Check if stream updated meanwhile
-               print('No GPS Fix yet, trying fallback to user address');
-               final fallbackSuccess = await _tryFallbackToUserAddress();
-               if (!fallbackSuccess) {
-                 state = state.copyWith(isLoading: false, error: 'Ricerca posizione in corso...');
-               }
-             }
-          }
+          // Allow the service to handle the time limit
+          final position = await _locationService.getCurrentPosition();
+          _updatePosition(position);
         } catch (e) {
+           // If stream hasn't picked up yet, show the specific error
            if (state.currentPosition == null) {
-              await _tryFallbackToUserAddress();
+              String errorMsg = 'Impossibile rilevare la posizione GPS.';
+              if (e.toString().contains('disabilitati')) {
+                errorMsg = 'Attiva il GPS nelle impostazioni.';
+              } else if (e.toString().contains('negati')) {
+                errorMsg = 'Permessi GPS necessari.';
+              } else if (e.toString().contains('Timeout')) {
+                errorMsg = 'Segnale GPS debole o assente.';
+              }
+              state = state.copyWith(isLoading: false, error: errorMsg);
            }
         }
       } 
       
       // Ensure loading is off eventually
-      state = state.copyWith(isLoading: false);
+      if (state.currentPosition != null) {
+         state = state.copyWith(isLoading: false);
+      }
 
     } catch (e) {
       print('Error initializing location: $e');
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'Errore GPS: $e');
     }
   }
 
   void _updatePosition(Position position) {
     state = state.copyWith(
       currentPosition: position,
+      isMocked: position.isMocked,
       isLoading: false,
     );
 
@@ -411,9 +451,37 @@ class MapStateController extends StateNotifier<MapState> {
     }
   }
 
+  Future<void> retryLocation() async {
+    state = state.copyWith(isLoading: true, error: null);
+    await _initLocation();
+  }
+
+  void setDogFilters({
+    List<DogSize>? sizes,
+    List<DogGender>? genders,
+    List<String>? breeds,
+  }) {
+    state = state.copyWith(
+      filterDogSizes: sizes,
+      filterDogGenders: genders,
+      filterDogBreeds: breeds,
+    );
+     _updateMarkers();
+  }
+
+  void clearDogFilters() {
+     state = state.copyWith(
+       filterDogSizes: [],
+       filterDogGenders: [],
+       filterDogBreeds: [],
+     );
+     _updateMarkers();
+  }
+
   void _updateMarkers() async {
     final List<Marker> markers = [];
     final query = state.searchQuery.toLowerCase();
+    final Map<String, List<DogModel>> pendingCacheUpdates = {};
 
     // 1. User Markers
     for (final userLoc in _currentUserLocations) {
@@ -448,6 +516,9 @@ class MapStateController extends StateNotifier<MapState> {
             case LocationPrivacy.friends:
               isVisible = userProfile.friends.contains(currentUserId);
               break;
+            case LocationPrivacy.closeFriends:
+              isVisible = userProfile.closeFriends.contains(currentUserId);
+              break;
             case LocationPrivacy.custom:
               isVisible = userProfile.locationWhitelist.contains(currentUserId);
               break;
@@ -460,19 +531,64 @@ class MapStateController extends StateNotifier<MapState> {
             continue;
           }
           
-          // Premium Filters (Gender)
-          if (state.filterGender != null && userProfile.gender != state.filterGender) {
-            continue;
+          // --- PET FILTERS (Global & Premium) ---
+          final hasPremiumDogFilters = state.filterDogSizes.isNotEmpty || 
+                                       state.filterDogGenders.isNotEmpty ||
+                                       state.filterDogBreeds.isNotEmpty;
+
+          final hasSpeciesFilter = state.filterPetSpecies != null;
+          final hasDogFilters = hasPremiumDogFilters || hasSpeciesFilter;
+
+          if (hasDogFilters) {
+             List<DogModel>? userDogs = state.dogCache[userLoc.uid];
+             bool dogsFetchedNow = false;
+             
+             if (userDogs == null) {
+                try {
+                  userDogs = await _dogService.getDogsByOwnerId(userLoc.uid);
+                  dogsFetchedNow = true;
+                } catch (e) {
+                   print('Error fetching dogs: $e');
+                   userDogs = [];
+                }
+             }
+             
+             // 0. Empty check: If filtering by pets, user must HAVE pets.
+             if (userDogs == null || userDogs.isEmpty) continue;
+
+             if (dogsFetchedNow) {
+                pendingCacheUpdates[userLoc.uid] = userDogs;
+             }
+
+             // 1. Check Species Filter (Global)
+             if (hasSpeciesFilter) {
+               final hasSpecies = userDogs.any((pet) => pet.species == state.filterPetSpecies);
+               if (!hasSpecies) continue;
+             }
+
+             // 2. Check Premium Filters (Dog Specific)
+             if (hasPremiumDogFilters) {
+                 bool isMatch(DogModel dog) {
+                    if (state.filterDogSizes.isNotEmpty && !state.filterDogSizes.contains(dog.size)) return false;
+                    if (state.filterDogGenders.isNotEmpty && !state.filterDogGenders.contains(dog.gender)) return false;
+                    
+                    if (state.filterDogBreeds.isNotEmpty) {
+                       bool breedMatch = false;
+                       for (final filter in state.filterDogBreeds) {
+                          if (dog.breed.toLowerCase().contains(filter.toLowerCase())) {
+                            breedMatch = true;
+                            break;
+                          }
+                       }
+                       if (!breedMatch) return false;
+                    }
+                    return true;
+                 }
+                 
+                 if (!userDogs.any(isMatch)) continue;
+             }
           }
-          
-          // Premium Filters (Breed - requires fetching dogs)
-          // Since dogs are not in UserModel yet, we might need to fetch them or rely on simple user filters for now.
-          // For MVP, if filterBreed is set, we'd need to check the user's dogs.
-          // This would require fetching dogs for EVERY user which is heavy. 
-          // Suggestion: Filter primarily by what's in UserModel or accepting that Breed filter is expensive.
-          // Or, just skip for now and do Gender only for MVP speed.
-          // Let's implement logic but maybe comment out breed fetching loop if too complex.
-          
+
           markers.add(
             Marker(
               point: LatLng(userLoc.latitude, userLoc.longitude),
@@ -482,59 +598,13 @@ class MapStateController extends StateNotifier<MapState> {
                 onTap: () {
                    state = state.copyWith(selectedUser: userProfile);
                 },
-                  child: userProfile!.accountType == AccountType.business
-                      ? Container(
-                          decoration: BoxDecoration(
-                            color: Colors.amber, // Business Gold
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(Icons.store, color: Colors.white, size: 24),
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            // Premium Check: Gold Border if Premium, Deep Purple if Standard
-                            border: Border.all(
-                              color: (userProfile.isPremium) ? Colors.amber : Colors.deepPurple, 
-                              width: (userProfile.isPremium) ? 3 : 2
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (userProfile.isPremium) 
-                                    ? Colors.amber.withOpacity(0.6) // Gold Glow
-                                    : Colors.black.withOpacity(0.2),
-                                blurRadius: (userProfile.isPremium) ? 8 : 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: userProfile.photoUrl != null
-                                ? Image.network(
-                                    userProfile.photoUrl!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Icon(
-                                    Icons.person, 
-                                    color: (userProfile.isPremium) ? Colors.amber : Colors.deepPurple
-                                  ),
-                          ),
-                        ),
-                ),
+                child: _buildUserMarker(userProfile),
+              ),
             ),
           );
         }
       } catch (e) {
-        print('Error fetching user profile for map: $e');
+        print('Error processing user ${userLoc.uid}: $e');
       }
     }
 
@@ -544,8 +614,8 @@ class MapStateController extends StateNotifier<MapState> {
       
       // Search Filter
       if (query.isNotEmpty) {
-        final matches = (walk.title?.toLowerCase().contains(query) ?? false) ||
-                        (walk.description?.toLowerCase().contains(query) ?? false);
+        final matches = (walk.title.toLowerCase().contains(query) ?? false) ||
+                        (walk.description.toLowerCase().contains(query) ?? false);
         if (!matches) continue;
       }
 
@@ -717,8 +787,8 @@ class MapStateController extends StateNotifier<MapState> {
 
       // Search Filter
       if (query.isNotEmpty) {
-        final matches = (event.title?.toLowerCase().contains(query) ?? false) ||
-                        (event.description?.toLowerCase().contains(query) ?? false);
+        final matches = (event.title.toLowerCase().contains(query) ?? false) ||
+                        (event.description.toLowerCase().contains(query) ?? false);
         if (!matches) continue;
       }
       
@@ -752,7 +822,14 @@ class MapStateController extends StateNotifier<MapState> {
     }
 
 
-    state = state.copyWith(markers: markers);
+
+    if (mounted) {
+       final finalCache = Map<String, List<DogModel>>.from(state.dogCache);
+       if (pendingCacheUpdates.isNotEmpty) {
+          finalCache.addAll(pendingCacheUpdates);
+       }
+       state = state.copyWith(markers: markers, dogCache: finalCache);
+    }
   }
 
   void _startListeningToNearbyUsers(Position center) {
@@ -815,16 +892,27 @@ class MapStateController extends StateNotifier<MapState> {
     try {
       final firebaseUser = _ref.read(authServiceProvider).currentUser;
       if (firebaseUser != null) {
-        final userModel = await _userService.getUserById(firebaseUser.uid);
-        
-        if (userModel != null && userModel.address != null && userModel.address!.isNotEmpty) {
-          print('Attempting to geocode address: ${userModel.address}');
-          final locations = await locationFromAddress(userModel.address!);
-          if (locations.isNotEmpty) {
-            final loc = locations.first;
+        final userModel = _ref.read(currentUserProfileProvider).value;
+        if (userModel != null) {
+          double? lat = userModel.homeLatitude;
+          double? lng = userModel.homeLongitude;
+
+          // If coordinates are missing, try geocoding with better accuracy
+          if (lat == null || lng == null) {
+            if (userModel.address != null && userModel.address!.isNotEmpty) {
+              print('Attempting to geocode address: ${userModel.address}, Italia');
+              final locations = await locationFromAddress('${userModel.address!}, Italia');
+              if (locations.isNotEmpty) {
+                lat = locations.first.latitude;
+                lng = locations.first.longitude;
+              }
+            }
+          }
+
+          if (lat != null && lng != null) {
             final position = Position(
-              latitude: loc.latitude,
-              longitude: loc.longitude,
+              latitude: lat,
+              longitude: lng,
               timestamp: DateTime.now(),
               accuracy: 0,
               altitude: 0,
@@ -845,6 +933,39 @@ class MapStateController extends StateNotifier<MapState> {
       print('Address fallback failed: $e');
     }
     return false;
+  }
+
+  Widget _buildUserMarker(UserModel user) {
+      if (user.accountType == AccountType.business) {
+          return Container(
+             padding: const EdgeInsets.all(4),
+             decoration: BoxDecoration(
+               color: Colors.amber, 
+               shape: BoxShape.circle,
+               border: Border.all(color: Colors.white, width: 2),
+               boxShadow: [
+                 BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 5, offset: const Offset(0, 3))
+               ]
+             ),
+             child: const Icon(Icons.store, color: Colors.white, size: 20),
+          );
+      }
+      
+      return Container(
+        decoration: BoxDecoration(
+           color: Colors.white,
+           shape: BoxShape.circle,
+           border: Border.all(color: Colors.deepPurple, width: 2), 
+           boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))
+           ]
+        ),
+        child: ClipOval(
+           child: user.photoUrl != null 
+              ? Image.network(user.photoUrl!, fit: BoxFit.cover)
+              : const Icon(Icons.person, color: Colors.deepPurple),
+        ),
+      );
   }
 }
 

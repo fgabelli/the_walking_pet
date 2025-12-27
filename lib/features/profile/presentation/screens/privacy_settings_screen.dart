@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../providers/friend_provider.dart';
 import '../providers/profile_provider.dart';
-import '../../../../core/services/user_service.dart';
 
 class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -19,13 +17,8 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   bool _isDirty = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userStreamProvider);
+    final userAsync = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -49,55 +42,66 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           }
           
           final currentPrivacy = _selectedPrivacy ?? user.locationPrivacy;
-          final currentWhitelist = _isDirty ? _whitelist : user.locationWhitelist;
 
-          return ListView(
-            children: [
-              _buildRadioTile(
-                title: 'Tutti',
-                subtitle: 'La tua posizione è visibile a tutti gli utenti vicini.',
-                value: LocationPrivacy.everyone,
-                groupValue: currentPrivacy,
-              ),
-              _buildRadioTile(
-                title: 'Solo Amici',
-                subtitle: 'La tua posizione è visibile solo ai tuoi amici.',
-                value: LocationPrivacy.friends,
-                groupValue: currentPrivacy,
-              ),
-              _buildRadioTile(
-                title: 'Personalizzato',
-                subtitle: 'Scegli specifici amici che possono vederti.',
-                value: LocationPrivacy.custom,
-                groupValue: currentPrivacy,
-              ),
-
-              if (currentPrivacy == LocationPrivacy.custom) ...[
-                const Divider(),
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    'Chi può vederti:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    'Chi può vedere la tua posizione sulla mappa?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
-                // List of friends to toggle
-                // We need to fetch friends list.
-                // This requires fetching user profiles for all friends.
-                // For now, let's just show IDs or implement a friend list fetcher.
-                _FriendsWhitelistSelector(
-                  friendIds: user.friends,
-                  whitelist: currentWhitelist,
-                  onChanged: (newWhitelist) {
-                    setState(() {
-                      _whitelist = newWhitelist;
-                      _selectedPrivacy = LocationPrivacy.custom;
-                      _isDirty = true;
-                    });
-                  },
+                _buildRadioTile(
+                  title: 'Tutti',
+                  subtitle: 'Tutti gli utenti possono vedere la tua posizione.',
+                  value: LocationPrivacy.everyone,
+                  groupValue: currentPrivacy,
                 ),
+                _buildRadioTile(
+                  title: 'Amici',
+                  subtitle: 'Solo i tuoi amici possono vedere dove sei.',
+                  value: LocationPrivacy.friends,
+                  groupValue: currentPrivacy,
+                ),
+                _buildRadioTile(
+                  title: 'Amici Stretti',
+                  subtitle: 'Solo i tuoi amici stretti possono vedere la tua posizione.',
+                  value: LocationPrivacy.closeFriends,
+                  groupValue: currentPrivacy,
+                ),
+                _buildRadioTile(
+                  title: 'Personalizzata',
+                  subtitle: 'Scegli specificamente chi può vederti.',
+                  value: LocationPrivacy.custom,
+                  groupValue: currentPrivacy,
+                ),
+                
+                if (currentPrivacy == LocationPrivacy.custom) ...[
+                  const Divider(),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Seleziona Amici',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  _FriendsWhitelistSelector(
+                    friendIds: user.friends,
+                    whitelist: _whitelist,
+                    onChanged: (newList) {
+                      setState(() {
+                        _whitelist = newList;
+                        _isDirty = true;
+                      });
+                    },
+                  ),
+                ],
+                const SizedBox(height: 32),
               ],
-            ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -122,29 +126,40 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           setState(() {
             _selectedPrivacy = newValue;
             _isDirty = true;
-            // Initialize whitelist if switching to custom for first time
-            if (newValue == LocationPrivacy.custom && _whitelist.isEmpty) {
-               // Keep existing or empty?
-            }
           });
         }
       },
     );
   }
 
-  void _saveSettings() {
+  void _saveSettings() async {
     if (_selectedPrivacy == null) return;
     
-    ref.read(friendControllerProvider.notifier).updateLocationPrivacy(
-      privacy: _selectedPrivacy!,
-      whitelist: _selectedPrivacy == LocationPrivacy.custom ? _whitelist : null,
-    );
-    setState(() {
-      _isDirty = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Impostazioni salvate')),
-    );
+    final user = ref.read(authServiceProvider).currentUser;
+    if (user == null) return;
+
+    try {
+      await ref.read(userServiceProvider).updateLocationPrivacy(
+        user.uid,
+        privacy: _selectedPrivacy!,
+        whitelist: _selectedPrivacy == LocationPrivacy.custom ? _whitelist : [],
+      );
+      
+      if (mounted) {
+        setState(() {
+          _isDirty = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impostazioni salvate')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore durante il salvataggio: $e')),
+        );
+      }
+    }
   }
 }
 
@@ -168,9 +183,6 @@ class _FriendsWhitelistSelector extends ConsumerWidget {
       );
     }
 
-    // Fetch friend profiles
-    // This is a bit heavy, ideally should be paginated or cached.
-    // For MVP, we fetch all.
     final friendsAsync = ref.watch(usersByIdsProvider(friendIds));
 
     return friendsAsync.when(
@@ -203,22 +215,3 @@ class _FriendsWhitelistSelector extends ConsumerWidget {
     );
   }
 }
-
-// Provider to fetch multiple users by ID
-final usersByIdsProvider = FutureProvider.family<List<UserModel>, List<String>>((ref, ids) async {
-  if (ids.isEmpty) return [];
-  final userService = ref.read(userServiceProvider);
-  final List<UserModel> users = [];
-  for (final id in ids) {
-    final user = await userService.getUserById(id);
-    if (user != null) users.add(user);
-  }
-  return users;
-});
-
-// Provider for current user stream
-final userStreamProvider = StreamProvider<UserModel?>((ref) {
-  final authUser = ref.watch(authServiceProvider).currentUser;
-  if (authUser == null) return Stream.value(null);
-  return ref.watch(userServiceProvider).getUserStream(authUser.uid);
-});

@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
-import '../services/user_service.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart'; // Added for userServiceProvider
 

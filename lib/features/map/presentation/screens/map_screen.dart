@@ -6,15 +6,12 @@ import 'package:geolocator/geolocator.dart'; // Added
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../providers/map_provider.dart';
-import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../../core/services/friend_service.dart';
-import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart'; // for safetyServiceProvider
 import '../../../notifications/presentation/screens/notifications_screen.dart'; // Corrected import
 import '../../../../shared/models/safety_alert_model.dart'; // Added
-import '../../../../shared/models/lost_pet_alert_model.dart'; // Added SOS Model
-import '../../../../shared/models/chat_model.dart'; // Added ChatModel import
+// Added SOS Model
+// Added ChatModel import
 import '../../../walks/presentation/screens/walk_detail_screen.dart';
 import '../../../nextdoor/presentation/screens/announcement_detail_screen.dart';
 import '../../../events/presentation/screens/event_detail_screen.dart'; // Added
@@ -24,6 +21,7 @@ import '../widgets/map_filter_bottom_sheet.dart';
 import '../../../ads/presentation/widgets/unified_ad_card.dart'; // Ads
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // AdSize
 import 'package:url_launcher/url_launcher.dart'; // Added
+import '../../../profile/data/visitor_service.dart'; // Added Visitor Service
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -45,17 +43,33 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(mapControllerProvider, (previous, next) {
       if (previous?.selectedUser != next.selectedUser &&
           next.selectedUser != null) {
+        
+        // Record Visit (Premium Feature)
+        final currentUser = ref.read(authServiceProvider).currentUser;
+        if (currentUser != null && currentUser.uid != next.selectedUser!.uid) {
+           // Fire and forget
+           ref.read(visitorServiceProvider).recordVisit(next.selectedUser!.uid, currentUser.uid);
+        }
+
         _showUserProfile(context, next.selectedUser!);
       }
     });
     
-    // Auto-center map when location is found (if it was previously null/loading)
-    ref.listen(mapControllerProvider.select((value) => value.currentPosition), (previous, next) {
-      if (previous == null && next != null) {
-        _mapController.move(
-          LatLng(next.latitude, next.longitude),
-          15.0,
-        );
+    // Auto-center map when location is found or when it switches from mocked to real GPS
+    ref.listen(mapControllerProvider, (previous, next) {
+      final prevPos = previous?.currentPosition;
+      final nextPos = next.currentPosition;
+      
+      if (nextPos == null) return;
+
+      // Case 1: First time we get a position
+      if (prevPos == null) {
+        _mapController.move(LatLng(nextPos.latitude, nextPos.longitude), 15.0);
+      } 
+      // Case 2: We had a mocked/fallback position and now we have a real GPS fix
+      else if (previous?.isMocked == true && next.isMocked == false) {
+        print('Real GPS fix obtained, moving camera');
+        _mapController.move(LatLng(nextPos.latitude, nextPos.longitude), 15.0);
       }
     });
 
@@ -110,6 +124,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ).then((_) {
           ref.read(mapControllerProvider.notifier).clearSelectedAlert();
+        });
+      }
+    });
+
+    // Listen for selected ANNOUNCEMENT
+    ref.listen(mapControllerProvider.select((value) => value.selectedAnnouncement), (previous, next) {
+      if (next != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnnouncementDetailScreen(announcement: next),
+          ),
+        ).then((_) {
+          ref.read(mapControllerProvider.notifier).clearSelectedAnnouncement();
         });
       }
     });
@@ -175,7 +203,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ref.read(mapControllerProvider.notifier).clearSelectedSOS();
         });
       }
-    }); // Added closing brace for ref.listen
+    });
 
     // Listen for selected EVENT (Added)
     ref.listen(mapControllerProvider.select((value) => value.selectedEvent), (previous, next) {
@@ -195,64 +223,82 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       body: Stack(
         children: [
           // Map Layer (unconditional render with fallback)
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: mapState.currentPosition != null 
-                  ? LatLng(
-                      mapState.currentPosition!.latitude,
-                      mapState.currentPosition!.longitude,
-                    )
-                  : const LatLng(41.9028, 12.4964), // Default to Rome
-              initialZoom: 15.0,
-              onTap: (_, __) {
-                ref.read(mapControllerProvider.notifier).clearSelectedUser();
-                // Also clear others if needed
-              },
-            ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.thewalkingpet.app',
-                ),
-                MarkerLayer(
-                  markers: [
-                    // Current Position Marker only if we have it
-                    if (mapState.currentPosition != null)
-                      Marker(
-                        point: LatLng(
-                          mapState.currentPosition!.latitude,
-                          mapState.currentPosition!.longitude,
-                        ),
-                        width: 50,
-                        height: 50,
-                        child: const Icon(
-                          Icons.my_location,
-                          color: Colors.blue,
-                          size: 30,
-                        ),
+          // Map Layer - Only show if position is available
+          if (mapState.currentPosition == null)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (mapState.error != null) ...[
+                    const Icon(Icons.error_outline, size: 48, color: Colors.orange),
+                    const SizedBox(height: 16),
+                    Text(
+                      mapState.error!,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
                       ),
-                    // Other Markers
-                    ...mapState.markers,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                         ref.read(mapControllerProvider.notifier).retryLocation();
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Riprova'),
+                    ),
+                  ] else ...[
+                     const CircularProgressIndicator(),
+                     const SizedBox(height: 16),
+                     const Text('Ricerca segnale GPS in corso...'),
                   ],
-                ),
-              ],
-            ),
-          
-        // Ad Banner (Top Center - Below Search Bar)
-        if (!isPremium)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 80, 
-            left: 0, 
-            right: 0,
-            child: const Center(
-              child: UnifiedAdCard(
-                zone: 'map_banner',
-                adSize: AdSize.banner, // Standard 320x50
+                ],
               ),
-            ),
+            )
+          else
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: LatLng(
+                        mapState.currentPosition!.latitude,
+                        mapState.currentPosition!.longitude,
+                      ),
+                initialZoom: 15.0,
+                onTap: (_, __) {
+                  ref.read(mapControllerProvider.notifier).clearSelectedUser();
+                  // Also clear others if needed
+                },
+              ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.thewalkingpet.app',
+              ),
+              MarkerLayer(
+                markers: [
+                  // Current Position Marker only if we have it
+                  if (mapState.currentPosition != null)
+                    Marker(
+                      point: LatLng(
+                        mapState.currentPosition!.latitude,
+                        mapState.currentPosition!.longitude,
+                      ),
+                      width: 50,
+                      height: 50,
+                      child: const Icon(
+                        Icons.my_location,
+                        color: Colors.blue,
+                        size: 30,
+                      ),
+                    ),
+                  // Other Markers
+                  ...mapState.markers,
+                ],
+              ),
+            ],
           ),
-
+          
           if (mapState.isLoading)
              const Center(child: CircularProgressIndicator()),
              
@@ -280,110 +326,99 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             ),
 
+
           // Custom UI Overlay
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Search Bar & Notifications
+                  // App Bar / Header
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: TextField(
-                            onChanged: (value) {
-                              ref.read(mapControllerProvider.notifier).setSearchQuery(value);
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Cerca passeggiate, eventi o amici...',
-                              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                              prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                              suffixIcon: mapState.searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear, color: AppColors.textSecondary),
-                                      onPressed: () {
-                                        ref.read(mapControllerProvider.notifier).setSearchQuery('');
-                                      },
-                                    )
-                                  : IconButton(
-                                      icon: const Icon(Icons.tune, color: AppColors.primary),
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          backgroundColor: Colors.transparent,
-                                          isScrollControlled: true,
-                                          builder: (context) => const MapFilterBottomSheet(),
-                                        );
-                                      },
-                                    ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      // Map Filter Button (New dedicated placement)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.tune, color: AppColors.primary),
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              builder: (context) => const MapFilterBottomSheet(),
+                            );
+                          },
+                          tooltip: 'Filtri',
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Notifications Button
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final requestsAsync = ref.watch(friendRequestsProvider);
-                          final hasNotifications = requestsAsync.maybeWhen(
-                            data: (data) => data.isNotEmpty,
-                            orElse: () => false,
-                          );
-
-                          return Stack(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
+                      
+                      // Title or Logo could go here if needed, or just spacers
+                      
+                      // Notification Button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none, color: AppColors.primary),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const NotificationsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            // Red Badge (if notifications exist)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.error,
                                   shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const NotificationsScreen(),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.notifications_outlined, color: AppColors.primary),
                                 ),
                               ),
-                              if (hasNotifications)
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
-                                  child: Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.error,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
+                  
+                  if (!isPremium)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: UnifiedAdCard(
+                        zone: 'map_banner',
+                        adSize: AdSize.banner,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -414,9 +449,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     );
                   },
                   backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
-                  child: const Icon(Icons.diversity_3), // Changed to generic community icon
+                  foregroundColor: Colors.white, // Changed to generic community icon
                   tooltip: 'Attività & Incontri',
+                  child: const Icon(Icons.diversity_3),
                 ),
                 const SizedBox(height: 16),
                 FloatingActionButton(
@@ -465,7 +500,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   
                   // Type Dropdown
                   DropdownButtonFormField<SafetyAlertType>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: const InputDecoration(
                       labelText: 'Tipo di Pericolo',
                       border: OutlineInputBorder(),

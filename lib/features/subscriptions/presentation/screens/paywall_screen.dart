@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/models/user_model.dart';
-import '../../../../core/services/subscription_service.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'; // Added
-import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../../core/services/purchase_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Added // Added provider definition here
 
@@ -166,10 +162,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                           _buildBenefitRow(context, Icons.event, 'Eventi Promossi', 'Organizza eventi esclusivi per la community'),
                           _buildBenefitRow(context, Icons.verified, 'Badge Business', 'Goditi la fiducia del badge verificato'),
                         ] else ...[
-                          _buildBenefitRow(context, Icons.filter_list, 'Filtri Avanzati', 'Cerca compagni per razza, taglia e sesso'),
-                          _buildBenefitRow(context, Icons.visibility_off, 'Ghost Mode', 'Naviga la mappa senza essere visto'),
-                          _buildBenefitRow(context, Icons.pets, 'Icona Dorata', 'Distinguiti sulla mappa con un pin esclusivo'),
                           _buildBenefitRow(context, Icons.block, 'Zero Pubblicità', 'Navigazione pulita e senza interruzioni'),
+                          _buildBenefitRow(context, Icons.pets, 'Filtri Compatibilità', 'Filtra per taglia, genere e razza sulla mappa'),
+                          _buildBenefitRow(context, Icons.visibility, 'Chi ti ha visto', 'Scopri chi visita il tuo profilo'),
                         ],
                         
                         const SizedBox(height: 48),

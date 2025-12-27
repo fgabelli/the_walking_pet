@@ -1,11 +1,13 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
   /// Request location permission
   Future<bool> requestPermission() async {
-    final status = await Permission.location.request();
-    return status.isGranted;
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
   }
 
   /// Check if location service is enabled
@@ -19,42 +21,42 @@ class LocationService {
   }
 
   /// Get current position (Precise but slower)
-  Future<Position?> getCurrentPosition() async {
-    try {
-      // Check permissions first
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return null;
-        }
-      }
-      
-      if (permission == LocationPermission.deniedForever) {
-        return null;
-      }
+  Future<Position> getCurrentPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
 
-      // Force a fresh update, but handle timeout gracefully
-      try {
-        return await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.medium, // Lower accuracy for faster fix
-            timeLimit: const Duration(seconds: 5));  // Shorter timeout
-      } catch (e) {
-        // Fallback to last known position if current fetch fails
-        return await Geolocator.getLastKnownPosition();
-      }
-    } catch (e) {
-      print('Error getting current position: $e');
-      return null;
+    // 1. Check Service
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception('I servizi di localizzazione sono disabilitati.');
     }
+
+    // 2. Check Permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('I permessi di localizzazione sono stati negati.');
+      }
+    }
+    
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('I permessi di localizzazione sono permanentemente negati.');
+    }
+
+    // 3. Get Position
+    // We throw generic timeout/error from Geolocator if this fails
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10));
   }
 
   /// Get position stream
   Stream<Position> getPositionStream() {
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 5, // Update more frequently (every 5 meters) to catch small moves
       ),
     );
   }

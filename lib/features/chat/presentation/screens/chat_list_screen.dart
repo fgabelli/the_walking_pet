@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/chat_model.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';

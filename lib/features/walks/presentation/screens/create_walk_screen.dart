@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/walk_model.dart';
 import '../providers/walk_provider.dart';
 import '../../../../shared/widgets/address_autocomplete_field.dart';
@@ -268,7 +267,7 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
 
               // Duration
               DropdownButtonFormField<int>(
-                value: _duration,
+                initialValue: _duration,
                 decoration: const InputDecoration(
                   labelText: 'Durata (minuti)',
                   prefixIcon: Icon(Icons.timer),

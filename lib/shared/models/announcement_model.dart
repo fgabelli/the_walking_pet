@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 /// Announcement model for NextDoor feature
 /// Updated with images and responses
@@ -15,6 +16,7 @@ class AnnouncementModel {
   final String? authorPhotoUrl;
   final DateTime createdAt;
   final DateTime expiresAt;
+  final AnnouncementCategory category; // Added
 
   AnnouncementModel({
     required this.id,
@@ -29,6 +31,7 @@ class AnnouncementModel {
     this.authorPhotoUrl,
     required this.createdAt,
     required this.expiresAt,
+    this.category = AnnouncementCategory.news, // Default
   });
 
   factory AnnouncementModel.fromFirestore(DocumentSnapshot doc) {
@@ -51,6 +54,10 @@ class AnnouncementModel {
       authorPhotoUrl: data['authorPhotoUrl'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       expiresAt: (data['expiresAt'] as Timestamp).toDate(),
+      category: AnnouncementCategory.values.firstWhere(
+        (e) => e.name == (data['category'] ?? 'news'),
+        orElse: () => AnnouncementCategory.news,
+      ),
     );
   }
 
@@ -67,6 +74,7 @@ class AnnouncementModel {
       'authorPhotoUrl': authorPhotoUrl,
       'createdAt': Timestamp.fromDate(createdAt),
       'expiresAt': Timestamp.fromDate(expiresAt),
+      'category': category.name,
     };
   }
 
@@ -86,6 +94,7 @@ class AnnouncementModel {
     String? authorPhotoUrl,
     DateTime? createdAt,
     DateTime? expiresAt,
+    AnnouncementCategory? category,
   }) {
     return AnnouncementModel(
       id: id ?? this.id,
@@ -100,7 +109,84 @@ class AnnouncementModel {
       authorPhotoUrl: authorPhotoUrl ?? this.authorPhotoUrl,
       createdAt: createdAt ?? this.createdAt,
       expiresAt: expiresAt ?? this.expiresAt,
+      category: category ?? this.category,
     );
+  }
+}
+
+enum AnnouncementCategory {
+  news,
+  lost,
+  walk,
+  training,
+  social,
+  litter,
+  advice,
+  other,
+}
+
+extension AnnouncementCategoryExtension on AnnouncementCategory {
+  String get displayName {
+    switch (this) {
+      case AnnouncementCategory.news:
+        return 'Novità';
+      case AnnouncementCategory.lost:
+        return 'Smarrito';
+      case AnnouncementCategory.walk:
+        return 'Passeggiata';
+      case AnnouncementCategory.training:
+        return 'Addestramento';
+      case AnnouncementCategory.social:
+        return 'Raduno / Incontri';
+      case AnnouncementCategory.litter:
+        return 'Cucciolata 🐾';
+      case AnnouncementCategory.advice:
+        return 'Consiglio';
+      case AnnouncementCategory.other:
+        return 'Altro';
+    }
+  }
+
+  MaterialColor get color {
+    switch (this) {
+      case AnnouncementCategory.news:
+        return Colors.blue;
+      case AnnouncementCategory.lost:
+        return Colors.red;
+      case AnnouncementCategory.walk:
+        return Colors.green;
+      case AnnouncementCategory.training:
+        return Colors.orange;
+      case AnnouncementCategory.social:
+        return Colors.purple;
+      case AnnouncementCategory.litter:
+        return Colors.pink;
+      case AnnouncementCategory.advice:
+        return Colors.amber;
+      case AnnouncementCategory.other:
+        return Colors.grey;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case AnnouncementCategory.news:
+        return Icons.campaign;
+      case AnnouncementCategory.lost:
+        return Icons.warning;
+      case AnnouncementCategory.walk:
+        return Icons.directions_walk;
+      case AnnouncementCategory.training:
+        return Icons.school;
+      case AnnouncementCategory.social:
+        return Icons.people;
+      case AnnouncementCategory.litter:
+        return Icons.pets;
+      case AnnouncementCategory.advice:
+        return Icons.lightbulb;
+      case AnnouncementCategory.other:
+        return Icons.more_horiz;
+    }
   }
 }
 

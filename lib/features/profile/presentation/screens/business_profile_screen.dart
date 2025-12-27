@@ -6,7 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/models/review_model.dart';
 import '../providers/profile_provider.dart'; // For currentUserProfileProvider
-import '../../../../features/offers/presentation/screens/offers_screen.dart'; // Reuse offer listing logic if possible, or create a streamlined widget
+// Reuse offer listing logic if possible, or create a streamlined widget
 
 class BusinessProfileScreen extends ConsumerStatefulWidget {
   final UserModel businessUser;

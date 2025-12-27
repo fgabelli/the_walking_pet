@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/services/auth_service.dart';
-import '../../../../core/services/purchase_service.dart'; // import moved to top
+import '../../../../core/services/purchase_service.dart';
+import '../../../../core/services/notification_service.dart';
 
 /// Auth Service Provider
 final authServiceProvider = Provider<AuthService>((ref) {
@@ -25,8 +26,9 @@ class AuthState {
 class AuthController extends StateNotifier<AuthState> {
   final AuthService _authService;
   final PurchaseService _purchaseService; 
+  final NotificationService _notificationService;
 
-  AuthController(this._authService, this._purchaseService) : super(AuthState());
+  AuthController(this._authService, this._purchaseService, this._notificationService) : super(AuthState());
 
   Future<void> signInWithEmail(String email, String password) async {
     state = AuthState(isLoading: true);
@@ -35,6 +37,7 @@ class AuthController extends StateNotifier<AuthState> {
       // Access .user property
       if (credential.user != null) {
         await _purchaseService.identifyUser(credential.user!.uid);
+        await _notificationService.updateToken();
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -48,6 +51,7 @@ class AuthController extends StateNotifier<AuthState> {
       final credential = await _authService.registerWithEmail(email: email, password: password);
        if (credential.user != null) {
         await _purchaseService.identifyUser(credential.user!.uid);
+        await _notificationService.updateToken();
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -61,6 +65,7 @@ class AuthController extends StateNotifier<AuthState> {
       final credential = await _authService.signInWithGoogle();
        if (credential.user != null) {
         await _purchaseService.identifyUser(credential.user!.uid);
+        await _notificationService.updateToken();
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -74,6 +79,7 @@ class AuthController extends StateNotifier<AuthState> {
       final credential = await _authService.signInWithApple();
        if (credential.user != null) {
         await _purchaseService.identifyUser(credential.user!.uid);
+        await _notificationService.updateToken();
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -86,6 +92,7 @@ class AuthController extends StateNotifier<AuthState> {
     state = AuthState(isLoading: true);
     try {
       await _authService.signOut();
+      await _notificationService.deleteToken();
       // Optionally reset purchases identity? RevenueCat handles logOut automatically if we want
       await _purchaseService.logout(); 
       state = AuthState(isLoading: false);
@@ -100,5 +107,6 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
   return AuthController(
     ref.watch(authServiceProvider),
     ref.watch(purchaseServiceProvider),
+    ref.watch(notificationServiceProvider),
   );
 });

@@ -62,12 +62,13 @@
 		</dict>
 	</array>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-5244139045429351~2945059589</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Questo identificativo verrà utilizzato per mostrarti annunci pubblicitari personalizzati pertinenti ai tuoi interessi.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 </dict>
