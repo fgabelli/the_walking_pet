@@ -24,6 +24,8 @@ class UserModel {
   final List<String> following; // Profiles this user is following
   final List<String> closeFriends; // New field for Close Friends
   final bool isGhost; // New field for Ghost Mode (Premium)
+  final String mapMarkerId; // Added: Custom Map Marker (Smile)
+  final bool isBanned;
 
   // Monetization Fields
   final bool isPremium;
@@ -45,6 +47,10 @@ class UserModel {
   final String? address;
   final double? homeLatitude;
   final double? homeLongitude;
+  final String? city;
+  final String? province;
+  final String? region;
+  final String? country;
   
   // Reviews
   final double averageRating;
@@ -70,7 +76,9 @@ class UserModel {
     this.followers = const [],
     this.following = const [],
     this.closeFriends = const [],
-    this.isGhost = false,
+    this.isGhost = true,
+    this.mapMarkerId = 'default',
+    this.isBanned = false,
     this.isPremium = false,
     this.accountType = AccountType.personal,
     this.businessCategory,
@@ -86,6 +94,10 @@ class UserModel {
     this.address,
     this.homeLatitude,
     this.homeLongitude,
+    this.city,
+    this.province,
+    this.region,
+    this.country,
     this.averageRating = 0.0,
     this.reviewCount = 0,
   });
@@ -115,7 +127,9 @@ class UserModel {
       followers: List<String>.from(data['followers'] ?? []),
       following: List<String>.from(data['following'] ?? []),
       closeFriends: List<String>.from(data['closeFriends'] ?? []),
-      isGhost: data['isGhost'] ?? false,
+      isGhost: data['isGhost'] ?? true,
+      mapMarkerId: data['mapMarkerId'] ?? 'default',
+      isBanned: data['isBanned'] ?? false,
       isPremium: data['isPremium'] ?? false,
       accountType: AccountType.values.firstWhere(
         (e) => e.name == (data['accountType'] ?? 'personal'),
@@ -136,6 +150,10 @@ class UserModel {
       address: data['address'],
       homeLatitude: (data['homeLatitude'] as num?)?.toDouble(),
       homeLongitude: (data['homeLongitude'] as num?)?.toDouble(),
+      city: data['city'],
+      province: data['province'],
+      region: data['region'],
+      country: data['country'],
       averageRating: (data['averageRating'] ?? 0.0).toDouble(),
       reviewCount: data['reviewCount'] ?? 0,
     );
@@ -162,6 +180,8 @@ class UserModel {
       'following': following,
       'closeFriends': closeFriends,
       'isGhost': isGhost,
+      'mapMarkerId': mapMarkerId,
+      'isBanned': isBanned,
       'isPremium': isPremium,
       'accountType': accountType.name,
       'businessCategory': businessCategory,
@@ -177,6 +197,10 @@ class UserModel {
       'address': address,
       'homeLatitude': homeLatitude,
       'homeLongitude': homeLongitude,
+      'city': city,
+      'province': province,
+      'region': region,
+      'country': country,
       'averageRating': averageRating,
       'reviewCount': reviewCount,
     };
@@ -205,6 +229,8 @@ class UserModel {
     List<String>? following,
     List<String>? closeFriends,
     bool? isGhost,
+    String? mapMarkerId,
+    bool? isBanned,
     bool? isPremium,
     AccountType? accountType,
     String? businessCategory,
@@ -220,6 +246,10 @@ class UserModel {
     String? address,
     double? homeLatitude,
     double? homeLongitude,
+    String? city,
+    String? province,
+    String? region,
+    String? country,
     double? averageRating,
     int? reviewCount,
   }) {
@@ -244,6 +274,8 @@ class UserModel {
       following: following ?? this.following,
       closeFriends: closeFriends ?? this.closeFriends,
       isGhost: isGhost ?? this.isGhost,
+      mapMarkerId: mapMarkerId ?? this.mapMarkerId,
+      isBanned: isBanned ?? this.isBanned,
       isPremium: isPremium ?? this.isPremium,
       accountType: accountType ?? this.accountType,
       businessCategory: businessCategory ?? this.businessCategory,
@@ -259,6 +291,10 @@ class UserModel {
       address: address ?? this.address,
       homeLatitude: homeLatitude ?? this.homeLatitude,
       homeLongitude: homeLongitude ?? this.homeLongitude,
+      city: city ?? this.city,
+      province: province ?? this.province,
+      region: region ?? this.region,
+      country: country ?? this.country,
       averageRating: averageRating ?? this.averageRating,
       reviewCount: reviewCount ?? this.reviewCount,
     );

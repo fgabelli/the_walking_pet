@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
@@ -15,12 +16,18 @@ class PurchaseService {
   Future<void> init() async {
     if (_isInitialized) return;
 
+    // RevenueCat is not supported on web
+    if (kIsWeb) {
+      print('RevenueCat not supported on web');
+      return;
+    }
+
     try {
       String apiKey;
       if (Platform.isIOS) {
         apiKey = 'appl_iDvNyOMRufxukhtmMEpLdtaufyJ';
       } else if (Platform.isAndroid) {
-        apiKey = 'sk_eoEeRwqedJlLgIbxsXrxzBgGZnuqd';
+        apiKey = 'goog_uhQfPpVBlpnkADFJQgrGcnvnmBh';
       } else {
         print('RevenueCat not supported on this platform');
         return;
@@ -44,6 +51,7 @@ class PurchaseService {
   }
 
   Future<void> identifyUser(String userId) async {
+    if (kIsWeb) return;
     if (!_isInitialized) await init();
     try {
       print('PURCHASE: Identifying user $userId...');
@@ -161,8 +169,8 @@ class PurchaseService {
              print('SYNC: Logic -> Updating accountType from ${userModel.accountType} to business');
              updates['accountType'] = AccountType.business.name;
           } else if (!isBusinessActive && userModel.accountType == AccountType.business) {
-             print('SYNC: WARNING -> User is Business in DB but RC says NOT Business. (Expired?)');
-             // We keep them as Business for now to avoid accidental lockouts if RC is slow
+             print('SYNC: Subscription Expired -> Downgrading accountType from business to personal');
+             updates['accountType'] = AccountType.personal.name;
           }
           
           if (updates.isNotEmpty) {
@@ -205,6 +213,7 @@ class PurchaseService {
   /// Note: RevenueCat's customerInfo.managementURL is often null on Android until configured or specific cases.
   /// We can fall back to standard store URLs if needed.
   Future<String?> getManagementURL() async {
+    if (kIsWeb) return null;
     final customerInfo = await getCustomerInfo();
     if (customerInfo?.managementURL != null) {
       return customerInfo!.managementURL;

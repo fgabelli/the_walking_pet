@@ -76,10 +76,26 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signInWithApple() async {
     state = AuthState(isLoading: true);
     try {
-      final credential = await _authService.signInWithApple();
-       if (credential.user != null) {
-        await _purchaseService.identifyUser(credential.user!.uid);
+      final result = await _authService.signInWithApple();
+       if (result.credential.user != null) {
+        await _purchaseService.identifyUser(result.credential.user!.uid);
         await _notificationService.updateToken();
+        
+        // Store name components if available (Apple only sends them on first login)
+        if (result.givenName != null || result.familyName != null) {
+          try {
+            String displayName = '';
+            if (result.givenName != null) displayName += result.givenName!;
+            if (result.familyName != null) displayName += ' ${result.familyName!}';
+            
+            if (displayName.trim().isNotEmpty) {
+               await result.credential.user!.updateDisplayName(displayName.trim());
+               await result.credential.user!.reload(); // Sync local user
+            }
+          } catch (e) {
+            print("Error updating Apple DisplayName: $e");
+          }
+        }
       }
       state = AuthState(isLoading: false);
     } catch (e) {
@@ -87,13 +103,13 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
   
-  // ... signOut remains same
   Future<void> signOut() async {
     state = AuthState(isLoading: true);
     try {
-      await _authService.signOut();
+      // [FIX] Delete token BEFORE signing out — user must still be authenticated
+      // so deleteToken() can read currentUser.uid and remove the token from Firestore.
       await _notificationService.deleteToken();
-      // Optionally reset purchases identity? RevenueCat handles logOut automatically if we want
+      await _authService.signOut();
       await _purchaseService.logout(); 
       state = AuthState(isLoading: false);
     } catch (e) {

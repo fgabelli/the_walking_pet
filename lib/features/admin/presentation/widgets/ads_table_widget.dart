@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../features/ads/presentation/widgets/unified_ad_card.dart'; // Ensure exported
 import '../../../../core/services/ad_service.dart';
 import '../../../../shared/models/ad_campaign_model.dart';
+import '../screens/create_campaign_web_screen.dart';
 
 class AdsTableWidget extends ConsumerWidget {
   const AdsTableWidget({super.key});
@@ -55,7 +56,8 @@ class AdsTableWidget extends ConsumerWidget {
               ],
               rows: ads.map((ad) {
                  final ctr = ad.impressions > 0 ? (ad.clicks / ad.impressions * 100).toStringAsFixed(1) : '0.0';
-                 final isExpired = ad.expiresAt.isBefore(DateTime.now());
+                 final isExpired = ad.endDate.isBefore(DateTime.now());
+                 final isScheduled = ad.startDate.isAfter(DateTime.now());
 
                  return DataRow(
                   cells: [
@@ -76,7 +78,7 @@ class AdsTableWidget extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(ad.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text(DateFormat('dd MMM yyyy').format(ad.createdAt), style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          Text('${DateFormat('dd MMM yyyy').format(ad.startDate)} - ${DateFormat('dd MMM yyyy').format(ad.endDate)}', style: TextStyle(fontSize: 10, color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -85,7 +87,7 @@ class AdsTableWidget extends ConsumerWidget {
                     DataCell(Text(ad.clicks.toString())),
                     DataCell(Text('$ctr%')),
                     DataCell(
-                      _StatusChip(isActive: ad.isActive, isExpired: isExpired),
+                      _StatusChip(isActive: ad.isActive, isExpired: isExpired, isScheduled: isScheduled),
                     ),
                     DataCell(
                       Row(
@@ -97,8 +99,20 @@ class AdsTableWidget extends ConsumerWidget {
                             onPressed: () => adService.toggleAdStatus(ad.id, !ad.isActive),
                           ),
                           IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            tooltip: 'Modifica',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CreateCampaignScreen(adToEdit: ad),
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                             tooltip: 'Elimina',
+                            tooltip: 'Elimina',
                             onPressed: () => _confirmDelete(context, adService, ad.id),
                           ),
                         ],
@@ -139,8 +153,9 @@ class AdsTableWidget extends ConsumerWidget {
 class _StatusChip extends StatelessWidget {
   final bool isActive;
   final bool isExpired;
+  final bool isScheduled;
 
-  const _StatusChip({required this.isActive, required this.isExpired});
+  const _StatusChip({required this.isActive, required this.isExpired, required this.isScheduled});
 
   @override
   Widget build(BuildContext context) {
@@ -150,12 +165,15 @@ class _StatusChip extends StatelessWidget {
     if (isExpired) {
       color = Colors.grey;
       label = 'Scaduta';
-    } else if (isActive) {
-      color = Colors.green;
-      label = 'Attiva';
-    } else {
+    } else if (!isActive) {
       color = Colors.orange;
       label = 'In Pausa';
+    } else if (isScheduled) {
+      color = Colors.blue;
+      label = 'Programmata';
+    } else {
+      color = Colors.green;
+      label = 'Attiva';
     }
 
     return Container(

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Safety - TWP</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 80px;
+        }
+
+        .legal-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+        }
+
+        p,
+        ul,
+        li {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--text-main);
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <div class="logo">
+                <a href="index.html" style="text-decoration:none; display:flex; align-items:center;">
+                    <img src="icons/logo_horizontal.png" alt="TWP Logo" class="logo-img-horizontal">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Torna alla Home</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="legal-content">
+        <h1>Data Safety - Dogzn</h1>
+        <p><strong>Per</strong>: Google Play Store<br>
+            <strong>Ultimo Aggiornamento</strong>: 26 Gennaio 2026<br>
+            <strong>Versione</strong>: 1.0
+        </p>
+
+        <hr>
+
+        <h2>1. Informazioni sulla Sicurezza dei Dati</h2>
+        <p>Dogzn è impegnata nella protezione della privacy e della sicurezza dei tuoi dati. Questo documento
+            fornisce informazioni sulla raccolta, l'utilizzo e la protezione dei dati personali in conformità con i
+            requisiti di Google Play Store.</p>
+
+        <hr>
+
+        <h2>2. Dati Raccolti</h2>
+
+        <h3>2.1 Dati Personali Raccolti</h3>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Raccolto</th>
+                <th>Obbligatorio</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Nome e Cognome</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Identificazione utente</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Comunicazione e recupero account</td>
+            </tr>
+            <tr>
+                <td><strong>Foto Profilo</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Identificazione visiva</td>
+            </tr>
+            <tr>
+                <td><strong>Tipo di Account</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Personale o Business</td>
+            </tr>
+            <tr>
+                <td><strong>Geolocalizzazione</strong></td>
+                <td>Sì</td>
+                <td>Sì (per funzionalità)</td>
+                <td>Radar Mode, SOS, Passeggiate</td>
+            </tr>
+        </table>
+
+        <h3>2.2 Dati del Pet Raccolti</h3>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Raccolto</th>
+                <th>Obbligatorio</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Nome Pet</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Identificazione</td>
+            </tr>
+            <tr>
+                <td><strong>Razza</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Profilo pet</td>
+            </tr>
+            <tr>
+                <td><strong>Foto Pet</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Profilo pet</td>
+            </tr>
+            <tr>
+                <td><strong>Sesso</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Profilo pet</td>
+            </tr>
+            <tr>
+                <td><strong>Età/Peso</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Informazioni pet</td>
+            </tr>
+            <tr>
+                <td><strong>Informazioni Mediche</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Sicurezza pet</td>
+            </tr>
+        </table>
+
+        <h3>2.3 Dati di Comunicazione</h3>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Raccolto</th>
+                <th>Obbligatorio</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Messaggi Chat</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Comunicazione utenti</td>
+            </tr>
+            <tr>
+                <td><strong>Foto Condivise</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Contenuto community</td>
+            </tr>
+            <tr>
+                <td><strong>Post e Commenti</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Contenuto community</td>
+            </tr>
+            <tr>
+                <td><strong>Annunci Bacheca Locale</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Annunci geolocalizzati</td>
+            </tr>
+        </table>
+
+        <h3>2.4 Dati Tecnici</h3>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Raccolto</th>
+                <th>Obbligatorio</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Identificatori Pubblicitari</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>IDFA (iOS), AAID (Android)</td>
+            </tr>
+            <tr>
+                <td><strong>Device ID</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Identificazione dispositivo</td>
+            </tr>
+            <tr>
+                <td><strong>IP Address</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Sicurezza e logging</td>
+            </tr>
+            <tr>
+                <td><strong>OS Version</strong></td>
+                <td>Sì</td>
+                <td>Sì</td>
+                <td>Compatibilità</td>
+            </tr>
+            <tr>
+                <td><strong>Crash Reports</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Debugging e miglioramento</td>
+            </tr>
+            <tr>
+                <td><strong>Analytics Data</strong></td>
+                <td>Sì</td>
+                <td>No</td>
+                <td>Miglioramento servizio</td>
+            </tr>
+        </table>
+
+        <h3>2.5 Dati di Pagamento</h3>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Raccolto</th>
+                <th>Obbligatorio</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Piano Abbonamento</strong></td>
+                <td>Sì</td>
+                <td>Sì (se sottoscritto)</td>
+                <td>Gestione abbonamenti</td>
+            </tr>
+            <tr>
+                <td><strong>Data Inizio/Scadenza</strong></td>
+                <td>Sì</td>
+                <td>Sì (se sottoscritto)</td>
+                <td>Gestione abbonamenti</td>
+            </tr>
+            <tr>
+                <td><strong>Stato Pagamento</strong></td>
+                <td>Sì</td>
+                <td>Sì (se sottoscritto)</td>
+                <td>Gestione abbonamenti</td>
+            </tr>
+        </table>
+        <p><strong>Nota</strong>: TWP non gestisce né memorizza mai i dati della carta di credito. I pagamenti sono
+            gestiti da Apple App Store e Google Play Store tramite RevenueCat.</p>
+
+        <hr>
+
+        <h2>3. Utilizzo dei Dati</h2>
+        <p>I dati raccolti vengono utilizzati per:</p>
+
+        <h3>Scopi Primari</h3>
+        <ul>
+            <li><strong>Fornitura del Servizio</strong>: Creare account, fornire funzionalità (Radar, Passeggiate, SOS,
+                Community, Bacheca Locale)</li>
+            <li><strong>Comunicazione</strong>: Inviare notifiche push, aggiornamenti e supporto</li>
+            <li><strong>Sicurezza</strong>: Prevenire frodi, proteggere utenti e proprietà</li>
+            <li><strong>Conformità Legale</strong>: Adempiere obblighi legali e normativi</li>
+        </ul>
+
+        <h3>Scopi Secondari</h3>
+        <ul>
+            <li><strong>Miglioramento del Servizio</strong>: Analizzare utilizzo, sviluppare nuove funzionalità</li>
+            <li><strong>Personalizzazione</strong>: Personalizzare l'esperienza utente</li>
+            <li><strong>Pubblicità</strong>: Mostrare annunci personalizzati (tramite Google AdMob)</li>
+            <li><strong>Ricerca</strong>: Condurre ricerche e analisi</li>
+        </ul>
+
+        <hr>
+
+        <h2>4. Condivisione dei Dati</h2>
+
+        <h3>4.1 Dati Condivisi con Terze Parti</h3>
+        <table>
+            <tr>
+                <th>Terza Parte</th>
+                <th>Tipo di Dato</th>
+                <th>Scopo</th>
+                <th>Sede</th>
+            </tr>
+            <tr>
+                <td><strong>Google Firebase</strong></td>
+                <td>Dati di account, geolocalizzazione, contenuti</td>
+                <td>Hosting, database, autenticazione, storage</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google Maps</strong></td>
+                <td>Geolocalizzazione</td>
+                <td>Mappe e percorsi</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google Analytics</strong></td>
+                <td>Dati di utilizzo</td>
+                <td>Analisi dell'app</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>AdMob (Google)</strong></td>
+                <td>Identificatori pubblicitari (IDFA, AAID)</td>
+                <td>Pubblicità</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>RevenueCat</strong></td>
+                <td>Dati di pagamento, ID utente</td>
+                <td>Gestione abbonamenti</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Firebase Crashlytics</strong></td>
+                <td>Crash reports</td>
+                <td>Monitoraggio errori</td>
+                <td>USA</td>
+            </tr>
+        </table>
+
+        <h3>4.2 Dati Condivisi con Utenti</h3>
+        <ul>
+            <li><strong>Profilo Pubblico</strong>: Nome, foto profilo (controllato da te)</li>
+            <li><strong>Geolocalizzazione</strong>: Posizione approssimativa nel Radar Mode (controllato da te)</li>
+            <li><strong>Contenuto Pubblico</strong>: Post, foto, commenti nella Community (controllato da te)</li>
+            <li><strong>Annunci</strong>: Annunci sulla Bacheca Locale (controllato da te)</li>
+            <li><strong>Messaggi Privati</strong>: Visibili solo al destinatario</li>
+            <li><strong>Passeggiate</strong>: Tracciati condivisi (controllato da te)</li>
+        </ul>
+
+        <h3>4.3 Dati Non Condivisi</h3>
+        <ul>
+            <li>Password (crittografata)</li>
+            <li>Informazioni mediche sensibili del pet (non condivise automaticamente)</li>
+            <li>Dati della carta di credito (gestiti da Apple/Google)</li>
+            <li>Cronologia completa di geolocalizzazione (conservata localmente)</li>
+        </ul>
+
+        <hr>
+
+        <h2>5. Sicurezza dei Dati</h2>
+
+        <h3>5.1 Misure di Sicurezza Implementate</h3>
+        <p><strong>Crittografia</strong></p>
+        <ul>
+            <li>SSL/TLS per dati in transito</li>
+            <li>Crittografia end-to-end per messaggi privati</li>
+            <li>Crittografia a riposo per dati sensibili</li>
+        </ul>
+        <p><strong>Autenticazione</strong></p>
+        <ul>
+            <li>Autenticazione tramite Google Sign-In, Apple Sign-In o email/password</li>
+            <li>Hashing sicuro delle password</li>
+            <li>Sessioni sicure</li>
+        </ul>
+        <p><strong>Accesso</strong></p>
+        <ul>
+            <li>Accesso limitato ai dati (principio del minimo privilegio)</li>
+            <li>Controllo degli accessi basato su ruoli</li>
+            <li>Audit log di accessi ai dati</li>
+        </ul>
+        <p><strong>Monitoraggio</strong></p>
+        <ul>
+            <li>Monitoraggio continuo della sicurezza</li>
+            <li>Rilevamento di anomalie</li>
+            <li>Incident response plan</li>
+        </ul>
+        <p><strong>Conformità</strong></p>
+        <ul>
+            <li>Conformità SOC 2 Type II</li>
+            <li>Conformità GDPR</li>
+            <li>Conformità CCPA</li>
+        </ul>
+
+        <h3>5.2 Backup e Recupero</h3>
+        <ul>
+            <li>Backup automatici giornalieri</li>
+            <li>Backup geograficamente distribuiti</li>
+            <li>Piano di recupero da disastri</li>
+        </ul>
+
+        <hr>
+
+        <h2>6. Conservazione dei Dati</h2>
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Periodo di Conservazione</th>
+            </tr>
+            <tr>
+                <td><strong>Dati di Account</strong></td>
+                <td>Per tutta la durata dell'account</td>
+            </tr>
+            <tr>
+                <td><strong>Dati del Pet</strong></td>
+                <td>Per tutta la durata dell'account</td>
+            </tr>
+            <tr>
+                <td><strong>Messaggi Chat</strong></td>
+                <td>2 anni</td>
+            </tr>
+            <tr>
+                <td><strong>Post e Contenuti Community</strong></td>
+                <td>Fino a cancellazione</td>
+            </tr>
+            <tr>
+                <td><strong>Annunci Bacheca Locale</strong></td>
+                <td>Fino a cancellazione</td>
+            </tr>
+            <tr>
+                <td><strong>Cronologia Passeggiate</strong></td>
+                <td>Fino a cancellazione</td>
+            </tr>
+            <tr>
+                <td><strong>Geolocalizzazione</strong></td>
+                <td>30 giorni</td>
+            </tr>
+            <tr>
+                <td><strong>Log di Accesso</strong></td>
+                <td>90 giorni</td>
+            </tr>
+            <tr>
+                <td><strong>Dati Analitici</strong></td>
+                <td>12 mesi</td>
+            </tr>
+            <tr>
+                <td><strong>Dati di Pagamento</strong></td>
+                <td>7 anni (conformità fiscale)</td>
+            </tr>
+        </table>
+        <p>Dopo la cancellazione dell'account, i dati personali vengono cancellati entro 30 giorni, salvo dove la
+            conservazione è richiesta dalla legge.</p>
+
+        <hr>
+
+        <h2>7. Diritti dell'Utente</h2>
+
+        <h3>7.1 Controllo dei Dati</h3>
+        <p>Gli utenti possono:</p>
+        <ul>
+            <li>Accedere ai propri dati personali</li>
+            <li>Modificare o aggiornare i propri dati</li>
+            <li>Scaricare una copia dei propri dati</li>
+            <li>Cancellare il proprio account e i propri dati</li>
+            <li>Controllare le impostazioni di privacy e geolocalizzazione</li>
+        </ul>
+
+        <h3>7.2 Diritti GDPR (per utenti UE)</h3>
+        <ul>
+            <li>Diritto di accesso</li>
+            <li>Diritto di rettifica</li>
+            <li>Diritto di cancellazione</li>
+            <li>Diritto di limitazione del trattamento</li>
+            <li>Diritto alla portabilità dei dati</li>
+            <li>Diritto di opposizione</li>
+            <li>Diritti relativi al processo decisionale automatizzato</li>
+        </ul>
+
+        <h3>7.3 Esercitare i Diritti</h3>
+        <p>Per esercitare uno qualsiasi di questi diritti, contattare privacy@dogzn.com</p>
+
+        <hr>
+
+        <h2>8. Geolocalizzazione</h2>
+
+        <h3>8.1 Utilizzo della Geolocalizzazione</h3>
+        <ul>
+            <li><strong>Radar Mode</strong>: Posizione approssimativa (non esatta) condivisa con utenti nelle vicinanze
+            </li>
+            <li><strong>SOS Network</strong>: Posizione esatta condivisa con utenti nel raggio di 5km in caso di
+                smarrimento</li>
+            <li><strong>Passeggiate</strong>: Tracciamento del percorso GPS durante le passeggiate</li>
+            <li><strong>Bacheca Locale</strong>: Annunci geolocalizzati visibili agli utenti della zona</li>
+        </ul>
+
+        <h3>8.2 Controllo della Geolocalizzazione</h3>
+        <p>Gli utenti possono:</p>
+        <ul>
+            <li>Disattivare completamente la geolocalizzazione dalle impostazioni del dispositivo</li>
+            <li>Limitare la visibilità nel Radar Mode</li>
+            <li>Disattivare gli SOS alerts</li>
+            <li>Visualizzare e cancellare la cronologia delle passeggiate</li>
+            <li>Modificare le impostazioni di privacy in qualsiasi momento</li>
+        </ul>
+
+        <h3>8.3 Precisione della Geolocalizzazione</h3>
+        <ul>
+            <li><strong>Radar Mode</strong>: Posizione approssimativa (±100-500m)</li>
+            <li><strong>SOS Network</strong>: Posizione esatta (±5m) nel raggio di 5km</li>
+            <li><strong>Passeggiate</strong>: Posizione precisa (±5-10m)</li>
+        </ul>
+
+        <hr>
+
+        <h2>9. Dati Sensibili</h2>
+
+        <h3>9.1 Informazioni Mediche del Pet</h3>
+        <ul>
+            <li>Conservate in modo sicuro e crittografato</li>
+            <li>Non condivise automaticamente con altri utenti</li>
+            <li>Condivise solo con consenso esplicito</li>
+            <li>Accessibili solo al proprietario del pet</li>
+        </ul>
+
+        <h3>9.2 Dati di Minori</h3>
+        <ul>
+            <li>Non raccogliamo consapevolmente dati da utenti sotto i 13 anni</li>
+            <li>Per utenti tra 13 e 18 anni, raccogliamo dati limitati</li>
+            <li>Applichiamo protezioni aggiuntive</li>
+            <li>Non condividiamo con inserzionisti pubblicitari</li>
+        </ul>
+
+        <hr>
+
+        <h2>10. Cookie e Tracciamento</h2>
+
+        <h3>10.1 Cookie Utilizzati</h3>
+        <ul>
+            <li><strong>Cookie di Sessione</strong>: Mantenere la sessione di accesso</li>
+            <li><strong>Cookie Persistenti</strong>: Ricordare preferenze</li>
+            <li><strong>Cookie Analitici</strong>: Analizzare utilizzo</li>
+            <li><strong>Cookie di Marketing</strong>: Personalizzare pubblicità</li>
+        </ul>
+
+        <h3>10.2 Identificatori Pubblicitari</h3>
+        <ul>
+            <li><strong>IDFA (iOS)</strong>: Utilizzato per pubblicità personalizzata</li>
+            <li><strong>AAID (Android)</strong>: Utilizzato per pubblicità personalizzata</li>
+        </ul>
+
+        <h3>10.3 Gestione dei Cookie e Tracciamento</h3>
+        <p>Gli utenti possono controllare i cookie tramite le impostazioni del browser e disabilitare il tracciamento
+            pubblicitario dalle impostazioni del dispositivo.</p>
+
+        <hr>
+
+        <h2>11. Permessi dell'App</h2>
+
+        <h3>11.1 Permessi Richiesti</h3>
+        <p>L'app richiede i seguenti permessi:</p>
+        <table>
+            <tr>
+                <th>Permesso</th>
+                <th>Motivo</th>
+                <th>Obbligatorio</th>
+            </tr>
+            <tr>
+                <td><strong>Localizzazione</strong></td>
+                <td>Radar Mode, SOS, Passeggiate, Bacheca Locale</td>
+                <td>Sì (per funzionalità)</td>
+            </tr>
+            <tr>
+                <td><strong>Fotocamera</strong></td>
+                <td>Caricare foto del profilo e del pet</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td><strong>Galleria</strong></td>
+                <td>Selezionare foto da caricare</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td><strong>Contatti</strong></td>
+                <td>Invitare amici (facoltativo)</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td><strong>Notifiche</strong></td>
+                <td>SOS Alerts, messaggi, inviti</td>
+                <td>Sì (per funzionalità)</td>
+            </tr>
+        </table>
+
+        <h3>11.2 Accesso ai Dati Sensibili</h3>
+        <ul>
+            <li><strong>Geolocalizzazione</strong>: Accesso continuo durante l'utilizzo dell'app e in background (se
+                abilitato)</li>
+            <li><strong>Fotocamera</strong>: Accesso solo quando l'utente carica una foto</li>
+            <li><strong>Contatti</strong>: Accesso solo se l'utente sceglie di invitare amici</li>
+        </ul>
+
+        <hr>
+
+        <h2>12. Conformità Normativa</h2>
+
+        <h3>12.1 GDPR (General Data Protection Regulation)</h3>
+        <ul>
+            <li>Conformità completa ai requisiti GDPR</li>
+            <li>Data Protection Officer disponibile</li>
+            <li>Valutazione d'impatto sulla privacy</li>
+            <li>Notifica di violazioni dei dati entro 72 ore</li>
+        </ul>
+
+        <h3>12.2 CCPA (California Consumer Privacy Act)</h3>
+        <ul>
+            <li>Conformità ai diritti dei consumatori californiani</li>
+            <li>Diritto di accesso, cancellazione, opt-out</li>
+        </ul>
+
+        <h3>12.3 Leggi Locali</h3>
+        <ul>
+            <li>Conformità alle leggi sulla protezione dei dati del tuo paese</li>
+            <li>Conformità alle leggi sulla privacy online</li>
+        </ul>
+
+        <hr>
+
+        <h2>13. Modifiche a Questa Politica</h2>
+        <p>TWP può aggiornare questa politica periodicamente. Le modifiche materiali saranno comunicate tramite:</p>
+        <ul>
+            <li>Email all'indirizzo associato al tuo account</li>
+            <li>Notifica prominente sull'app</li>
+            <li>Richiesta di consenso esplicito</li>
+        </ul>
+        <p>L'utilizzo continuato dell'app dopo le modifiche costituisce accettazione della politica aggiornata.</p>
+
+        <hr>
+
+        <h2>14. Contatti</h2>
+        <p>Per domande sulla sicurezza dei dati, contattaci:</p>
+        <p><strong>Dogzn - Vega Lab SRL</strong></p>
+        <p>📧 <strong>Email Privacy</strong>: privacy@dogzn.com<br>
+            📧 <strong>Email Supporto</strong>: support@dogzn.com</p>
+
+        <hr>
+
+        <h2>15. Informazioni Aggiuntive per Google Play Store</h2>
+
+        <h3>15.1 Politica di Dati Sensibili</h3>
+        <ul>
+            <li><strong>Non vendiamo mai i dati personali</strong></li>
+            <li><strong>Non condividiamo dati con inserzionisti pubblicitari senza consenso</strong></li>
+            <li><strong>Non utilizziamo dati per scopi diversi da quelli dichiarati</strong></li>
+            <li><strong>Implementiamo protezioni aggiuntive per dati sensibili</strong></li>
+        </ul>
+
+        <h3>15.2 Trasferimenti Internazionali</h3>
+        <p>I dati vengono trasferiti negli USA tramite Google Firebase, Google Maps, RevenueCat e AdMob. Implementiamo
+            Clausole Contrattuali Standard (SCC) per proteggere i dati durante i trasferimenti.</p>
+
+        <hr>
+
+        <p><strong>© 2026 Vega Lab SRL. Tutti i diritti riservati.</strong></p>
+        <p><strong>Versione</strong>: 1.0<br>
+            <strong>Data di Entrata in Vigore</strong>: 26 Gennaio 2026<br>
+            <strong>Ultima Modifica</strong>: 26 Gennaio 2026
+        </p>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="icons/logo_horizontal.png" alt="TWP" class="footer-logo">
+                <p>Connetti. Cammina. Condividi.<br>Il social network definitivo per i pet lovers.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Esplora</h4>
+                <a href="#features">Funzionalità</a>
+                <a href="#safety">Sicurezza</a>
+                <a href="#community">Storie</a>
+            </div>
+            <div class="footer-links">
+                <h4>Legale</h4>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Termini e Condizioni</a>
+                <a href="data_safety.html">Data Safety</a>
+            </div>
+            <div class="footer-social">
+                <h4>Seguici</h4>
+                <div class="social-icons">
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                    <a href="#">Facebook</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Vega Lab SRL. Made with ❤️ for pets.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

@@ -10,6 +10,7 @@ class LostPetAlertModel {
   final String contactPhone;
   final DateTime createdAt;
   final bool isActive;
+  final String? announcementId;
 
   LostPetAlertModel({
     required this.id,
@@ -21,6 +22,7 @@ class LostPetAlertModel {
     required this.contactPhone,
     required this.createdAt,
     required this.isActive,
+    this.announcementId,
   });
 
   factory LostPetAlertModel.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +37,7 @@ class LostPetAlertModel {
       contactPhone: data['contactPhone'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       isActive: data['isActive'] ?? true,
+      announcementId: data['announcementId'],
     );
   }
 
@@ -48,6 +51,7 @@ class LostPetAlertModel {
       'contactPhone': contactPhone,
       'createdAt': Timestamp.fromDate(createdAt),
       'isActive': isActive,
+      if (announcementId != null) 'announcementId': announcementId,
     };
   }
 
@@ -61,6 +65,7 @@ class LostPetAlertModel {
     String? contactPhone,
     DateTime? createdAt,
     bool? isActive,
+    String? announcementId,
   }) {
     return LostPetAlertModel(
       id: id ?? this.id,
@@ -72,6 +77,7 @@ class LostPetAlertModel {
       contactPhone: contactPhone ?? this.contactPhone,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
+      announcementId: announcementId ?? this.announcementId,
     );
   }
 }

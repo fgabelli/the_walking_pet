@@ -31,6 +31,8 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
   double _latitude = 0.0;
   double _longitude = 0.0;
   bool _isEditing = false;
+  Recurrence _recurrence = Recurrence.none;
+  List<int> _recurrenceDays = []; // Added
 
   @override
   void initState() {
@@ -46,6 +48,8 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
       _duration = walk.duration;
       _latitude = walk.meetingPoint.latitude;
       _longitude = walk.meetingPoint.longitude;
+      _recurrence = walk.recurrence;
+      _recurrenceDays = List.from(walk.recurrenceDays); // Added
     }
   }
 
@@ -85,6 +89,16 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
 
   void _handleCreateWalk() async {
     if (_formKey.currentState!.validate()) {
+      // Validate Custom Recurrence
+      if (_recurrence == Recurrence.custom && _recurrenceDays.isEmpty) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('Seleziona almeno un giorno per la ripetizione personalizzata.')),
+           );
+           return;
+        }
+      }
+
       // Combine date and time
       final dateTime = DateTime(
         _selectedDate.year,
@@ -94,10 +108,10 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
         _selectedTime.minute,
       );
 
-      // Check if coordinates are 0.0 OR are the default Rome coordinates (which means they might be wrong for a non-Rome address)
+      // Check if coordinates are 0.0 OR are the default Rome coordinates
       bool needsGeocoding = (_latitude == 0.0 && _longitude == 0.0);
       
-      // If we have Rome coordinates but the address doesn't seem to contain "Roma", try to re-geocode to fix old data
+      // If we have Rome coordinates but the address doesn't seem to contain "Roma"
       if ((_latitude - 41.9028).abs() < 0.0001 && (_longitude - 12.4964).abs() < 0.0001) {
          if (!_addressController.text.toLowerCase().contains('roma')) {
            needsGeocoding = true;
@@ -115,7 +129,7 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Indirizzo non trovato, usare la ricerca automatica.')),
                 );
-                return; // Stop saving to prevent bad data
+                return;
              }
            }
         } catch (_) {
@@ -123,15 +137,13 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Impossibile geolocalizzare questo indirizzo. Selezionalo dal menu a tendina.')),
               );
-              return; // Stop saving
+              return;
            }
         }
       }
 
       // Default to Rome ONLY if explicit fallback is needed and we really have no data
-      // But since we return above on failure, this might be redundant or for empty address cases (which are blocked by validator)
       if (!_isEditing && (_latitude == 0.0 && _longitude == 0.0)) {
-         // Final fallback if something really weird happens
         _latitude = 41.9028;
         _longitude = 12.4964;
       }
@@ -147,22 +159,16 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
             longitude: _longitude,
             address: _addressController.text.trim(),
           ),
+          recurrence: _recurrence,
+          recurrenceDays: _recurrenceDays, // Added
         );
 
         await ref.read(walkControllerProvider.notifier).updateWalk(updatedWalk);
         
         if (mounted) {
-          final state = ref.read(walkControllerProvider);
-          if (state.error == null) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Passeggiata aggiornata!')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
-            );
-          }
+           // ... handle success ...
+           Navigator.pop(context);
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Passeggiata aggiornata!')));
         }
       } else {
         await ref.read(walkControllerProvider.notifier).createWalk(
@@ -175,75 +181,83 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
                 longitude: _longitude,
                 address: _addressController.text.trim(),
               ),
+              recurrence: _recurrence,
+              recurrenceDays: _recurrenceDays, // Added
             );
 
         if (mounted) {
-          final state = ref.read(walkControllerProvider);
-          if (state.error == null) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Passeggiata creata!')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
-            );
-          }
+           // ... handle success ...
+           Navigator.pop(context);
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Passeggiata creata!')));
         }
       }
     }
   }
 
+  // Helper widget for Day Selector
+  Widget _buildDaySelector() {
+     final days = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+     return Wrap(
+       spacing: 8,
+       children: List.generate(7, (index) {
+          final dayNum = index + 1; // 1 = Mon
+          final isSelected = _recurrenceDays.contains(dayNum);
+          return FilterChip(
+            label: Text(days[index]),
+            selected: isSelected,
+            onSelected: (selected) {
+               setState(() {
+                 if (selected) {
+                   _recurrenceDays.add(dayNum);
+                   _recurrenceDays.sort();
+                 } else {
+                   _recurrenceDays.remove(dayNum);
+                 }
+               });
+            },
+          );
+       }),
+     );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ... setup ...
     final walkState = ref.watch(walkControllerProvider);
     final dateFormat = DateFormat('EEE d MMM yyyy', 'it');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Modifica Passeggiata' : 'Organizza Passeggiata'),
-      ),
+      appBar: AppBar(title: Text(_isEditing ? 'Modifica Passeggiata' : 'Organizza Passeggiata')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
+         padding: const EdgeInsets.all(24),
+         child: Form(
+           key: _formKey,
+           child: Column(
+             crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: [
+               // ... existing fields ...
+               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Titolo',
-                  prefixIcon: Icon(Icons.title),
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Inserisci un titolo' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
+                decoration: const InputDecoration(labelText: 'Titolo', prefixIcon: Icon(Icons.title)),
+                validator: (value) => value?.isEmpty ?? true ? 'Inserisci un titolo' : null,
+               ),
+               const SizedBox(height: 16),
+               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Descrizione',
-                  prefixIcon: Icon(Icons.description),
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Inserisci una descrizione' : null,
-              ),
-              const SizedBox(height: 24),
-              
-              // Date & Time
-              Row(
+                decoration: const InputDecoration(labelText: 'Descrizione', prefixIcon: Icon(Icons.description)),
+                validator: (value) => value?.isEmpty ?? true ? 'Inserisci una descrizione' : null,
+               ),
+               const SizedBox(height: 24),
+               
+               // Date and Time Row
+               Row(
                 children: [
                   Expanded(
                     child: InkWell(
                       onTap: () => _selectDate(context),
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Data',
-                          prefixIcon: Icon(Icons.calendar_today),
-                        ),
+                        decoration: const InputDecoration(labelText: 'Data', prefixIcon: Icon(Icons.calendar_today)),
                         child: Text(dateFormat.format(_selectedDate)),
                       ),
                     ),
@@ -253,35 +267,39 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
                     child: InkWell(
                       onTap: () => _selectTime(context),
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Ora',
-                          prefixIcon: Icon(Icons.access_time),
-                        ),
+                        decoration: const InputDecoration(labelText: 'Ora', prefixIcon: Icon(Icons.access_time)),
                         child: Text(_selectedTime.format(context)),
                       ),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
+               ),
+               const SizedBox(height: 16),
 
               // Duration
               DropdownButtonFormField<int>(
                 initialValue: _duration,
-                decoration: const InputDecoration(
-                  labelText: 'Durata (minuti)',
-                  prefixIcon: Icon(Icons.timer),
-                ),
-                items: [30, 45, 60, 90, 120].map((e) {
-                  return DropdownMenuItem(
-                    value: e,
-                    child: Text('$e min'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _duration = value);
-                },
+                decoration: const InputDecoration(labelText: 'Durata (minuti)', prefixIcon: Icon(Icons.timer)),
+                items: [30, 45, 60, 90, 120].map((e) => DropdownMenuItem(value: e, child: Text('$e min'))).toList(),
+                onChanged: (value) { if (value != null) setState(() => _duration = value); },
               ),
+              const SizedBox(height: 16),
+              
+              // Recurrence
+              DropdownButtonFormField<Recurrence>(
+                initialValue: _recurrence,
+                decoration: const InputDecoration(labelText: 'Ripetizione', prefixIcon: Icon(Icons.update)),
+                items: Recurrence.values.map((e) => DropdownMenuItem(value: e, child: Text(e.displayName))).toList(),
+                onChanged: (value) { if (value != null) setState(() => _recurrence = value); },
+              ),
+              
+              // Custom Day Selector (Added)
+              if (_recurrence == Recurrence.custom) ...[
+                 const SizedBox(height: 8),
+                 Text('Giorni:', style: Theme.of(context).textTheme.bodySmall),
+                 _buildDaySelector(),
+              ],
+              
               const SizedBox(height: 16),
 
               // Location
@@ -293,32 +311,23 @@ class _CreateWalkScreenState extends ConsumerState<CreateWalkScreen> {
                   setState(() {
                     _latitude = place.latitude;
                     _longitude = place.longitude;
-                    // Address is already updated in controller by the widget
                   });
                 },
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Inserisci un luogo' : null,
+                validator: (value) => value?.isEmpty ?? true ? 'Inserisci un luogo' : null,
               ),
               const SizedBox(height: 32),
 
-              // Submit
+              // Submit Button
               ElevatedButton(
                 onPressed: walkState.isLoading ? null : _handleCreateWalk,
                 child: walkState.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : Text(_isEditing ? 'Aggiorna Passeggiata' : 'Crea Passeggiata'),
               ),
-            ],
-          ),
-        ),
+             ],
+           ),
+         ),
       ),
     );
   }
-}
+} // End Class

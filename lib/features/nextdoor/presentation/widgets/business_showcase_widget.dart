@@ -115,30 +115,32 @@ class _BusinessCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 10),
-                          const SizedBox(width: 2),
-                          Text(
-                            '4.9', // Placeholder for actual rating if available
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber, size: 10),
+                            const SizedBox(width: 2),
+                            Text(
+                              user.averageRating > 0
+                                  ? user.averageRating.toStringAsFixed(1)
+                                  : 'New',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

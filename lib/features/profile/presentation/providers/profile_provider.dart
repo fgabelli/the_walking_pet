@@ -6,8 +6,11 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/review_service.dart';
 import '../../../../core/services/safety_service.dart';
 import '../../../../core/services/purchase_service.dart'; // Added
+import '../../../../core/services/map_service.dart'; // Added
+import '../../../../core/services/osm_service.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import 'dog_provider.dart';
 
 /// User Service Provider
 final userServiceProvider = Provider<UserService>((ref) {
@@ -135,6 +138,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     Gender? gender,
     DateTime? birthDate,
     String? address,
+    String mapMarkerId = 'default', // Added
   }) async {
     state = ProfileState(isLoading: true);
     try {
@@ -148,12 +152,46 @@ class ProfileController extends StateNotifier<ProfileState> {
 
       double? homeLatitude;
       double? homeLongitude;
-      if (address != null && address.isNotEmpty) {
+      String? city;
+      String? province;
+      String? region;
+      String? country;
+      final geocodeQuery = (address != null && address.isNotEmpty) ? address : zone;
+      if (geocodeQuery.isNotEmpty) {
         try {
-          final locations = await locationFromAddress('$address, Italia');
+          final locations = await locationFromAddress('$geocodeQuery, Italia');
           if (locations.isNotEmpty) {
             homeLatitude = locations.first.latitude;
             homeLongitude = locations.first.longitude;
+            
+            // Sync with MapService for Radar/Discovery (even if offline)
+            try {
+               await MapService().updateUserLocation(
+                 user.uid, 
+                 homeLatitude!, 
+                 homeLongitude!
+               );
+            } catch (e) {
+               print('Error syncing map location: $e');
+            }
+
+            // Reverse geocode using OSM Nominatim to populate structured fields
+            try {
+              final osmData = await OSMService().reverseGeocode(homeLatitude!, homeLongitude!);
+              if (osmData != null) {
+                city = osmData['city'] ?? zone;
+                province = osmData['province'];
+                region = osmData['region'];
+                country = osmData['country'] ?? 'Italia';
+              } else {
+                city = zone;
+                country = 'Italia';
+              }
+            } catch (e) {
+              print('Reverse geocoding error during profile creation: $e');
+              city = zone;
+              country = 'Italia';
+            }
           }
         } catch (e) {
           print('Geocoding error during profile creation: $e');
@@ -176,6 +214,11 @@ class ProfileController extends StateNotifier<ProfileState> {
         address: address,
         homeLatitude: homeLatitude,
         homeLongitude: homeLongitude,
+        city: city,
+        province: province,
+        region: region,
+        country: country,
+        mapMarkerId: mapMarkerId, // Added
       );
 
       await _userService.createUser(newUser);
@@ -191,7 +234,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     String? zone,
     String? bio,
     File? imageFile,
-    File? coverImageFile, // Added
+    File? coverImageFile,
     SocialPreferences? socialPreferences,
     Gender? gender,
     DateTime? birthDate,
@@ -203,6 +246,8 @@ class ProfileController extends StateNotifier<ProfileState> {
     String? instagramHandle,
     String? tiktokHandle,
     String? openingHours,
+    String? mapMarkerId, // Added
+    bool? isGhost,
   }) async {
     state = ProfileState(isLoading: true);
     try {
@@ -224,21 +269,77 @@ class ProfileController extends StateNotifier<ProfileState> {
 
       double? homeLatitude = currentUserProfile.homeLatitude;
       double? homeLongitude = currentUserProfile.homeLongitude;
+      String? city = currentUserProfile.city;
+      String? province = currentUserProfile.province;
+      String? region = currentUserProfile.region;
+      String? country = currentUserProfile.country;
+
+      bool shouldGeocode = false;
+      String? targetAddress;
 
       if (address != null && address != currentUserProfile.address) {
         if (address.isEmpty) {
-          homeLatitude = null;
-          homeLongitude = null;
-        } else {
-          try {
-            final locations = await locationFromAddress('$address, Italia');
-            if (locations.isNotEmpty) {
-              homeLatitude = locations.first.latitude;
-              homeLongitude = locations.first.longitude;
-            }
-          } catch (e) {
-            print('Geocoding error during profile update: $e');
+          final effectiveZone = zone ?? currentUserProfile.zone;
+          if (effectiveZone.isNotEmpty) {
+            targetAddress = effectiveZone;
+            shouldGeocode = true;
+          } else {
+            homeLatitude = null;
+            homeLongitude = null;
+            city = null;
+            province = null;
+            region = null;
+            country = null;
           }
+        } else {
+          targetAddress = address;
+          shouldGeocode = true;
+        }
+      } else if (zone != null && zone != currentUserProfile.zone && (address ?? currentUserProfile.address ?? '').isEmpty) {
+        if (zone.isNotEmpty) {
+          targetAddress = zone;
+          shouldGeocode = true;
+        }
+      }
+
+      if (shouldGeocode && targetAddress != null) {
+        try {
+          final locations = await locationFromAddress('$targetAddress, Italia');
+          if (locations.isNotEmpty) {
+            homeLatitude = locations.first.latitude;
+            homeLongitude = locations.first.longitude;
+            
+            // Sync with MapService for Radar/Discovery
+            try {
+               await MapService().updateUserLocation(
+                 user.uid, 
+                 homeLatitude!, 
+                 homeLongitude!
+               );
+            } catch (e) {
+               print('Error syncing map location: $e');
+            }
+
+            // Reverse geocode using OSM Nominatim to populate structured fields
+            try {
+              final osmData = await OSMService().reverseGeocode(homeLatitude!, homeLongitude!);
+              if (osmData != null) {
+                city = osmData['city'] ?? (zone ?? currentUserProfile.zone);
+                province = osmData['province'];
+                region = osmData['region'];
+                country = osmData['country'] ?? 'Italia';
+              } else {
+                city = zone ?? currentUserProfile.zone;
+                country = 'Italia';
+              }
+            } catch (e) {
+              print('Reverse geocoding error during profile update: $e');
+              city = zone ?? currentUserProfile.zone;
+              country = 'Italia';
+            }
+          }
+        } catch (e) {
+          print('Geocoding error during profile update: $e');
         }
       }
 
@@ -248,7 +349,7 @@ class ProfileController extends StateNotifier<ProfileState> {
         zone: zone,
         bio: bio,
         photoUrl: photoUrl,
-        coverImageUrl: coverImageUrl, // Added
+        coverImageUrl: coverImageUrl,
         socialPreferences: socialPreferences,
         updatedAt: DateTime.now(),
         gender: gender,
@@ -256,6 +357,10 @@ class ProfileController extends StateNotifier<ProfileState> {
         address: address,
         homeLatitude: homeLatitude,
         homeLongitude: homeLongitude,
+        city: city,
+        province: province,
+        region: region,
+        country: country,
         accountType: accountType,
         businessCategory: businessCategory,
         website: website,
@@ -263,6 +368,8 @@ class ProfileController extends StateNotifier<ProfileState> {
         instagramHandle: instagramHandle,
         tiktokHandle: tiktokHandle,
         openingHours: openingHours,
+        mapMarkerId: mapMarkerId, // Added
+        isGhost: isGhost,
       );
 
       await _userService.updateUser(updatedUser);
@@ -298,10 +405,21 @@ class ProfileController extends StateNotifier<ProfileState> {
       final user = _ref.read(authServiceProvider).currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      // 1. Delete user data from Firestore
+      // 1. Delete user's dogs from Firestore
+      try {
+        final dogService = _ref.read(dogServiceProvider);
+        final dogs = await dogService.getDogsByOwnerId(user.uid);
+        for (final dog in dogs) {
+          await dogService.deleteDog(dog.id);
+        }
+      } catch (e) {
+        print('Error deleting user dogs during account deletion: $e');
+      }
+
+      // 2. Delete user data from Firestore
       await _userService.deleteUser(user.uid);
 
-      // 2. Delete user from Auth
+      // 3. Delete user from Auth
       await _ref.read(authServiceProvider).deleteAccount();
 
       // 3. Sign out

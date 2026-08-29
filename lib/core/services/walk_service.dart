@@ -20,10 +20,55 @@ class WalkService {
     return _firestore
         .collection(_collection)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => WalkModel.fromFirestore(doc))
-            .where((walk) => walk.status == WalkStatus.upcoming)
-            .toList());
+        .map((snapshot) {
+          final now = DateTime.now();
+          final List<WalkModel> activeWalks = [];
+
+          for (final doc in snapshot.docs) {
+            final walk = WalkModel.fromFirestore(doc);
+            
+            // Calculate end time
+            final endTime = walk.date.add(Duration(minutes: walk.duration));
+            
+            if (endTime.isAfter(now)) {
+              // Not expired yet
+              if (walk.status == WalkStatus.upcoming) {
+                 activeWalks.add(walk);
+              }
+            } else {
+              // Expired, check recurrence
+              if (walk.recurrence != Recurrence.none && walk.status != WalkStatus.cancelled) {
+                 // Project date
+                 DateTime nextDate = walk.date;
+                 while (nextDate.add(Duration(minutes: walk.duration)).isBefore(now)) {
+                    if (walk.recurrence == Recurrence.daily) {
+                      nextDate = nextDate.add(const Duration(days: 1));
+                    } else if (walk.recurrence == Recurrence.weekly) {
+                      nextDate = nextDate.add(const Duration(days: 7));
+                    } else if (walk.recurrence == Recurrence.custom && walk.recurrenceDays.isNotEmpty) {
+                      // Move to next allowed day
+                      do {
+                        nextDate = nextDate.add(const Duration(days: 1));
+                      } while (!walk.recurrenceDays.contains(nextDate.weekday));
+                    } else {
+                       // Fallback if custom has no days or unknown recurrence type to prevent infinite loop
+                       // Just break or treat as non-recurring? 
+                       // Loop condition might prevent breaking if we don't advance.
+                       // Force advance 1 day to be safe or break.
+                       nextDate = nextDate.add(const Duration(days: 1));
+                    }
+                 }
+                 // Return virtual copy with new date
+                 activeWalks.add(walk.copyWith(date: nextDate));
+              }
+            }
+          }
+          
+          // Sort by date
+          activeWalks.sort((a, b) => a.date.compareTo(b.date));
+          
+          return activeWalks;
+        });
   }
 
   // Get walk by ID

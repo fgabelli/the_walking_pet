@@ -63,7 +63,7 @@ class ChatService {
             snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList());
   }
 
-  // Send message
+  // Send message (with optional reply)
   Future<void> sendMessage(String chatId, MessageModel message) async {
     try {
       final batch = _firestore.batch();
@@ -82,6 +82,10 @@ class ChatService {
         timestamp: message.timestamp,
         type: message.type,
         isRead: false,
+        replyToId: message.replyToId,
+        replyToText: message.replyToText,
+        replyToSenderId: message.replyToSenderId,
+        metadata: message.metadata,
       );
 
       batch.set(messageRef, messageWithId.toMap());
@@ -118,5 +122,123 @@ class ChatService {
         .doc(chatId)
         .snapshots()
         .map((doc) => ChatModel.fromFirestore(doc));
+  }
+
+  // Delete chat and all its messages
+  Future<void> deleteChat(String chatId) async {
+    try {
+      final messagesSnapshot = await _firestore
+          .collection(_collection)
+          .doc(chatId)
+          .collection('messages')
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in messagesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      batch.delete(_firestore.collection(_collection).doc(chatId));
+      await batch.commit();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ─── NEW: Toggle reaction on a message ───
+  Future<void> toggleReaction(String chatId, String messageId, String userId, String emoji) async {
+    final ref = _firestore
+        .collection(_collection)
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId);
+
+    final doc = await ref.get();
+    if (!doc.exists) return;
+
+    final reactions = Map<String, String>.from(
+      (doc.data()?['reactions'] as Map<String, dynamic>?) ?? {},
+    );
+
+    // Toggle: if same emoji → remove, if different or new → set
+    if (reactions[userId] == emoji) {
+      reactions.remove(userId);
+    } else {
+      reactions[userId] = emoji;
+    }
+
+    await ref.update({'reactions': reactions});
+  }
+
+  // ─── NEW: Edit message text ───
+  Future<void> editMessage(String chatId, String messageId, String newText) async {
+    await _firestore
+        .collection(_collection)
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .update({
+      'text': newText,
+      'isEdited': true,
+    });
+  }
+
+  // ─── NEW: Soft-delete message ───
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    await _firestore
+        .collection(_collection)
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .update({
+      'isDeleted': true,
+      'text': '',
+      'reactions': {},
+    });
+  }
+
+  // Mark all messages in a chat as read (except those sent by current user)
+  Future<void> markMessagesAsRead(String chatId, String currentUserId) async {
+    try {
+      final messagesRef = _firestore
+          .collection(_collection)
+          .doc(chatId)
+          .collection('messages');
+          
+      final unreadSnapshot = await messagesRef
+          .where('senderId', isNotEqualTo: currentUserId)
+          .get();
+          
+      final batch = _firestore.batch();
+      bool hasUpdates = false;
+      
+      for (final doc in unreadSnapshot.docs) {
+        final data = doc.data();
+        if (data['isRead'] != true) {
+          batch.update(doc.reference, {'isRead': true});
+          hasUpdates = true;
+        }
+      }
+      
+      final chatRef = _firestore.collection(_collection).doc(chatId);
+      final chatDoc = await chatRef.get();
+      if (chatDoc.exists) {
+        final chatData = chatDoc.data();
+        final lastMessageMap = chatData?['lastMessage'] as Map<String, dynamic>?;
+        if (lastMessageMap != null && 
+            lastMessageMap['senderId'] != currentUserId && 
+            lastMessageMap['isRead'] != true) {
+          lastMessageMap['isRead'] = true;
+          batch.update(chatRef, {'lastMessage': lastMessageMap});
+          hasUpdates = true;
+        }
+      }
+      
+      if (hasUpdates) {
+        await batch.commit();
+        print("Marked messages as read in chat $chatId");
+      }
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
   }
 }

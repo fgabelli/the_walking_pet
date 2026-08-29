@@ -123,7 +123,7 @@ class AppTheme {
         ),
       ),
       
-      // Bottom Navigation Bar
+      // Bottom Navigation Bar (Material 2)
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         elevation: 8,
         backgroundColor: AppColors.surface,
@@ -132,6 +132,19 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: true,
         showUnselectedLabels: true,
+      ),
+
+      // Navigation Bar (Material 3)
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primary,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: Colors.white);
+          }
+          return const IconThemeData(color: AppColors.textTertiary);
+        }),
       ),
       
       // Floating Action Button

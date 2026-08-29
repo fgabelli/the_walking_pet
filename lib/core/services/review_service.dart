@@ -1,11 +1,287 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/review_model.dart';
 import '../../shared/models/user_model.dart';
+import 'content_moderation_service.dart';
+
+/// Provider
+final reviewServiceProvider = Provider<ReviewService>((ref) {
+  return ReviewService();
+});
 
 class ReviewService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Add a review for a Business Profile
+  // ============================================
+  // PET BUSINESS / DOG PARK REVIEWS (NEW)
+  // ============================================
+
+  /// Collection path: pet_businesses/{businessId}/reviews
+  CollectionReference _petBusinessReviews(String businessId) {
+    return _firestore
+        .collection('pet_businesses')
+        .doc(businessId)
+        .collection('reviews');
+  }
+
+  /// Submit a review for a pet business/dog park with content moderation
+  Future<ReviewSubmitResult> submitPetBusinessReview({
+    required String businessId,
+    required String authorId,
+    required String authorName,
+    String? authorPhotoUrl,
+    required double rating,
+    required String comment,
+  }) async {
+    // 1. Validate rating
+    if (rating < 1 || rating > 5) {
+      return ReviewSubmitResult(
+        success: false,
+        message: 'Seleziona una valutazione da 1 a 5 stelle.',
+      );
+    }
+
+    // 2. Content moderation check
+    final moderationResult = ContentModerationService.moderateText(comment);
+    if (!moderationResult.isClean) {
+      return ReviewSubmitResult(
+        success: false,
+        message: moderationResult.reason ?? 'Contenuto non appropriato.',
+        moderationFailed: true,
+      );
+    }
+
+    // 3. Check if user already reviewed this business
+    final existingReview = await _petBusinessReviews(businessId)
+        .where('authorId', isEqualTo: authorId)
+        .limit(1)
+        .get();
+
+    if (existingReview.docs.isNotEmpty) {
+      return ReviewSubmitResult(
+        success: false,
+        message: 'Hai già lasciato una recensione. Puoi modificarla.',
+        existingReviewId: existingReview.docs.first.id,
+      );
+    }
+
+    // 4. Create the review
+    final review = ReviewModel(
+      id: '',
+      authorId: authorId,
+      authorName: authorName,
+      authorPhotoUrl: authorPhotoUrl,
+      businessId: businessId,
+      rating: rating,
+      comment: comment.trim(),
+      timestamp: DateTime.now(),
+      moderationStatus: ModerationStatus.approved,
+    );
+
+    try {
+      final docRef = await _petBusinessReviews(businessId).add(review.toFirestore());
+      await _updatePetBusinessRating(businessId);
+
+      return ReviewSubmitResult(
+        success: true,
+        message: 'Recensione pubblicata con successo!',
+        reviewId: docRef.id,
+      );
+    } catch (e) {
+      return ReviewSubmitResult(
+        success: false,
+        message: 'Errore durante la pubblicazione. Riprova.',
+      );
+    }
+  }
+
+  /// Update an existing pet business review
+  Future<ReviewSubmitResult> updatePetBusinessReview({
+    required String businessId,
+    required String reviewId,
+    required String authorId,
+    required double rating,
+    required String comment,
+  }) async {
+    final moderationResult = ContentModerationService.moderateText(comment);
+    if (!moderationResult.isClean) {
+      return ReviewSubmitResult(
+        success: false,
+        message: moderationResult.reason ?? 'Contenuto non appropriato.',
+        moderationFailed: true,
+      );
+    }
+
+    try {
+      final doc = await _petBusinessReviews(businessId).doc(reviewId).get();
+      if (!doc.exists) {
+        return ReviewSubmitResult(success: false, message: 'Recensione non trovata.');
+      }
+      final existing = ReviewModel.fromFirestore(doc);
+      if (existing.authorId != authorId) {
+        return ReviewSubmitResult(success: false, message: 'Non puoi modificare questa recensione.');
+      }
+
+      await _petBusinessReviews(businessId).doc(reviewId).update({
+        'rating': rating,
+        'comment': comment.trim(),
+        'timestamp': Timestamp.fromDate(DateTime.now()),
+        'moderationStatus': ModerationStatus.approved.name,
+        'reportCount': 0,
+        'reportedByUserIds': [],
+      });
+
+      await _updatePetBusinessRating(businessId);
+
+      return ReviewSubmitResult(
+        success: true,
+        message: 'Recensione aggiornata!',
+        reviewId: reviewId,
+      );
+    } catch (e) {
+      return ReviewSubmitResult(success: false, message: 'Errore: $e');
+    }
+  }
+
+  /// Delete a pet business review
+  Future<bool> deletePetBusinessReview({
+    required String businessId,
+    required String reviewId,
+    required String requestingUserId,
+  }) async {
+    try {
+      final doc = await _petBusinessReviews(businessId).doc(reviewId).get();
+      if (!doc.exists) return false;
+
+      final review = ReviewModel.fromFirestore(doc);
+      if (review.authorId != requestingUserId) return false;
+
+      await _petBusinessReviews(businessId).doc(reviewId).delete();
+      await _updatePetBusinessRating(businessId);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Stream of approved reviews for a pet business (most recent first)
+  Stream<List<ReviewModel>> getPetBusinessReviewsStream(String businessId) {
+    return _petBusinessReviews(businessId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ReviewModel.fromFirestore(doc))
+            .where((r) => r.isVisible)
+            .toList());
+  }
+
+  /// Get review stats for a pet business
+  Future<ReviewStats> getPetBusinessReviewStats(String businessId) async {
+    final snapshot = await _petBusinessReviews(businessId)
+        .where('moderationStatus', isEqualTo: 'approved')
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return ReviewStats(averageRating: 0, totalReviews: 0, distribution: {});
+    }
+
+    final reviews = snapshot.docs.map((d) => ReviewModel.fromFirestore(d)).toList();
+    final total = reviews.length;
+    final avg = reviews.map((r) => r.rating).reduce((a, b) => a + b) / total;
+
+    final dist = <int, int>{};
+    for (var i = 1; i <= 5; i++) {
+      dist[i] = reviews.where((r) => r.rating.round() == i).length;
+    }
+
+    return ReviewStats(averageRating: avg, totalReviews: total, distribution: dist);
+  }
+
+  /// Report a review as inappropriate
+  Future<ReviewSubmitResult> reportReview({
+    required String businessId,
+    required String reviewId,
+    required String reportingUserId,
+  }) async {
+    try {
+      final doc = await _petBusinessReviews(businessId).doc(reviewId).get();
+      if (!doc.exists) {
+        return ReviewSubmitResult(success: false, message: 'Recensione non trovata.');
+      }
+
+      final review = ReviewModel.fromFirestore(doc);
+
+      if (review.reportedByUserIds.contains(reportingUserId)) {
+        return ReviewSubmitResult(
+          success: false,
+          message: 'Hai già segnalato questa recensione.',
+        );
+      }
+
+      final newReportCount = review.reportCount + 1;
+      final newReportedBy = [...review.reportedByUserIds, reportingUserId];
+
+      // Auto-flag at 3 reports, auto-reject at 5
+      ModerationStatus newStatus = review.moderationStatus;
+      String? note;
+      if (newReportCount >= 5) {
+        newStatus = ModerationStatus.rejected;
+        note = 'Rimosso automaticamente per troppe segnalazioni.';
+      } else if (newReportCount >= 3) {
+        newStatus = ModerationStatus.flagged;
+      }
+
+      await _petBusinessReviews(businessId).doc(reviewId).update({
+        'reportCount': newReportCount,
+        'reportedByUserIds': newReportedBy,
+        'moderationStatus': newStatus.name,
+        if (note != null) 'moderationNote': note,
+      });
+
+      return ReviewSubmitResult(
+        success: true,
+        message: 'Segnalazione inviata. Grazie per il tuo contributo.',
+      );
+    } catch (e) {
+      return ReviewSubmitResult(success: false, message: 'Errore durante la segnalazione.');
+    }
+  }
+
+  /// Update aggregate rating on pet business document
+  Future<void> _updatePetBusinessRating(String businessId) async {
+    try {
+      final snapshot = await _petBusinessReviews(businessId)
+          .where('moderationStatus', isEqualTo: 'approved')
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        await _firestore.collection('pet_businesses').doc(businessId).update({
+          'rating': null,
+          'userRatingsTotal': 0,
+        });
+        return;
+      }
+
+      final ratings = snapshot.docs
+          .map((d) => (d.data() as Map<String, dynamic>)['rating'] as num)
+          .toList();
+
+      final avg = ratings.reduce((a, b) => a + b) / ratings.length;
+
+      await _firestore.collection('pet_businesses').doc(businessId).update({
+        'rating': double.parse(avg.toStringAsFixed(1)),
+        'userRatingsTotal': ratings.length,
+      });
+    } catch (e) {
+      print('Error updating pet business rating: $e');
+    }
+  }
+
+  // ============================================
+  // EXISTING: BUSINESS PROFILE (USER) REVIEWS
+  // ============================================
+
+  /// Add review for a Business Profile (user-based)
   Future<void> addBusinessReview(ReviewModel review) async {
     if (review.targetUserId == null) throw Exception('Target User ID required for business review');
 
@@ -13,19 +289,12 @@ class ReviewService {
     final reviewsRef = businessRef.collection('reviews');
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Get current business user data to check stats
       final businessDoc = await transaction.get(businessRef);
       if (!businessDoc.exists) throw Exception('Business user not found');
 
       final businessUser = UserModel.fromFirestore(businessDoc);
-      
-      // 2. Add the new review document
-      // We use a new doc ID provided by the caller or auto-gen. 
-      // If review.id is 'temp' or empty, we generate one, but ReviewModel expects an ID.
-      // Usually we let Firestore gen ID. But here we have the object.
-      // Let's assume we create a new ref with auto ID if the passed ID is empty.
-      final newReviewRef = reviewsRef.doc(); 
-      // We need to store the review with this new ID
+
+      final newReviewRef = reviewsRef.doc();
       final reviewToSave = ReviewModel(
         id: newReviewRef.id,
         authorId: review.authorId,
@@ -39,10 +308,9 @@ class ReviewService {
 
       transaction.set(newReviewRef, reviewToSave.toFirestore());
 
-      // 3. Update aggregations
       final currentCount = businessUser.reviewCount;
       final currentAvg = businessUser.averageRating;
-      
+
       final newCount = currentCount + 1;
       final newAvg = ((currentAvg * currentCount) + review.rating) / newCount;
 
@@ -54,7 +322,7 @@ class ReviewService {
     });
   }
 
-  // Get reviews stream for a business
+  /// Get reviews stream for a business user profile
   Stream<List<ReviewModel>> getBusinessReviews(String businessUserId) {
     return _firestore
         .collection('users')
@@ -67,17 +335,13 @@ class ReviewService {
     });
   }
 
-  // --- Announcement Reviews (Legacy/Nextdoor) ---
+  // ============================================
+  // EXISTING: ANNOUNCEMENT REVIEWS
+  // ============================================
 
-  // Add a review for an Announcement
   Future<void> addReview(ReviewModel review) async {
-    // We store announcement reviews in a top-level 'reviews' collection
-    // or we could store them in announcements/{id}/reviews.
-    // Let's use top-level for flexibility if not defined otherwise.
-    
     if (review.announcementId == null) throw Exception('Announcement ID required');
-    
-    // 1. Save Review to 'reviews' collection
+
     final docRef = _firestore.collection('reviews').doc();
     final reviewToSave = ReviewModel(
       id: docRef.id,
@@ -92,12 +356,6 @@ class ReviewService {
     );
     await docRef.set(reviewToSave.toFirestore());
 
-    // 2. Update User's average rating (The author of the announcement)
-    // We need to know who the author of the announcement is.
-    // This requires fetching the announcement or assuming the UI passes the targetUserId.
-    // ReviewModel has `targetUserId`. If CreateReviewScreen sets it, we are good.
-    // If not, we might fail to update the user stats.
-    
     if (review.targetUserId != null) {
       await _updateUserRatingStats(review.targetUserId!, review.rating);
     }
@@ -105,15 +363,15 @@ class ReviewService {
 
   Future<void> _updateUserRatingStats(String userId, double newRating) async {
     final userRef = _firestore.collection('users').doc(userId);
-    
+
     await _firestore.runTransaction((transaction) async {
       final userDoc = await transaction.get(userRef);
-      if (!userDoc.exists) return; // Should not happen
+      if (!userDoc.exists) return;
 
       final user = UserModel.fromFirestore(userDoc);
       final currentCount = user.reviewCount;
       final currentAvg = user.averageRating;
-      
+
       final newCount = currentCount + 1;
       final newAvg = ((currentAvg * currentCount) + newRating) / newCount;
 
@@ -146,10 +404,39 @@ class ReviewService {
   }
 
   Future<double> getUserAverageRating(String userId) async {
-    // Since we now store averageRating in UserModel, we just fetch that.
     final doc = await _firestore.collection('users').doc(userId).get();
     if (!doc.exists) return 0.0;
     final user = UserModel.fromFirestore(doc);
     return user.averageRating;
   }
+}
+
+/// Result of a review submission
+class ReviewSubmitResult {
+  final bool success;
+  final String message;
+  final String? reviewId;
+  final String? existingReviewId;
+  final bool moderationFailed;
+
+  ReviewSubmitResult({
+    required this.success,
+    required this.message,
+    this.reviewId,
+    this.existingReviewId,
+    this.moderationFailed = false,
+  });
+}
+
+/// Review statistics for a business
+class ReviewStats {
+  final double averageRating;
+  final int totalReviews;
+  final Map<int, int> distribution;
+
+  ReviewStats({
+    required this.averageRating,
+    required this.totalReviews,
+    required this.distribution,
+  });
 }

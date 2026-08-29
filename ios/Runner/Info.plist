@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>TSLocationManagerLicense</key>
+	<string>eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSJ9.eyJvcyI6ImlvcyIsImFwcF9pZCI6ImNvbS50aGV3YWxraW5ncGV0LmFwcCIsIm9yZGVyX251bWJlciI6MTYzMDEsInJlbmV3YWxfdXJsIjoiaHR0cHM6Ly9zaG9wLnRyYW5zaXN0b3Jzb2Z0LmNvbS9jYXJ0LzMxODc0MzU2MDUyMDcxOjE_bm90ZT0xMDgxNCIsImN1c3RvbWVyX2lkIjo5ODI5LCJwcm9kdWN0IjoiZmx1dHRlci1iYWNrZ3JvdW5kLWdlb2xvY2F0aW9uIiwia2V5X3ZlcnNpb24iOjEsImFsbG93ZWRfc3VmZml4ZXMiOlsiLmRldiIsIi5kZXZlbG9wbWVudCIsIi5zdGFnaW5nIiwiLnN0YWdlIiwiLnFhIiwiLnVhdCIsIi50ZXN0IiwiLmRlYnVnIl0sIm1heF9idWlsZF9zdGFtcCI6MjAyNzA2MTksImdyYWNlX2J1aWxkcyI6MCwiZW50aXRsZW1lbnRzIjpbImNvcmUiXSwiaWF0IjoxNzc5MTczMjgxfQ.CXw4Wh_qneAI_cZlJ_L7EvCQunRDxcGYhIjViJ_e00ADVLFtZtHz2GlIx4t_boNfddAL3A7EQN_rh4uC22xaBw</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>The Walking Pet</string>
+	<string>Dogzn</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>the_walking_pet</string>
+	<string>Dogzn</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -35,11 +37,11 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>The Walking Pet ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze.</string>
+	<string>DOGZN ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>The Walking Pet ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze anche quando l'app è in background.</string>
+	<string>DOGZN ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze anche quando l'app è in background.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>The Walking Pet ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze anche quando l'app è in background.</string>
+	<string>DOGZN ha bisogno della tua posizione per mostrarti altri utenti e passeggiate nelle vicinanze anche quando l'app è in background.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>L'app necessita di accedere alla galleria per caricare la foto del profilo utente o del cane.</string>
 	<key>NSCameraUsageDescription</key>
@@ -60,16 +62,45 @@
 				<string>com.googleusercontent.apps.903048437394-brjtca4krq8eue6qtipchd4lg9on8gf1</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb27039957352304924</string>
+			</array>
+		</dict>
 	</array>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-5244139045429351~2945059589</string>
+	<string>ca-app-pub-9742953793397431~6887145034</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Questo identificativo verrà utilizzato per mostrarti annunci pubblicitari personalizzati pertinenti ai tuoi interessi.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>DOGZN usa il sensore di movimento per contare i passi durante le tue attività con il tuo Pet.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>DOGZN usa i tuoi dati di attività per visualizzare i passi fatti insieme al tuo Pet e permetterti di completare obiettivi di camminata.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>DOGZN salva le tue passeggiate come allenamenti in Salute per aiutarti a completare i tuoi anelli di attività.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>location</string>
 		<string>remote-notification</string>
+	</array>
+	<key>FacebookAppID</key>
+	<string>27039957352304924</string>
+	<key>FacebookClientToken</key>
+	<string>67614c90f39fb0976996618b76c3883e</string>
+	<key>FacebookDisplayName</key>
+	<string>DOGZN</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>tg</string>
+		<string>telegram</string>
+		<string>instagram</string>
+		<string>instagram-stories</string>
+		<string>fb</string>
+		<string>fbapi</string>
+		<string>https</string>
 	</array>
 </dict>
 </plist>

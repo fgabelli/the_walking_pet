@@ -71,7 +71,7 @@ class AuthService {
   }
 
   // Sign in with Apple
-  Future<UserCredential> signInWithApple() async {
+  Future<({UserCredential credential, String? givenName, String? familyName})> signInWithApple() async {
     try {
       // Request credential for the currently signed in Apple account
       final appleCredential = await SignInWithApple.getAppleIDCredential(
@@ -88,7 +88,13 @@ class AuthService {
       );
 
       // Sign in to Firebase with the Apple credential
-      return await _auth.signInWithCredential(oauthCredential);
+      final credential = await _auth.signInWithCredential(oauthCredential);
+      
+      return (
+        credential: credential,
+        givenName: appleCredential.givenName,
+        familyName: appleCredential.familyName,
+      );
     } catch (e) {
       rethrow;
     }

@@ -1,6 +1,42 @@
 {
     "indexes": [
         {
+            "collectionGroup": "pet_swipes",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "senderPetId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "targetPetId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "isLike",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "ads",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "targetZone",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "isActive",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "expiresAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
             "collectionGroup": "reviews",
             "queryScope": "COLLECTION",
             "fields": [
@@ -66,6 +102,108 @@
                 },
                 {
                     "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "lost_pet_alerts",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "isActive",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "lost_pet_alerts",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "isActive",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "completed_walks",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "userId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "startTime",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "social_posts",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "authorId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "reels",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "moderationStatus",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "reels",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "authorId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "moderationStatus",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "reels",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "authorId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
             ]

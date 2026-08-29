@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/admin/presentation/screens/admin_login_screen.dart';
 import 'core/theme/app_colors.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // TODO: Replace with your actual Firebase Options for Web
@@ -16,6 +18,7 @@ void main() async {
       messagingSenderId: '903048437394',
       projectId: 'thewalkingpet-a1578',
       storageBucket: 'thewalkingpet-a1578.firebasestorage.app',
+      authDomain: 'thewalkingpet-a1578.firebaseapp.com',
     ),
   );
 
@@ -28,10 +31,10 @@ class AdminApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'The Walking Pet Admin',
+      title: 'DOGZN Admin',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Inter',
+        textTheme: GoogleFonts.montserratTextTheme(),
         primaryColor: AppColors.primary,
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,

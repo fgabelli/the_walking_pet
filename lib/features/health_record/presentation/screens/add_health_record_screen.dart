@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/health_service.dart';
 import '../../../../shared/models/health_record_model.dart';
+import '../../../../shared/models/dog_model.dart';
+import '../../../../shared/data/vaccination_protocols.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class AddHealthRecordScreen extends ConsumerStatefulWidget {
   final String petId;
-  const AddHealthRecordScreen({super.key, required this.petId});
+  final DogModel? pet;
+  final HealthRecordType initialType;
+  const AddHealthRecordScreen({super.key, required this.petId, this.pet, this.initialType = HealthRecordType.vaccine});
 
   @override
   ConsumerState<AddHealthRecordScreen> createState() => _AddHealthRecordScreenState();
@@ -16,15 +20,23 @@ class AddHealthRecordScreen extends ConsumerStatefulWidget {
 class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  HealthRecordType _selectedType = HealthRecordType.vaccine;
+  late HealthRecordType _selectedType;
   final _titleController = TextEditingController();
   final _vetController = TextEditingController();
   final _notesController = TextEditingController();
-  
   DateTime _selectedDate = DateTime.now();
   DateTime? _nextDueDate;
-  
   bool _isLoading = false;
+
+  VaccinationProtocol? _selectedProtocol;
+  bool _isCustomVaccine = false;
+  bool _nextDueDateManuallySet = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = widget.initialType;
+  }
 
   @override
   void dispose() {
@@ -32,6 +44,40 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
     _vetController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  List<VaccinationProtocol> get _availableVaccines {
+    if (widget.pet == null) return [];
+    return VaccinationProtocols.forSpecies(widget.pet!.species);
+  }
+
+  void _onProtocolSelected(VaccinationProtocol? protocol) {
+    setState(() {
+      _selectedProtocol = protocol;
+      _isCustomVaccine = false;
+      if (protocol != null) {
+        _titleController.text = protocol.name;
+        _autoCalculateNextDueDate();
+      }
+    });
+  }
+
+  void _onCustomVaccineSelected() {
+    setState(() {
+      _selectedProtocol = null;
+      _isCustomVaccine = true;
+      _titleController.clear();
+      _nextDueDate = null;
+      _nextDueDateManuallySet = false;
+    });
+  }
+
+  void _autoCalculateNextDueDate() {
+    if (_selectedProtocol != null && !_nextDueDateManuallySet) {
+      setState(() {
+        _nextDueDate = _selectedDate.add(Duration(days: _selectedProtocol!.boosterIntervalDays));
+      });
+    }
   }
 
   Future<void> _selectDate(BuildContext context, bool isDueDate) async {
@@ -45,8 +91,10 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
       setState(() {
         if (isDueDate) {
           _nextDueDate = picked;
+          _nextDueDateManuallySet = true;
         } else {
           _selectedDate = picked;
+          _autoCalculateNextDueDate();
         }
       });
     }
@@ -57,18 +105,28 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
       setState(() => _isLoading = true);
       
       try {
+        final vaccineTitle = _selectedType == HealthRecordType.vaccine
+            ? (_selectedProtocol?.name ?? _titleController.text)
+            : _titleController.text;
+
         final newRecord = HealthRecordModel(
           id: '', // Firestore generates this
           petId: widget.petId,
           type: _selectedType,
-          title: _titleController.text,
+          title: vaccineTitle,
+          specificName: _selectedType == HealthRecordType.vaccine ? vaccineTitle : null,
           date: _selectedDate,
           nextDueDate: _nextDueDate,
+          reminderEnabled: _nextDueDate != null,
+          isCompleted: _selectedDate.isBefore(DateTime.now()) || _selectedDate.isAtSameMomentAs(DateTime.now()),
           veterinarianName: _vetController.text,
           notes: _notesController.text,
         );
 
-        await ref.read(healthServiceProvider).addHealthRecord(newRecord);
+        await ref.read(healthServiceProvider).addHealthRecord(
+          newRecord,
+          petName: widget.pet?.name,
+        );
         if (mounted) {
           Navigator.pop(context);
         }
@@ -86,6 +144,9 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isVaccine = _selectedType == HealthRecordType.vaccine;
+    final hasProtocols = widget.pet != null && isVaccine;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aggiungi Evento Sanitario'),
@@ -112,22 +173,45 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
                   );
                 }).toList(),
                 onChanged: (val) {
-                  if (val != null) setState(() => _selectedType = val);
+                  if (val != null) {
+                    setState(() {
+                      _selectedType = val;
+                      _selectedProtocol = null;
+                      _isCustomVaccine = false;
+                      _nextDueDateManuallySet = false;
+                      if (val != HealthRecordType.vaccine) {
+                        _nextDueDate = null;
+                      }
+                    });
+                  }
                 },
               ),
               const SizedBox(height: 16),
 
-              // Title
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Titolo (es. Vaccino Rabbia)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
+              // Vaccine Protocol Selector (only for vaccine type with pet data)
+              if (hasProtocols) ...[
+                _buildVaccineSelector(),
+                const SizedBox(height: 16),
+              ],
+
+              // Title (shown always for non-vaccine, or for custom vaccine, or when no pet data)
+              if (!hasProtocols || _isCustomVaccine || !isVaccine)
+                TextFormField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    labelText: _isCustomVaccine ? 'Nome vaccino personalizzato' : 'Titolo (es. Vaccino Rabbia)',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.title),
+                  ),
+                  validator: (value) {
+                    if (!hasProtocols || _isCustomVaccine || !isVaccine) {
+                      return value == null || value.isEmpty ? 'Inserisci un titolo' : null;
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Inserisci un titolo' : null,
-              ),
-              const SizedBox(height: 16),
+              if (!hasProtocols || _isCustomVaccine || !isVaccine)
+                const SizedBox(height: 16),
 
               // Date
               InkWell(
@@ -156,7 +240,10 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
                     suffixIcon: _nextDueDate != null 
                         ? IconButton(
                             icon: const Icon(Icons.clear), 
-                            onPressed: () => setState(() => _nextDueDate = null),
+                            onPressed: () => setState(() {
+                              _nextDueDate = null;
+                              _nextDueDateManuallySet = false;
+                            }),
                           )
                         : null,
                   ),
@@ -170,6 +257,14 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
                   ),
                 ),
               ),
+              if (_nextDueDate != null && _selectedProtocol != null && !_nextDueDateManuallySet)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 12),
+                  child: Text(
+                    'Calcolata automaticamente (${_selectedProtocol!.boosterIntervalDays} giorni)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+                  ),
+                ),
               const SizedBox(height: 16),
 
               // Veterinarian
@@ -214,6 +309,136 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVaccineSelector() {
+    final vaccines = _availableVaccines;
+    final isSelected = _selectedProtocol != null || _isCustomVaccine;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Seleziona vaccino',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        ...vaccines.map((protocol) {
+          final selected = _selectedProtocol?.name == protocol.name;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => _onProtocolSelected(protocol),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected ? AppColors.primary : Colors.grey.shade300,
+                    width: selected ? 2 : 1,
+                  ),
+                  color: selected ? AppColors.primary.withOpacity(0.05) : null,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      selected ? Icons.check_circle : Icons.circle_outlined,
+                      color: selected ? AppColors.primary : Colors.grey,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  protocol.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: selected ? AppColors.primary : null,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: protocol.isCore
+                                      ? Colors.teal.withOpacity(0.1)
+                                      : Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  protocol.isCore ? 'Obbligatorio' : 'Consigliato',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: protocol.isCore ? Colors.teal : Colors.orange,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            protocol.description,
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        // Custom option
+        InkWell(
+          onTap: _onCustomVaccineSelected,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isCustomVaccine ? AppColors.primary : Colors.grey.shade300,
+                width: _isCustomVaccine ? 2 : 1,
+              ),
+              color: _isCustomVaccine ? AppColors.primary.withOpacity(0.05) : null,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isCustomVaccine ? Icons.check_circle : Icons.circle_outlined,
+                  color: _isCustomVaccine ? AppColors.primary : Colors.grey,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Altro (personalizzato)',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: _isCustomVaccine ? AppColors.primary : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (!isSelected)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Seleziona un vaccino',
+              style: TextStyle(fontSize: 12, color: Colors.red.shade400),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -55,17 +55,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
          offering ??= offerings.current;
          
          final selectedOffering = offering;
-         
-         if (selectedOffering != null) {
-            buffer.writeln('Selected: ${selectedOffering.identifier}');
-            buffer.writeln('Pkgs count: ${selectedOffering.availablePackages.length}');
-            if (selectedOffering.availablePackages.isEmpty) {
-              buffer.writeln('WARNING: Selected offering has 0 packages!');
-            }
-            setState(() {
-             _packages = selectedOffering.availablePackages;
-             _debugInfo = buffer.toString();
-            });
+                  if (selectedOffering != null) {
+             buffer.writeln('Selected: ${selectedOffering.identifier}');
+             buffer.writeln('Pkgs count: ${selectedOffering.availablePackages.length}');
+             if (selectedOffering.availablePackages.isEmpty) {
+               buffer.writeln('WARNING: Selected offering has 0 packages!');
+             }
+              // Filter: only keep monthly for business_pro offering
+              final filteredPackages = widget.offeringId == 'business_pro'
+                  ? selectedOffering.availablePackages.where((p) {
+                      final id = p.identifier.toLowerCase();
+                      return !id.contains('annual') && !id.contains('yearly');
+                    }).toList()
+                  : selectedOffering.availablePackages;
+              setState(() {
+               _packages = filteredPackages;
+               _debugInfo = buffer.toString();
+              });
          } else {
            buffer.writeln('ERROR: Offering "${widget.offeringId}" NOT FOUND!');
            setState(() => _debugInfo = buffer.toString());
@@ -181,17 +187,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                              ],
                            ),
                         
-                        // DEBUG: Show Offering ID
-                         Padding(
-                           padding: const EdgeInsets.only(bottom: 8.0),
-                           child: Text("Offering: ${widget.offeringId}", style: TextStyle(fontSize: 10, color: Colors.grey[400])),
-                         ),
 
                         ..._packages.map((p) => Column(
                           children: [
                             _buildProductCard(context, p),
-                            Text("Pkg: ${p.identifier}\nProd: ${p.storeProduct.identifier}", 
-                                style: TextStyle(fontSize: 9, color: Colors.grey[400])),
                             const SizedBox(height: 10),
                           ],
                         )),
@@ -317,6 +316,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
     final product = package.storeProduct;
 
+    // Determine period label from package identifier
+    final pkgId = package.identifier.toLowerCase();
+    final isAnnual = pkgId.contains('annual') || pkgId.contains('yearly');
+    final periodLabel = isAnnual ? '/anno' : '/mese';
+
     return GestureDetector(
       onTap: () => _purchase(package),
       child: Container(
@@ -362,7 +366,15 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                           color: AppColors.primary,
                         ),
                       ),
-                       const SizedBox(width: 8),
+                       const SizedBox(width: 6),
+                       Text(
+                         periodLabel,
+                         style: TextStyle(
+                           fontSize: 14,
+                           color: Colors.grey[500],
+                           fontWeight: FontWeight.w500,
+                         ),
+                       ),
                     ],
                   ),
                 ],

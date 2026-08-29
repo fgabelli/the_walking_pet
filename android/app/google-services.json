@@ -8,18 +8,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:903048437394:android:b99f821aeb575d83d8504b",
+        "mobilesdk_app_id": "1:903048437394:android:155d7c606b93892dd8504b",
         "android_client_info": {
-          "package_name": "com.thewalkingpet.the_walking_pet"
+          "package_name": "com.thewalkingpet.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "903048437394-3q5simnnnqm99u1rqd49pi8ijidagoe7.apps.googleusercontent.com",
+          "client_id": "903048437394-55f4rq09b4ioclss0cb4nc9cbpt7m7oa.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.thewalkingpet.the_walking_pet",
+            "package_name": "com.thewalkingpet.app",
             "certificate_hash": "f70e692ff9afe7e7ca6ab27afafc31cc3d07141b"
+          }
+        },
+        {
+          "client_id": "903048437394-5uca85rmnl2vi7c6ajm38firranb935h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewalkingpet.app",
+            "certificate_hash": "8ccadd6b923d93ef494285c83a859252fab3f7a2"
+          }
+        },
+        {
+          "client_id": "903048437394-tqhuvat4vgb9vn92seu6jbhc0t7d5th7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewalkingpet.app",
+            "certificate_hash": "3ef579b04ecbebf8cf05e49f20b6073bfaeda94c"
           }
         },
         {
@@ -40,15 +56,16 @@
               "client_type": 3
             },
             {
-              "client_id": "903048437394-ndo19anet2rpv57qfl8bqlvcbbgsblvl.apps.googleusercontent.com",
+              "client_id": "903048437394-brjtca4krq8eue6qtipchd4lg9on8gf1.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.thewalkingpet.theWalkingPet"
+                "bundle_id": "com.thewalkingpet.app"
               }
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-9742953793397431~3308038853"
     }
   ],
   "configuration_version": "1"

@@ -251,7 +251,7 @@ class _BusinessProfileEditScreenState extends ConsumerState<BusinessProfileEditS
                         child: TextFormField(
                           controller: _addressController,
                           decoration: const InputDecoration(
-                            labelText: 'Indirizzo Completo',
+                            labelText: 'Indirizzo Completo (Opzionale)',
                             prefixIcon: Icon(Icons.location_on),
                             border: OutlineInputBorder(),
                             suffixIcon: Icon(Icons.search),

@@ -13,6 +13,7 @@ class PrivacySettingsScreen extends ConsumerStatefulWidget {
 
 class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   LocationPrivacy? _selectedPrivacy;
+  bool? _isGhost; // Track Ghost Mode locally
   List<String> _whitelist = [];
   bool _isDirty = false;
 
@@ -38,10 +39,12 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           // Initialize state from user data if not dirty and not yet initialized
           if (!_isDirty && _selectedPrivacy == null) {
              _selectedPrivacy = user.locationPrivacy;
+             _isGhost = user.isGhost;
              _whitelist = List.from(user.locationWhitelist);
           }
           
           final currentPrivacy = _selectedPrivacy ?? user.locationPrivacy;
+          final currentIsGhost = _isGhost ?? user.isGhost;
 
           return SingleChildScrollView(
             child: Column(
@@ -54,32 +57,89 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
-                _buildRadioTile(
-                  title: 'Tutti',
-                  subtitle: 'Tutti gli utenti possono vedere la tua posizione.',
-                  value: LocationPrivacy.everyone,
-                  groupValue: currentPrivacy,
-                ),
-                _buildRadioTile(
-                  title: 'Amici',
-                  subtitle: 'Solo i tuoi amici possono vedere dove sei.',
-                  value: LocationPrivacy.friends,
-                  groupValue: currentPrivacy,
-                ),
-                _buildRadioTile(
-                  title: 'Amici Stretti',
-                  subtitle: 'Solo i tuoi amici stretti possono vedere la tua posizione.',
-                  value: LocationPrivacy.closeFriends,
-                  groupValue: currentPrivacy,
-                ),
-                _buildRadioTile(
-                  title: 'Personalizzata',
-                  subtitle: 'Scegli specificamente chi può vederti.',
-                  value: LocationPrivacy.custom,
-                  groupValue: currentPrivacy,
+                
+                // Option 1: GHOST MODE (Nessuno)
+                RadioListTile<bool>(
+                  title: const Text('Nessuno (Ghost Mode)'),
+                  subtitle: const Text('Sei invisibile a tutti. Puoi comunque vedere segnalazioni e locali.'),
+                  value: true,
+                  groupValue: currentIsGhost,
+                  onChanged: (val) {
+                    setState(() {
+                      _isGhost = true;
+                      _isDirty = true;
+                    });
+                  },
+                  secondary: const Icon(Icons.visibility_off),
                 ),
                 
-                if (currentPrivacy == LocationPrivacy.custom) ...[
+                const Divider(),
+                
+                // Option 2: EVERYONE
+                RadioListTile<String>( // Type hack to distinguish, or just custom logic
+                  title: const Text('Tutti'),
+                  subtitle: const Text('Tutti gli utenti possono vedere la tua posizione.'),
+                  value: 'everyone',
+                  groupValue: !currentIsGhost && currentPrivacy == LocationPrivacy.everyone ? 'everyone' : null,
+                  onChanged: (_) {
+                     setState(() {
+                       _isGhost = false;
+                       _selectedPrivacy = LocationPrivacy.everyone;
+                       _isDirty = true;
+                     });
+                  },
+                   secondary: const Icon(Icons.public),
+                ),
+
+                // Option 3: FRIENDS
+                RadioListTile<String>(
+                  title: const Text('Amici'),
+                  subtitle: const Text('Solo i tuoi amici possono vedere dove sei.'),
+                  value: 'friends',
+                  groupValue: !currentIsGhost && currentPrivacy == LocationPrivacy.friends ? 'friends' : null,
+                  onChanged: (_) {
+                     setState(() {
+                       _isGhost = false;
+                       _selectedPrivacy = LocationPrivacy.friends;
+                       _isDirty = true;
+                     });
+                  },
+                   secondary: const Icon(Icons.people),
+                ),
+
+                // Option 4: CLOSE FRIENDS
+                RadioListTile<String>(
+                  title: const Text('Amici Stretti'),
+                  subtitle: const Text('Solo i tuoi amici stretti possono vedere la tua posizione.'),
+                  value: 'closeFriends',
+                  groupValue: !currentIsGhost && currentPrivacy == LocationPrivacy.closeFriends ? 'closeFriends' : null,
+                  onChanged: (_) {
+                     setState(() {
+                       _isGhost = false;
+                       _selectedPrivacy = LocationPrivacy.closeFriends;
+                       _isDirty = true;
+                     });
+                  },
+                   secondary: const Icon(Icons.favorite),
+                ),
+
+                // Option 5: CUSTOM
+                RadioListTile<String>(
+                  title: const Text('Personalizzata'),
+                  subtitle: const Text('Scegli specificamente chi può vederti.'),
+                  value: 'custom',
+                  groupValue: !currentIsGhost && currentPrivacy == LocationPrivacy.custom ? 'custom' : null,
+                  onChanged: (_) {
+                     setState(() {
+                       _isGhost = false;
+                       _selectedPrivacy = LocationPrivacy.custom;
+                       _isDirty = true;
+                     });
+                  },
+                   secondary: const Icon(Icons.settings),
+                ),
+                
+                if (!currentIsGhost && currentPrivacy == LocationPrivacy.custom) ...[
                   const Divider(),
                   const Padding(
                     padding: EdgeInsets.all(16.0),
@@ -110,40 +170,28 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     );
   }
 
-  Widget _buildRadioTile({
-    required String title,
-    required String subtitle,
-    required LocationPrivacy value,
-    required LocationPrivacy groupValue,
-  }) {
-    return RadioListTile<LocationPrivacy>(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      value: value,
-      groupValue: groupValue,
-      onChanged: (newValue) {
-        if (newValue != null) {
-          setState(() {
-            _selectedPrivacy = newValue;
-            _isDirty = true;
-          });
-        }
-      },
-    );
-  }
-
   void _saveSettings() async {
-    if (_selectedPrivacy == null) return;
+    // If we're in Ghost Mode, that's the priority
+    // Ideally we should update both, but updateProfile handles isGhost
+    // We might need to make two calls or update profile provider to handle both
     
     final user = ref.read(authServiceProvider).currentUser;
     if (user == null) return;
 
     try {
-      await ref.read(userServiceProvider).updateLocationPrivacy(
-        user.uid,
-        privacy: _selectedPrivacy!,
-        whitelist: _selectedPrivacy == LocationPrivacy.custom ? _whitelist : [],
-      );
+      // 1. Update isGhost
+      if (_isGhost != null) {
+          await ref.read(profileControllerProvider.notifier).updateProfile(isGhost: _isGhost);
+      }
+      
+      // 2. Update Location Privacy (only relevant if not ghost, but good to save anyway)
+      if (_selectedPrivacy != null) {
+          await ref.read(userServiceProvider).updateLocationPrivacy(
+            user.uid,
+            privacy: _selectedPrivacy!,
+            whitelist: _selectedPrivacy == LocationPrivacy.custom ? _whitelist : [],
+          );
+      }
       
       if (mounted) {
         setState(() {

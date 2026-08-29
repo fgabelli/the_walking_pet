@@ -45,10 +45,7 @@ class AnnouncementModel {
       scheduledTime: data['scheduledTime'] != null
           ? (data['scheduledTime'] as Timestamp).toDate()
           : null,
-      responses: (data['responses'] as List<dynamic>?)
-              ?.map((e) => AnnouncementResponse.fromMap(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      responses: _parseResponses(data['responses']),
       imageUrl: data['imageUrl'],
       authorName: data['authorName'] ?? 'Utente',
       authorPhotoUrl: data['authorPhotoUrl'],
@@ -59,6 +56,30 @@ class AnnouncementModel {
         orElse: () => AnnouncementCategory.news,
       ),
     );
+  }
+
+  /// Parse responses array safely — skip individual broken entries
+  static List<AnnouncementResponse> _parseResponses(dynamic raw) {
+    if (raw == null || raw is! List) return [];
+    final List<AnnouncementResponse> results = [];
+    for (final entry in raw) {
+      try {
+        Map<String, dynamic> map;
+        if (entry is Map<String, dynamic>) {
+          map = entry;
+        } else if (entry is Map) {
+          map = Map<String, dynamic>.from(entry);
+        } else {
+          print('[AnnouncementModel] Skipping non-map response entry: ${entry.runtimeType}');
+          continue;
+        }
+        results.add(AnnouncementResponse.fromMap(map));
+      } catch (e) {
+        // Skip broken response instead of failing entire list
+        print('[AnnouncementModel] Skipping malformed response: $e');
+      }
+    }
+    return results;
   }
 
   Map<String, dynamic> toFirestore() {
@@ -122,6 +143,7 @@ enum AnnouncementCategory {
   social,
   litter,
   advice,
+  adoption,
   other,
 }
 
@@ -142,6 +164,8 @@ extension AnnouncementCategoryExtension on AnnouncementCategory {
         return 'Cucciolata 🐾';
       case AnnouncementCategory.advice:
         return 'Consiglio';
+      case AnnouncementCategory.adoption:
+        return 'Adozione 🏡';
       case AnnouncementCategory.other:
         return 'Altro';
     }
@@ -163,6 +187,8 @@ extension AnnouncementCategoryExtension on AnnouncementCategory {
         return Colors.pink;
       case AnnouncementCategory.advice:
         return Colors.amber;
+      case AnnouncementCategory.adoption:
+        return Colors.teal;
       case AnnouncementCategory.other:
         return Colors.grey;
     }
@@ -184,6 +210,8 @@ extension AnnouncementCategoryExtension on AnnouncementCategory {
         return Icons.pets;
       case AnnouncementCategory.advice:
         return Icons.lightbulb;
+      case AnnouncementCategory.adoption:
+        return Icons.volunteer_activism;
       case AnnouncementCategory.other:
         return Icons.more_horiz;
     }
@@ -244,6 +272,20 @@ class AnnouncementResponse {
   });
 
   factory AnnouncementResponse.fromMap(Map<String, dynamic> map) {
+    DateTime parsedTimestamp;
+    try {
+      final ts = map['timestamp'];
+      if (ts is Timestamp) {
+        parsedTimestamp = ts.toDate();
+      } else if (ts is DateTime) {
+        parsedTimestamp = ts;
+      } else {
+        parsedTimestamp = DateTime.now();
+      }
+    } catch (_) {
+      parsedTimestamp = DateTime.now();
+    }
+
     return AnnouncementResponse(
       userId: map['userId'] ?? '',
       userName: map['userName'] ?? 'Utente',
@@ -253,7 +295,7 @@ class AnnouncementResponse {
         orElse: () => ResponseType.message,
       ),
       message: map['message'],
-      timestamp: (map['timestamp'] as Timestamp).toDate(),
+      timestamp: parsedTimestamp,
     );
   }
 

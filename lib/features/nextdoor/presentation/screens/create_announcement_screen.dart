@@ -9,8 +9,9 @@ import '../providers/nextdoor_provider.dart';
 
 class CreateAnnouncementScreen extends ConsumerStatefulWidget {
   final AnnouncementModel? announcementToEdit;
+  final String? initialMessage;
 
-  const CreateAnnouncementScreen({super.key, this.announcementToEdit});
+  const CreateAnnouncementScreen({super.key, this.announcementToEdit, this.initialMessage});
 
   @override
   ConsumerState<CreateAnnouncementScreen> createState() => _CreateAnnouncementScreenState();
@@ -31,6 +32,10 @@ class _CreateAnnouncementScreenState extends ConsumerState<CreateAnnouncementScr
   @override
   void initState() {
     super.initState();
+    if (widget.initialMessage != null) {
+      _messageController.text = widget.initialMessage!;
+      _selectedCategory = AnnouncementCategory.news;
+    }
     if (widget.announcementToEdit != null) {
       _isEditing = true;
       _messageController.text = widget.announcementToEdit!.message;

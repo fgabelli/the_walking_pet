@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "thewalkingpet-a1578"
-  }
+  },
+  "targets": {
+    "thewalkingpet-a1578": {
+      "hosting": {
+        "admin": [
+          "dogzn-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

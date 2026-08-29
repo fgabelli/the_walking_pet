@@ -43,6 +43,13 @@ class MapService {
 
   CollectionReference<Map<String, dynamic>> get _collectionReference =>
       _firestore.collection(_collection);
+
+  /// Get the real-time location of a specific user
+  Future<UserLocation?> getUserLocation(String uid) async {
+    final doc = await _firestore.collection(_collection).doc(uid).get();
+    if (!doc.exists || doc.data() == null) return null;
+    return UserLocation.fromMap(doc.data()!, doc.id);
+  }
 }
 
 class UserLocation {
@@ -59,13 +66,26 @@ class UserLocation {
   });
 
   factory UserLocation.fromMap(Map<String, dynamic> data, String id) {
-    final geoData = data['geo'] as Map<String, dynamic>;
-    final geoPoint = geoData['geopoint'] as GeoPoint;
+    double? lat;
+    double? lng;
+    
+    if (data['geo'] != null && data['geo'] is Map) {
+      final geoData = data['geo'] as Map<String, dynamic>;
+      final geoPoint = geoData['geopoint'] as GeoPoint?;
+      if (geoPoint != null) {
+        lat = geoPoint.latitude;
+        lng = geoPoint.longitude;
+      }
+    }
+    
+    // Fallback if data was flat (e.g. from migrations or manual edits)
+    lat ??= (data['latitude'] as num?)?.toDouble();
+    lng ??= (data['longitude'] as num?)?.toDouble();
     
     return UserLocation(
       uid: data['uid'] ?? id,
-      latitude: geoPoint.latitude,
-      longitude: geoPoint.longitude,
+      latitude: lat ?? 0.0,
+      longitude: lng ?? 0.0,
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
   }

@@ -108,7 +108,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/icons/app_icon.png',
+                        'assets/images/dogzn/dogzn_app_icon.jpg',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -122,7 +122,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Unisciti alla community di The Walking Pet',
+                  'Unisciti alla community di DOGZN',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),

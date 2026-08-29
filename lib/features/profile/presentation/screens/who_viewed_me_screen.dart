@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
-import '../../providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 import '../../data/visitor_service.dart';
 import '../../../subscriptions/presentation/screens/paywall_screen.dart';
 

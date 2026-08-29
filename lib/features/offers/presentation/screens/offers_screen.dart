@@ -34,12 +34,85 @@ class OffersScreen extends ConsumerWidget {
           if (offers.isEmpty) {
             return const Center(child: Text('Nessuna offerta disponibile al momento.'));
           }
+
+          // Count recent offers (last 24 hours)
+          final now = DateTime.now();
+          final recentOffers = offers.where(
+            (o) => now.difference(o.createdAt).inHours < 24,
+          ).length;
+
           return ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: offers.length,
+            itemCount: offers.length + (recentOffers > 0 ? 1 : 0),
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final offer = offers[index];
+              // Banner for new offers
+              if (recentOffers > 0 && index == 0) {
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.amber.shade600, Colors.orange.shade500],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.local_offer, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$recentOffers ${recentOffers == 1 ? 'nuova offerta' : 'nuove offerte'} vicino a te!',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Pubblicate nelle ultime 24 ore',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_downward_rounded,
+                        color: Colors.white.withOpacity(0.7),
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final offerIndex = recentOffers > 0 ? index - 1 : index;
+              final offer = offers[offerIndex];
+              final isNew = now.difference(offer.createdAt).inHours < 24;
+
               return Card(
                 clipBehavior: Clip.antiAlias,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -74,6 +147,34 @@ class OffersScreen extends ConsumerWidget {
                               child: Text(
                                 '-${offer.discountPercentage!.toInt()}%',
                                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        if (isNew)
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade600,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.fiber_new, color: Colors.white, size: 14),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'NUOVA',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 10,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),

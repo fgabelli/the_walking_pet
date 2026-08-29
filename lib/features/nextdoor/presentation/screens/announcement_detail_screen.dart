@@ -1,14 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/announcement_model.dart';
-import '../../../../shared/models/review_model.dart';
 import '../../../../shared/models/user_model.dart';
 import 'create_announcement_screen.dart';
 import '../providers/nextdoor_provider.dart';
-import '../../../reviews/presentation/screens/create_review_screen.dart';
-import '../../../../core/services/review_service.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../shared/presentation/widgets/user_profile_bottom_sheet.dart';
 import 'package:the_walking_pet/features/auth/presentation/providers/auth_provider.dart';
@@ -24,10 +22,16 @@ class AnnouncementDetailScreen extends ConsumerStatefulWidget {
 
 class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScreen> {
   final _commentController = TextEditingController();
+  Stream<DocumentSnapshot>? _announcementStream;
 
   @override
   void initState() {
     super.initState();
+    // Listen to the announcement document directly for real-time comment updates
+    _announcementStream = FirebaseFirestore.instance
+        .collection('announcements')
+        .doc(widget.announcement.id)
+        .snapshots();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _markAsViewed();
     });
@@ -72,25 +76,31 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
 
   @override
   Widget build(BuildContext context) {
-    // We should watch the specific announcement to get updates on comments
-    // But our provider returns a list.
-    // We can find the updated announcement from the list.
-    final nextdoorState = ref.watch(nextdoorControllerProvider);
-    final updatedAnnouncement = nextdoorState.announcements.firstWhere(
-      (a) => a.id == widget.announcement.id,
-      orElse: () => widget.announcement,
-    );
-
-    final comments = updatedAnnouncement.responses
-        .where((r) => r.type == ResponseType.message)
-        .toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp)); // Newest first
-
     final currentUser = ref.read(authServiceProvider).currentUser;
-    print('DEBUG: Current User ID: ${currentUser?.uid}');
-    print('DEBUG: Announcement User ID: ${updatedAnnouncement.userId}');
 
-    return Scaffold(
+    // Use StreamBuilder for real-time updates directly from Firestore
+    // This ensures comments are visible even when navigating from SOS card
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _announcementStream,
+      builder: (context, snapshot) {
+        AnnouncementModel updatedAnnouncement;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          updatedAnnouncement = AnnouncementModel.fromFirestore(snapshot.data!);
+        } else {
+          // Fallback: try provider, then widget
+          final nextdoorState = ref.watch(nextdoorControllerProvider);
+          updatedAnnouncement = nextdoorState.announcements.firstWhere(
+            (a) => a.id == widget.announcement.id,
+            orElse: () => widget.announcement,
+          );
+        }
+
+        final comments = updatedAnnouncement.responses
+            .where((r) => r.type == ResponseType.message)
+            .toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+        return Scaffold(
       appBar: AppBar(
         title: const Text('Dettagli Annuncio'),
         centerTitle: true,
@@ -231,10 +241,10 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                                   ),
                                   const SizedBox(width: 8),
                                   // User average rating stars
-                                  FutureBuilder<double>(
-                                    future: ReviewService().getUserAverageRating(updatedAnnouncement.userId),
+                                  FutureBuilder<UserModel?>(
+                                    future: UserService().getUserById(updatedAnnouncement.userId),
                                     builder: (context, snapshot) {
-                                      final avgRating = snapshot.data ?? 0.0;
+                                      final avgRating = snapshot.data?.averageRating ?? 0.0;
                                       if (avgRating == 0.0) return const SizedBox.shrink();
                                       
                                       return Row(
@@ -289,47 +299,6 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                     ),
                   ),
 
-                  // Review Button
-                  if (updatedAnnouncement.userId != ref.read(authServiceProvider).currentUser?.uid)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: FutureBuilder<bool>(
-                        future: ReviewService().hasUserReviewedAnnouncement(
-                          ref.read(authServiceProvider).currentUser?.uid ?? '',
-                          updatedAnnouncement.id,
-                        ),
-                        builder: (context, snapshot) {
-                          final hasReviewed = snapshot.data ?? false;
-                          
-                          return TextButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CreateReviewScreen(
-                                      announcementId: updatedAnnouncement.id,
-                                      targetUserId: updatedAnnouncement.userId,
-                                      announcementTitle: updatedAnnouncement.message.length > 50
-                                        ? '${updatedAnnouncement.message.substring(0, 50)}...'
-                                        : updatedAnnouncement.message,
-                                  ),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              hasReviewed ? Icons.edit : Icons.star_rate_rounded,
-                              size: 18,
-                            ),
-                            label: Text(hasReviewed ? 'Modifica' : 'Recensisci'),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
 
                   // Message
                   Padding(
@@ -446,121 +415,6 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                       );
                       },
                     ),
-                  // Reviews Section
-                  const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Recensioni',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ),
-                  StreamBuilder<List<ReviewModel>>(
-                    stream: ReviewService().getReviewsForAnnouncement(updatedAnnouncement.id),
-                    builder: (context, reviewSnapshot) {
-                      if (reviewSnapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      final reviews = reviewSnapshot.data ?? [];
-
-                      if (reviews.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Text('Nessuna recensione ancora. Sii il primo!'),
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: reviews.length,
-                        itemBuilder: (context, index) {
-                          final review = reviews[index];
-                          
-                          return FutureBuilder<UserModel?>(
-                            future: UserService().getUserById(review.authorId),
-                            builder: (context, userSnapshot) {
-                              final authorName = userSnapshot.data?.fullName ?? 'Utente';
-                              final authorPhotoUrl = userSnapshot.data?.photoUrl;
-
-                              return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          InkWell(
-                                            onTap: userSnapshot.data != null
-                                                ? () => showUserProfileBottomSheet(context, userSnapshot.data!)
-                                                : null,
-                                            child: CircleAvatar(
-                                              radius: 20,
-                                              backgroundColor: AppColors.surfaceVariant,
-                                              backgroundImage: authorPhotoUrl != null
-                                                  ? NetworkImage(authorPhotoUrl)
-                                                  : null,
-                                              child: authorPhotoUrl == null
-                                                  ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
-                                                  : null,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  authorName,
-                                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                ),
-                                                Text(
-                                                  timeago.format(review.timestamp, locale: 'it'),
-                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                        color: AppColors.textSecondary,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Row(
-                                            children: List.generate(5, (i) {
-                                              return Icon(
-                                                i < review.rating ? Icons.star : Icons.star_border,
-                                                color: Colors.amber,
-                                                size: 18,
-                                              );
-                                            }),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        review.comment,
-                                        style: Theme.of(context).textTheme.bodyMedium,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -603,6 +457,8 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

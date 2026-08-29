@@ -101,4 +101,81 @@ class DogService {
       rethrow;
     }
   }
+  // Search dogs with multiple filters
+  Future<List<DogModel>> searchDogs({
+    List<PetSpecies>? species, // Changed to List
+    List<DogSize>? sizes,
+    List<DogGender>? genders,
+    String? breedQuery,
+    bool? isSterilized,
+    int limit = 50,
+  }) async {
+    try {
+      Query query = _firestore.collection(_collection);
+      bool usedWhereIn = false;
+
+      // 1. Filter by Species
+      if (species != null && species.isNotEmpty) {
+        if (species.length == 1) {
+          query = query.where('species', isEqualTo: species.first.name);
+        } else {
+           // Multiple species -> Use whereIn
+           query = query.where('species', whereIn: species.map((e) => e.name).toList());
+           usedWhereIn = true;
+        }
+      }
+
+      // 2. Filter by Size
+      // Firestore allows only one 'whereIn' per query.
+      bool filterSizeClientSide = false;
+      if (sizes != null && sizes.isNotEmpty) {
+        if (!usedWhereIn) {
+           query = query.where('size', whereIn: sizes.map((e) => e.name).toList());
+           usedWhereIn = true;
+        } else {
+           filterSizeClientSide = true;
+        }
+      }
+      
+      // 3. Filter by Gender
+      bool filterGenderClientSide = false;
+      if (genders != null && genders.isNotEmpty) {
+        if (!usedWhereIn) {
+           query = query.where('gender', whereIn: genders.map((e) => e.name).toList());
+           usedWhereIn = true;
+        } else {
+           filterGenderClientSide = true;
+        }
+      }
+
+      // Execute Query
+      final snapshot = await query.limit(limit).get();
+      var results = snapshot.docs.map((doc) => DogModel.fromFirestore(doc)).toList();
+
+      // Client-Side Filtering Fallbacks
+      if (filterSizeClientSide) {
+         results = results.where((dog) => sizes!.contains(dog.size)).toList();
+      }
+
+      if (filterGenderClientSide) {
+         results = results.where((dog) => genders!.contains(dog.gender)).toList();
+      }
+
+      // Breed Filter (Partial Match / Contains)
+      if (breedQuery != null && breedQuery.isNotEmpty) {
+        final q = breedQuery.toLowerCase();
+        results = results.where((dog) => dog.breed.toLowerCase().contains(q)).toList();
+      }
+
+      // Sterilized filter
+      if (isSterilized != null) {
+        results = results.where((dog) => dog.isSterilized == isSterilized).toList();
+      }
+
+      return results;
+    } catch (e) {
+      print('Error searching dogs: $e');
+      rethrow;
+    }
+  }
 }

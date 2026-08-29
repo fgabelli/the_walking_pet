@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
-
 class LocationService {
   /// Request location permission
   Future<bool> requestPermission() async {
@@ -46,9 +46,17 @@ class LocationService {
 
     // 3. Get Position
     // We throw generic timeout/error from Geolocator if this fails
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10));
+    try {
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium, // Changed to medium for better Wi-Fi compatibility
+          timeLimit: const Duration(seconds: 10)); // Reduced timeout with fallback
+    } on TimeoutException {
+      final lastPosition = await Geolocator.getLastKnownPosition();
+      if (lastPosition != null) {
+        return lastPosition;
+      }
+      throw Exception('Impossibile ottenere la posizione (Timeout). Verifica il segnale GPS.');
+    }
   }
 
   /// Get position stream

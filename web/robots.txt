@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /api/
+
+# AI search bots — ESPLICITAMENTE permessi
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Bot solo training (non danno citation) — bloccato
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://dogzn.com/sitemap.xml

@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/health_record_model.dart';
+import 'notification_service.dart';
 
 final healthServiceProvider = Provider<HealthService>((ref) {
-  return HealthService();
+  return HealthService(ref.read(notificationServiceProvider));
 });
 
 class HealthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService;
+
+  HealthService(this._notificationService);
 
   // Collection reference: users/{ownerId}/dogs/{dogId}/health_records/{recordId}
   // WAIT: Ideally we should store this either under the dog document or a top level collection.
@@ -27,8 +31,17 @@ class HealthService {
 
   CollectionReference get _healthRef => _firestore.collection('health_records');
 
-  Future<void> addHealthRecord(HealthRecordModel record) async {
-    await _healthRef.add(record.toFirestore());
+  Future<void> addHealthRecord(HealthRecordModel record, {String? petName}) async {
+    final docRef = await _healthRef.add(record.toFirestore());
+
+    if (record.reminderEnabled && record.nextDueDate != null && petName != null) {
+      await _notificationService.scheduleVaccinationReminder(
+        healthRecordId: docRef.id,
+        petName: petName,
+        vaccineName: record.specificName ?? record.title,
+        nextDueDate: record.nextDueDate!,
+      );
+    }
   }
 
   Future<void> updateHealthRecord(HealthRecordModel record) async {
@@ -36,6 +49,7 @@ class HealthService {
   }
 
   Future<void> deleteHealthRecord(String recordId) async {
+    await _notificationService.cancelVaccinationReminder(recordId);
     await _healthRef.doc(recordId).delete();
   }
 

@@ -100,9 +100,10 @@ class UserService {
   // Update FCM token
   Future<void> updateFcmToken(String uid, String token) async {
     try {
-      await _firestore.collection(_collection).doc(uid).update({
+      // [FIX] Use set(merge:true) so it works for newly registered users
+      await _firestore.collection(_collection).doc(uid).set({
         'fcmTokens': FieldValue.arrayUnion([token]),
-      });
+      }, SetOptions(merge: true));
     } catch (e) {
       rethrow;
     }
@@ -214,6 +215,30 @@ class UserService {
 
       await _firestore.collection(_collection).doc(uid).update(data);
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Report User (App Store Guideline 1.2)
+  Future<void> reportUser({
+    required String reporterId,
+    required String reportedUserId,
+    required String reason,
+    String? description,
+  }) async {
+    try {
+      await _firestore.collection('reports').add({
+        'reporterId': reporterId,
+        'reportedUserId': reportedUserId,
+        'reason': reason,
+        'description': description,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending', // pending, reviewed, resolved
+        'type': 'user_report',
+      });
+    } catch (e) {
+      // Log error but generally fail gracefully for the user
+      print('Error reporting user: $e');
       rethrow;
     }
   }

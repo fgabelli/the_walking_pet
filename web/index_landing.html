@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOGZN - Il Social Network per Pet Lovers | Passeggiate, Community e Sicurezza</title>
+
+  <!-- Meta SEO -->
+  <meta name="description"
+    content="Unisciti a DOGZN, l'app per incontrare nuovi amici a 4 zampe, tracciare passeggiate con Health Connect, proteggere il tuo animale con il Radar e la Rete SOS. Scarica gratis per iOS e Android.">
+  <meta name="keywords" content="app per cani, social network animali, passeggiate con cane, pet lovers, dog walking, GPS cane, SOS animale smarrito, community pet, app veterinario, Health Connect">
+  <meta name="author" content="DOGZN">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#00A878">
+  <link rel="canonical" href="https://dogzn.com">
+
+  <!-- Schema Markup Site-wide (@graph) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://dogzn.com/#organization",
+        "name": "DOGZN",
+        "alternateName": "DOGZN — Vega Lab SRL",
+        "url": "https://dogzn.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dogzn.com/icons/Icon-512.png",
+          "width": 512,
+          "height": 512
+        },
+        "founder": [
+          {"@type": "Person", "name": "Fabio Gabelli"},
+          {"@type": "Person", "name": "Mirko"}
+        ],
+        "foundingDate": "2025",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Lissone",
+          "addressRegion": "MB",
+          "addressCountry": "IT"
+        },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "support@dogzn.com",
+            "availableLanguage": ["Italian"]
+          },
+          {
+            "@type": "ContactPoint",
+            "contactType": "sales",
+            "email": "business@dogzn.com",
+            "availableLanguage": ["Italian"]
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/dogzn",
+          "https://www.tiktok.com/@dogzn",
+          "https://www.linkedin.com/company/dogzn",
+          "https://www.youtube.com/@dogzn",
+          "https://play.google.com/store/apps/details?id=com.thewalkingpet.app",
+          "https://apps.apple.com/app/dogzn/id6756281701"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://dogzn.com/#website",
+        "url": "https://dogzn.com",
+        "name": "DOGZN",
+        "publisher": { "@id": "https://dogzn.com/#organization" },
+        "inLanguage": "it-IT",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://dogzn.com/cerca/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dogzn.com">
+  <meta property="og:site_name" content="DOGZN">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="DOGZN - Il Social Network per Pet Lovers">
+  <meta property="og:description"
+    content="Scarica l'app per iOS e Android. Trova compagni di passeggiata, traccia salute e fitness, e tieni al sicuro il tuo pet.">
+  <meta property="og:image" content="https://dogzn.com/icons/Icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="DOGZN App Icon">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DOGZN - Il Social Network per Pet Lovers">
+  <meta name="twitter:description" content="Trova compagni di passeggiata, traccia salute e fitness, e tieni al sicuro il tuo pet. Scarica gratis!">
+  <meta name="twitter:image" content="https://dogzn.com/icons/Icon-512.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" href="icons/Icon-192.png" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Service Worker Cleanup -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) registration.unregister();
+      });
+      caches.keys().then(function (names) {
+        for (let name of names) caches.delete(name);
+      });
+    }
+  </script>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container navbar-container">
+      <div class="logo">
+        <img src="icons/logo_horizontal.png" alt="DOGZN Logo" class="logo-img-horizontal">
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Funzionalità</a></li>
+        <li><a href="#health">Salute</a></li>
+        <li><a href="#community">Community</a></li>
+        <li><a href="#safety">Sicurezza</a></li>
+        <li><a href="#premium">Premium</a></li>
+        <li><a href="#advertise">Pubblicizza</a></li>
+        <li><a href="admin.html">Area Riservata</a></li>
+        <li><a href="#download" class="btn-nav">Scarica App</a></li>
+      </ul>
+      <div class="mobile-menu-icon" onclick="toggleMenu()">
+        ☰
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="container hero-content">
+      <div class="hero-text">
+        <div class="badge-new">🆕 Novità v1.2.2: Moderazione AI, Business Claim & Notifiche Smart</div>
+        <h1>Il Social Network per il tuo <span class="highlight">Migliore Amico</span></h1>
+        <p>Non passeggiare mai più da solo. <strong>DOGZN</strong> ti connette con migliaia di pet lovers intorno a te.
+          Traccia la tua attività fisica, organizza incontri, segnala pericoli e proteggi il tuo animale.</p>
+        <div class="hero-buttons">
+          <a href="https://play.google.com/store/apps/details?id=com.thewalkingpet.app" target="_blank" rel="noopener"
+            class="store-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+              alt="Google Play">
+          </a>
+          <a href="https://apps.apple.com/us/app/dogzn/id6756281701" target="_blank" rel="noopener" class="store-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
+              alt="App Store">
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="icons/Icon-512.png" alt="DOGZN App" class="floating-mockup">
+      </div>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Tutto ciò che serve al tuo Pet</h2>
+        <p>Tecnologia e amore per gli animali, finalmente insieme.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card feature-card">
+          <div class="icon-circle bg-green">📡</div>
+          <h3>Radar Mode</h3>
+          <p>Attiva il radar per vedere chi c'è al parco senza rivelare la tua posizione esatta. Manda un "Abbaio" per
+            rompere il ghiaccio!</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-orange">📍</div>
+          <h3>Passeggiate Smart</h3>
+          <p>Traccia i tuoi percorsi GPS, monitora passi, distanza e calorie. Condividi la tua Walk Card con amici e
+            community.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-teal">💬</div>
+          <h3>Chat Diretta</h3>
+          <p>Messaggi privati 1:1 con altri pet lovers. Organizza passeggiate di gruppo, chiedi consigli o trova nuovi
+            amici per il tuo pet.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-coral">📢</div>
+          <h3>Bacheca Locale</h3>
+          <p>Cerchi un dog sitter o hai smarrito il guinzaglio? Pubblica annunci geolocalizzati visibili a tutti i
+            vicini, come Nextdoor ma per i pet.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-purple">🎉</div>
+          <h3>Eventi</h3>
+          <p>Scopri e organizza eventi per pet lovers nella tua zona. Raduni al parco, passeggiate di gruppo, fiere e
+            molto altro.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-yellow">🏷️</div>
+          <h3>Offerte & Promozioni</h3>
+          <p>Approfitta di sconti esclusivi da negozi, veterinari e servizi pet-friendly nella tua zona. Offerte
+            selezionate per te.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Health & Fitness Section -->
+  <section id="health" class="section bg-light">
+    <div class="container split-layout">
+      <div class="content-side">
+        <div class="tag">Novità v1.2</div>
+        <h2>Salute & Fitness 🏃‍♂️</h2>
+        <p>Collega <strong>DOGZN</strong> a <strong>Health Connect</strong> (Android) e <strong>Apple Health</strong>
+          (iOS) per un monitoraggio completo della tua attività fisica durante le passeggiate.</p>
+        <ul class="check-list">
+          <li>👣 <strong>Contapassi</strong> — Monitora i passi in tempo reale</li>
+          <li>🔥 <strong>Calorie bruciate</strong> — Traccia il consumo calorico attivo e totale</li>
+          <li>📏 <strong>Distanza percorsa</strong> — Km e metri per ogni passeggiata</li>
+          <li>📊 <strong>Statistiche</strong> — Riepilogo settimanale e mensile della tua attività</li>
+        </ul>
+      </div>
+      <div class="image-side">
+        <div class="health-card">
+          <div class="health-stat">
+            <span class="stat-icon">👣</span>
+            <div class="stat-info">
+              <span class="stat-value">8,432</span>
+              <span class="stat-label">Passi oggi</span>
+            </div>
+          </div>
+          <div class="health-stat">
+            <span class="stat-icon">🔥</span>
+            <div class="stat-info">
+              <span class="stat-value">347 kcal</span>
+              <span class="stat-label">Calorie bruciate</span>
+            </div>
+          </div>
+          <div class="health-stat">
+            <span class="stat-icon">📏</span>
+            <div class="stat-info">
+              <span class="stat-value">5.8 km</span>
+              <span class="stat-label">Distanza totale</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Walk Card Section -->
+  <section class="section">
+    <div class="container split-layout reverse">
+      <div class="image-side">
+        <div class="walk-card-preview">
+          <div class="walk-card-header">🐾 Walk Card</div>
+          <div class="walk-card-stats">
+            <div class="wc-stat">
+              <span class="wc-value">45 min</span>
+              <span class="wc-label">Durata</span>
+            </div>
+            <div class="wc-stat">
+              <span class="wc-value">3.2 km</span>
+              <span class="wc-label">Distanza</span>
+            </div>
+            <div class="wc-stat">
+              <span class="wc-value">4,521</span>
+              <span class="wc-label">Passi</span>
+            </div>
+          </div>
+          <div class="walk-card-footer">📤 Condividi su Instagram, WhatsApp...</div>
+        </div>
+      </div>
+      <div class="content-side">
+        <div class="tag">Condividi i tuoi progressi</div>
+        <h2>Walk Card 🎴</h2>
+        <p>Al termine di ogni passeggiata, DOGZN genera automaticamente una <strong>Walk Card</strong> — una card
+          personalizzata con il riepilogo della tua attività: percorso, durata, passi, distanza e calorie.</p>
+        <ul class="check-list">
+          <li>📤 Condividila su <strong>Instagram, WhatsApp, Facebook</strong></li>
+          <li>🗺️ Mappa del percorso integrata</li>
+          <li>📸 Design personalizzabile con foto del tuo pet</li>
+          <li>📊 Confronta le tue performance nel tempo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pet Health Record Section -->
+  <section class="section bg-light">
+    <div class="container split-layout">
+      <div class="content-side">
+        <div class="tag">Cartella clinica digitale</div>
+        <h2>Scheda Medica Pet 🏥</h2>
+        <p>Tieni traccia di tutto ciò che riguarda la salute del tuo amico a 4 zampe, sempre a portata di mano.</p>
+        <ul class="check-list">
+          <li>💉 <strong>Vaccinazioni</strong> — Registro completo con date e promemoria</li>
+          <li>💊 <strong>Farmaci</strong> — Terapie in corso e dosaggi</li>
+          <li>📋 <strong>Visite veterinarie</strong> — Storico completo</li>
+          <li>⚠️ <strong>Allergie e intolleranze</strong> — Sempre accessibili, anche offline</li>
+        </ul>
+      </div>
+      <div class="image-side">
+        <div class="safety-card">
+          <div style="font-size: 4rem; margin-bottom: 15px;">🏥</div>
+          <h4>Libretto Sanitario</h4>
+          <p style="color: var(--text-light);">Vaccinazioni, allergie, visite e farmaci sempre con te.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Safety Section -->
+  <section id="safety" class="section">
+    <div class="container split-layout reverse">
+      <div class="image-side">
+        <div class="safety-card sos-card">
+          <div style="font-size: 4rem; margin-bottom: 15px; animation: pulse 2s infinite;">🛡️</div>
+          <h4>SOS Attivo</h4>
+          <p style="color: var(--text-light);">Ricerca in corso...<br>12 utenti allertati nel raggio di 5km</p>
+        </div>
+      </div>
+      <div class="content-side">
+        <div class="tag">Sicurezza al Primo Posto</div>
+        <h2>Rete SOS & Protezione 🛡️</h2>
+        <p>La paura di smarrire il proprio animale è finita. Con <strong>DOGZN SOS</strong>, puoi lanciare un allarme
+          immediato a tutti gli utenti nel raggio di 5km.</p>
+        <ul class="check-list">
+          <li>🔔 Notifiche Push istantanee agli utenti vicini</li>
+          <li>🏥 Scheda medica digitale del tuo pet sempre accessibile</li>
+          <li>👥 Community attiva pronta ad aiutare nelle ricerche</li>
+          <li>⚡ Segnalazione pericoli (bocconi avvelenati, zone pericolose)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community & Social Section -->
+  <section id="community" class="section bg-light">
+    <div class="container">
+      <div class="section-header">
+        <h2>Una Community che ti capisce 🐾</h2>
+        <p>Condividi momenti, chiedi consigli e trova nuovi amici per te e il tuo pet.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card feature-card">
+          <div class="icon-circle bg-green">📸</div>
+          <h3>Feed Social</h3>
+          <p>Condividi foto, video e storie delle tue avventure con il tuo pet. Metti like, commenta e interagisci con
+            la community.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-orange">⭐</div>
+          <h3>Recensioni</h3>
+          <p>Lascia recensioni su parchi, veterinari, negozi pet-friendly e dog sitter. Leggi le esperienze degli altri
+            utenti prima di scegliere.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-teal">🏢</div>
+          <h3>Profili Business</h3>
+          <p>Sei un veterinario, dog sitter o toelettatore? Crea il tuo profilo Business per farti trovare sulla mappa e
+            ricevere recensioni.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What's New Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="tag" style="display:inline-block; margin-bottom: 15px;">Aggiornamento Febbraio 2026</div>
+        <h2>Novità v1.2.2 🚀</h2>
+        <p>Le ultime funzionalità che rendono DOGZN ancora più sicuro, smart e connesso.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card feature-card">
+          <div class="icon-circle bg-purple">🤖</div>
+          <h3>Moderazione AI</h3>
+          <p>Tutti i contenuti vengono analizzati automaticamente dall'intelligenza artificiale per garantire una
+            community sicura e rispettosa. Zero tolleranza per contenuti inappropriati.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-coral">📣</div>
+          <h3>Notifiche Smart</h3>
+          <p>Ricevi notifiche push personalizzate per annunci, offerte e SOS nel raggio di 10 km dalla tua posizione.
+            Sempre aggiornato su cosa succede intorno a te.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-teal">🏢</div>
+          <h3>Business Claim</h3>
+          <p>Sei un veterinario o un negozio pet-friendly? Riscatta la tua attività sulla mappa DOGZN, pubblica offerte
+            e raggiungi migliaia di pet lovers nella tua zona.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-orange">🚨</div>
+          <h3>SOS Potenziato</h3>
+          <p>Quando lanci un SOS, viene creato automaticamente un annuncio sulla Bacheca Locale. Più visibilità, più
+            possibilità di ritrovare il tuo pet.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-green">📈</div>
+          <h3>Offerte Vicino a Te</h3>
+          <p>Scopri sconti e promozioni da negozi e servizi pet-friendly nella tua zona. Badge e notifiche per non
+            perdere nessuna occasione.</p>
+        </div>
+        <div class="card feature-card">
+          <div class="icon-circle bg-yellow">⚠️</div>
+          <h3>Safety Report</h3>
+          <p>Segnala bocconi avvelenati, zone pericolose e pericoli sulla mappa. Tutti gli utenti nel raggio di 2 km
+            vengono avvisati immediatamente.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Cosa dicono i nostri utenti</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card testimonial-card">
+          <p>"Grazie a DOGZN ho conosciuto un gruppo di passeggiata fantastico per il mio Golden. Ora non usciamo mai
+            soli!"</p>
+          <div class="author">
+            <strong>Giulia & Luna</strong>
+            <span>Milano</span>
+          </div>
+        </div>
+        <div class="card testimonial-card">
+          <p>"La funzione SOS è incredibile. Ho ritrovato il mio gatto in 20 minuti grazie alla segnalazione di un
+            vicino sull'app."</p>
+          <div class="author">
+            <strong>Marco & Spritz</strong>
+            <span>Roma</span>
+          </div>
+        </div>
+        <div class="card testimonial-card">
+          <p>"La Walk Card è fantastica! La condivido ogni giorno su Instagram. I miei follower adorano vedere le
+            statistiche delle passeggiate."</p>
+          <div class="author">
+            <strong>Elena & Tobia</strong>
+            <span>Torino</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Premium Plans Section -->
+  <section id="premium" class="section bg-light">
+    <div class="container">
+      <div class="section-header">
+        <h2>Scegli il tuo Piano 💎</h2>
+        <p>DOGZN è gratuito! Ma con Premium sblocchi il massimo potenziale.</p>
+      </div>
+      <div class="grid-3 pricing-grid">
+        <div class="card pricing-card">
+          <div class="pricing-badge">Gratuito</div>
+          <h3>Free</h3>
+          <div class="pricing-price">€0</div>
+          <ul class="pricing-features">
+            <li>✅ Radar Mode</li>
+            <li>✅ Passeggiate GPS (ultime 7)</li>
+            <li>✅ Community & Feed</li>
+            <li>✅ Chat 1:1</li>
+            <li>✅ Bacheca Locale</li>
+            <li>✅ SOS Network</li>
+            <li>❌ Pubblicità presenti</li>
+          </ul>
+        </div>
+        <div class="card pricing-card featured">
+          <div class="pricing-badge premium-badge">⭐ Più Popolare</div>
+          <h3>Premium</h3>
+          <div class="pricing-price">€2.99<span>/mese</span></div>
+          <ul class="pricing-features">
+            <li>✅ Tutto del piano Free</li>
+            <li>✅ <strong>Zero pubblicità</strong></li>
+            <li>✅ <strong>Cronologia illimitata</strong></li>
+            <li>✅ <strong>Badge Premium</strong> sul profilo</li>
+            <li>✅ <strong>Statistiche avanzate</strong></li>
+            <li>✅ Supporto prioritario</li>
+          </ul>
+          <a href="#download" class="btn-pricing">Prova Gratis</a>
+        </div>
+        <div class="card pricing-card">
+          <div class="pricing-badge">Business</div>
+          <h3>Business</h3>
+          <div class="pricing-price">€9.99<span>/mese</span></div>
+          <ul class="pricing-features">
+            <li>✅ Tutto del piano Premium</li>
+            <li>✅ <strong>Profilo Business</strong> in evidenza</li>
+            <li>✅ <strong>Visibilità sulla mappa</strong> con logo e dettagli</li>
+            <li>✅ <strong>Notifiche push</strong> ai pet lovers vicini</li>
+            <li>✅ <strong>Promozioni localizzate</strong> (10km)</li>
+            <li>✅ <strong>Statistiche Business</strong></li>
+            <li>✅ <strong>Risposte alle recensioni</strong></li>
+            <li>✅ Supporto dedicato</li>
+          </ul>
+          <a href="#download" class="btn-pricing btn-business">Inizia Ora</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pubblicizza la tua Attività Section -->
+  <section id="advertise" class="section advertise-section">
+    <div class="container">
+      <div class="advertise-wrapper">
+        <div class="advertise-content">
+          <div class="tag" style="color: #FFB800;">Pubblicità In-App</div>
+          <h2>Fatti trovare dai pet lovers della tua zona 📢</h2>
+          <p>Sei un <strong>veterinario</strong>, <strong>toelettatore</strong>, <strong>negozio di animali</strong>,
+            <strong>dog sitter</strong>, <strong>educatore cinofilo</strong> o gestisci un'attività legata al mondo
+            pet? Con la <strong>pubblicità in-app</strong> di DOGZN, il tuo annuncio appare direttamente nel feed
+            degli utenti, tra un post e l'altro — dove l'attenzione è massima.
+          </p>
+          <ul class="check-list advertise-list">
+            <li>📱 <strong>Banner nel feed</strong> — Il tuo annuncio appare nella bacheca, tra i contenuti degli utenti
+            </li>
+            <li>🐾 <strong>Pubblico qualificato</strong> — Solo proprietari di animali, il tuo target ideale</li>
+            <li>🔗 <strong>Link diretto</strong> — Un tap sul tuo annuncio porta al tuo sito o pagina</li>
+            <li>📊 <strong>Statistiche</strong> — Monitora impressions e click in tempo reale</li>
+            <li>🔄 <strong>Rotazione smart</strong> — Il tuo banner viene distribuito equamente tra gli utenti</li>
+          </ul>
+          <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 15px;">
+            Cerchi visibilità sulla mappa, notifiche push e promozioni localizzate? Scopri il
+            <a href="#premium" style="color: var(--accent-orange); text-decoration: underline;">Piano Business</a>.
+          </p>
+
+          <h3 style="color: white; margin-top: 35px; margin-bottom: 15px;">Richiedi informazioni per la pubblicità
+            in-app</h3>
+
+          <!-- Form Dati -->
+          <div id="adFormContainer">
+            <form id="adForm" class="ad-form" onsubmit="submitAdForm(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="adBusinessName">Nome Attività *</label>
+                  <input type="text" id="adBusinessName" placeholder="Es. PetShop Roma" required>
+                </div>
+                <div class="form-group">
+                  <label for="adBusinessType">Tipo Attività *</label>
+                  <select id="adBusinessType" required>
+                    <option value="">Seleziona...</option>
+                    <option value="veterinario">🏥 Veterinario</option>
+                    <option value="negozio">🏪 Negozio di Animali</option>
+                    <option value="toelettatore">✂️ Toelettatore</option>
+                    <option value="dog_sitter">🐕 Dog Sitter</option>
+                    <option value="educatore">🎓 Educatore Cinofilo</option>
+                    <option value="pensione">🏠 Pensione per Animali</option>
+                    <option value="ristorante_petfriendly">🍽️ Ristorante Pet-Friendly</option>
+                    <option value="altro">📦 Altro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="adContactName">Nome e Cognome *</label>
+                  <input type="text" id="adContactName" placeholder="Mario Rossi" required>
+                </div>
+                <div class="form-group">
+                  <label for="adCity">Città *</label>
+                  <input type="text" id="adCity" placeholder="Roma" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="adEmail">Email *</label>
+                  <input type="email" id="adEmail" placeholder="info@tuaattivita.it" required>
+                </div>
+                <div class="form-group">
+                  <label for="adPhone">Telefono *</label>
+                  <input type="tel" id="adPhone" placeholder="+39 333 1234567" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="adPiva">Partita IVA (opzionale)</label>
+                  <input type="text" id="adPiva" placeholder="IT12345678901">
+                </div>
+                <div class="form-group">
+                  <label for="adWebsite">Sito Web (opzionale)</label>
+                  <input type="url" id="adWebsite" placeholder="https://tuaattivita.it">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="adMessage">Descrivi la tua attività e cosa vorresti pubblicizzare</label>
+                  <textarea id="adMessage"
+                    placeholder="Es. Siamo un negozio di alimenti naturali per cani e gatti a Roma. Vorremmo promuovere la nostra linea di crocchette biologiche..."></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit-ad" id="adSubmitBtn">
+                🚀 Invia Richiesta Pubblicitaria
+              </button>
+              <p class="form-note">Ti contatteremo entro 24 ore per concordare i dettagli e attivare la campagna.</p>
+            </form>
+          </div>
+
+          <!-- Success State -->
+          <div id="adFormSuccess" class="form-success" style="display: none;">
+            <div class="success-icon">✅</div>
+            <h3>Richiesta inviata con successo!</h3>
+            <p>Ti contatteremo entro <strong>24 ore</strong> all'email indicata per concordare i dettagli della
+              campagna e procedere con l'attivazione.</p>
+            <p style="margin-top: 15px; color: rgba(255,255,255,0.5); font-size: 0.85rem;">
+              Nel frattempo, se hai domande: <strong>business@dogzn.com</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="advertise-visual">
+          <div class="advertise-card">
+            <div class="adv-icon">📱</div>
+            <h4>Il tuo banner nel feed</h4>
+            <p>visibile a <strong>migliaia di pet lovers</strong> mentre navigano l'app</p>
+            <div class="adv-stats">
+              <div class="adv-stat">
+                <span class="adv-stat-value">📊</span>
+                <span class="adv-stat-label">Impressions</span>
+              </div>
+              <div class="adv-stat">
+                <span class="adv-stat-value">👆</span>
+                <span class="adv-stat-label">Click</span>
+              </div>
+              <div class="adv-stat">
+                <span class="adv-stat-value">📈</span>
+                <span class="adv-stat-label">CTR</span>
+              </div>
+            </div>
+          </div>
+          <!-- Testimonial Business -->
+          <div class="advertise-card" style="border-color: rgba(0, 168, 120, 0.3);">
+            <p style="font-style: italic; color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.6;">
+              "Il banner in-app ci ha portato visibilità immediata tra i proprietari della zona. Semplice da attivare
+              e con risultati misurabili."
+            </p>
+            <p style="color: var(--primary); font-weight: 700; margin-top: 12px;">— Dr.ssa Bianchi, Clinica
+              Veterinaria</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download CTA -->
+  <section id="download" class="cta-section">
+    <div class="container cta-content">
+      <h2>Pronto a unirti al branco? 🐾</h2>
+      <p>Scarica DOGZN gratuitamente e inizia subito la tua avventura.</p>
+      <div class="hero-buttons">
+        <a href="https://play.google.com/store/apps/details?id=com.thewalkingpet.app" target="_blank" rel="noopener"
+          class="store-btn glass">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+            alt="Google Play">
+        </a>
+        <a href="https://apps.apple.com/us/app/dogzn/id6756281701" target="_blank" rel="noopener"
+          class="store-btn glass">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
+            alt="App Store">
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="icons/logo_horizontal.png" alt="DOGZN" class="footer-logo">
+        <p>Connetti. Cammina. Condividi.<br>Il social network definitivo per i pet lovers.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Esplora</h4>
+        <a href="#features">Funzionalità</a>
+        <a href="#health">Salute & Fitness</a>
+        <a href="#community">Community</a>
+        <a href="#safety">Sicurezza</a>
+        <a href="#premium">Piani</a>
+      </div>
+      <div class="footer-links">
+        <h4>Legale</h4>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Termini e Condizioni</a>
+        <a href="data_safety.html">Data Safety</a>
+      </div>
+      <div class="footer-social">
+        <h4>Seguici</h4>
+        <div class="social-icons">
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+          <a href="#">Facebook</a>
+        </div>
+        <div style="margin-top: 20px;">
+          <h4>Contatti</h4>
+          <a href="mailto:support@dogzn.com" style="color: #888;">support@dogzn.com</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Vega Lab SRL. Made with ❤️ for pets.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyAq2Qk_u0TO_TZ9ZZf2uFQxM_71wz75ubI',
+      appId: '1:903048437394:web:0792503aab77b554d8504b',
+      messagingSenderId: '903048437394',
+      projectId: 'thewalkingpet-a1578',
+      storageBucket: 'thewalkingpet-a1578.firebasestorage.app',
+      authDomain: 'thewalkingpet-a1578.firebaseapp.com'
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Form submission
+    window.submitAdForm = async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('adSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Invio in corso...';
+
+      try {
+        const data = {
+          businessName: document.getElementById('adBusinessName').value.trim(),
+          businessType: document.getElementById('adBusinessType').value,
+          contactName: document.getElementById('adContactName').value.trim(),
+          city: document.getElementById('adCity').value.trim(),
+          email: document.getElementById('adEmail').value.trim(),
+          phone: document.getElementById('adPhone').value.trim(),
+          piva: document.getElementById('adPiva').value.trim() || null,
+          website: document.getElementById('adWebsite').value.trim() || null,
+          message: document.getElementById('adMessage').value.trim() || null,
+          type: 'in_app_advertising',
+          status: 'pending',
+          source: 'landing_page',
+          createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, 'ad_inquiries'), data);
+
+        // Show success
+        document.getElementById('adFormContainer').style.display = 'none';
+        document.getElementById('adFormSuccess').style.display = 'block';
+        document.querySelector('.advertise-content h3').style.display = 'none';
+
+
+      } catch (error) {
+        console.error('Errore:', error);
+        btn.disabled = false;
+        btn.textContent = '🚀 Invia Richiesta Pubblicitaria';
+        alert('Si è verificato un errore. Riprova o contattaci a business@dogzn.com');
+      }
+    };
+  </script>
+
+  <script>
+    function toggleMenu() {
+      const navLinks = document.querySelector('.nav-links');
+      navLinks.classList.toggle('active');
+    }
+  </script>
+  <script src="chatbot.js" defer></script>
+
+  <!-- Structured Data JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "DOGZN",
+    "operatingSystem": "iOS, Android",
+    "applicationCategory": "SocialNetworkingApplication",
+    "applicationSubCategory": "Pets",
+    "description": "App italiana per dog parent: community di quartiere, GPS passeggiate, scheda medica digitale, rete SOS 5 km. Free + Premium €2,99 + Business €9,99.",
+    "inLanguage": "it",
+    "datePublished": "2026-01-15",
+    "dateModified": "2026-04-27",
+    "publisher": { "@id": "https://dogzn.com/#organization" },
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "category": "free"
+      },
+      {
+        "@type": "Offer",
+        "name": "Premium",
+        "price": "2.99",
+        "priceCurrency": "EUR",
+        "billingDuration": "P1M",
+        "category": "subscription"
+      },
+      {
+        "@type": "Offer",
+        "name": "Business",
+        "price": "9.99",
+        "priceCurrency": "EUR",
+        "billingDuration": "P1M",
+        "category": "subscription"
+      }
+    ],
+    "installUrl": [
+      "https://play.google.com/store/apps/details?id=com.thewalkingpet.app",
+      "https://apps.apple.com/us/app/dogzn/id6756281701"
+    ],
+    "featureList": [
+      "Radar di prossimità privacy-aware",
+      "Tracciamento GPS passeggiate con Walk Card",
+      "Health Connect e Apple Health integration",
+      "Chat 1:1 con dog parent vicini",
+      "Bacheca locale con annunci geolocalizzati",
+      "Eventi e raduni di quartiere",
+      "Offerte da attività pet locali",
+      "Scheda medica digitale offline-first",
+      "Rete SOS 5 km con notifiche push istantanee",
+      "Segnalazione bocconi e pericoli"
+    ],
+    "screenshot": [
+      "https://dogzn.com/screenshots/home.jpg",
+      "https://dogzn.com/screenshots/walk-card.jpg",
+      "https://dogzn.com/screenshots/sos.jpg"
+    ]
+  }
+  </script>
+  
+  <!-- FAQ Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "DOGZN è davvero gratis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sì. Il piano Free è gratuito per sempre e include Radar, GPS passeggiate, Chat, Bacheca, SOS Network e scheda medica base. Premium (€2,99/mese) toglie le pubblicità e sblocca cronologia illimitata e statistiche avanzate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Come funziona la rete SOS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Quando attivi un SOS dall'app, tutti gli utenti DOGZN entro 5 km dalla tua posizione ricevono una notifica push istantanea con foto, descrizione e ultima zona vista del cane. Possono segnalare avvistamenti direttamente in chat."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "I miei dati di posizione sono al sicuro?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sì. DOGZN non condivide mai le tue coordinate esatte. Il Radar usa un geohash approssimato (raggio di pochi minuti a piedi). La scheda medica è cifrata. Puoi disattivare la condivisione posizione in qualsiasi momento."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Cosa succede se nel mio quartiere non c'è ancora nessuno?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DOGZN è utile anche da solo: tracciamento GPS, scheda medica, libretto sanitario, statistiche. La community cresce per quartiere — appena raggiungiamo 50 utenti nel tuo CAP attiviamo automaticamente Radar e SOS pieni."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Posso usarlo anche se ho un gatto?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Al momento DOGZN è ottimizzato per i cani. Il supporto multi-pet (gatti, conigli, furetti) è in roadmap per il 2026."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Funziona offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "La scheda medica e il libretto vaccinazioni funzionano offline. GPS passeggiate funziona anche senza dati (sincronizza al ritorno). Chat, Radar e SOS richiedono connessione."
+        }
+      }
+    ]
+  }
+  </script>
+</body>
+
+</html>

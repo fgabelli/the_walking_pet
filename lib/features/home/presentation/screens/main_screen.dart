@@ -1,16 +1,23 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/tutorial_keys.dart';
+import '../../../../core/services/tutorial_service.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../map/presentation/screens/map_screen.dart';
-import '../../../profile/presentation/screens/my_pets_screen.dart'; // Changed import
 import '../../../chat/presentation/screens/chat_list_screen.dart';
-import '../../../nextdoor/presentation/screens/nextdoor_screen.dart';
+import '../../../social/presentation/screens/community_screen.dart';
+import '../../../nextdoor/presentation/screens/pet_matcher_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../../../core/providers/ad_readiness_provider.dart';
+import '../../../notifications/presentation/screens/notifications_screen.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 
 import '../../../../core/services/notification_service.dart';
-import '../../../auth/presentation/providers/auth_provider.dart'; // Corrected
-import '../../../../core/services/purchase_service.dart'; // Added
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/services/purchase_service.dart';
+import '../../../../core/services/device_health_service.dart';
+
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -19,37 +26,50 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _selectedIndex = 0; // Renamed from _currentIndex
+  int _selectedIndex = 0;
 
   final List<Widget> _screens = [
+    const CommunityScreen(),
     const MapScreen(),
-    const MyPetsScreen(), // Changed from WalksListScreen
-    const NextdoorScreen(), // Changed from placeholder
+    const PetMatcherScreen(),
     const ChatListScreen(),
     const ProfileScreen(),
   ];
 
-  void _onItemTapped(int index) { // New method
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    ref.read(activeTabProvider.notifier).state = index;
   }
 
   @override
   void initState() {
     super.initState();
-    // Initialize Notification Service
-    NotificationService().initialize();
+    // Notification Service is already initialized in main.dart
+
+    // Request Health Permissions on Startup (iOS only — Health Connect disabled on Android)
+    if (Platform.isIOS) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+         try {
+           final healthService = ref.read(deviceHealthServiceProvider);
+           final granted = await healthService.requestPermissions();
+           debugPrint('Health Permissions requested: $granted');
+         } catch (e) {
+           debugPrint('Error requesting health permissions: $e');
+         }
+      });
+    }
     
     // Sync Purchases Identity (Listen to Auth Changes)
     // This ensures we sync even if Auth takes a moment to initialize
     ref.listenManual(authServiceProvider, (previous, next) async {
        final user = next.currentUser;
        if (user != null) {
-         debugPrint('AuthUser loaded: ${user.uid}, identifying in Purchases...');
-         await ref.read(purchaseServiceProvider).identifyUser(user.uid);
+          debugPrint('AuthUser loaded: ${user.uid}, identifying in Purchases...');
+          await ref.read(purchaseServiceProvider).identifyUser(user.uid);
        }
-    });
+     });
 
     // Also check immediately in case it's already there
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -58,42 +78,105 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ref.read(purchaseServiceProvider).identifyUser(user.uid);
       }
     });
+
+    // Start onboarding tutorial if first launch
+    _maybeStartTutorial();
+  }
+
+  Future<void> _maybeStartTutorial() async {
+    final completed = await TutorialService.isOnboardingCompleted();
+    if (!completed && mounted) {
+      TutorialService.startOnboarding(
+        context: context,
+        tabSwitcher: (index) {
+          if (mounted) {
+            setState(() => _selectedIndex = index);
+          }
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final activeTab = ref.watch(activeTabProvider);
+    if (activeTab != _selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _selectedIndex = activeTab;
+          });
+        }
+      });
+    }
+
     return Scaffold(
-      body: IndexedStack( // Changed body to IndexedStack
+      body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex, // Changed to _selectedIndex
-        onDestinationSelected: _onItemTapped, // Changed to _onItemTapped
-        destinations: const [
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        height: 64,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map),
+            key: TutorialKeys.socialTabKey,
+            icon: Consumer(
+              builder: (context, ref, child) {
+                final count = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
+                return count > 0 
+                  ? Badge(label: Text('$count'), child: const Icon(Icons.groups_outlined))
+                  : const Icon(Icons.groups_outlined);
+              },
+            ),
+            selectedIcon: Consumer(
+              builder: (context, ref, child) {
+                final count = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
+                return count > 0 
+                  ? Badge(label: Text('$count'), child: const Icon(Icons.groups))
+                  : const Icon(Icons.groups);
+              },
+            ),
+            label: 'Social',
+          ),
+          NavigationDestination(
+            key: TutorialKeys.mapTabKey,
+            icon: const Icon(Icons.map_outlined),
+            selectedIcon: const Icon(Icons.map),
             label: 'Mappa',
           ),
           NavigationDestination(
-            icon: Icon(Icons.pets), // Changed icon
-            selectedIcon: Icon(Icons.pets),
-            label: 'I Miei Pet', // Changed label
+            key: TutorialKeys.datingTabKey,
+            icon: const Icon(Icons.favorite_border),
+            selectedIcon: const Icon(Icons.favorite),
+            label: 'Dating',
           ),
           NavigationDestination(
-            icon: Icon(Icons.campaign_outlined), 
-            selectedIcon: Icon(Icons.campaign),
-            label: 'Nextdoor', 
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
+            key: TutorialKeys.chatTabKey,
+            icon: Consumer(
+              builder: (context, ref, child) {
+                final count = ref.watch(unreadChatsCountProvider);
+                return count > 0 
+                  ? Badge(label: Text('$count'), child: const Icon(Icons.chat_bubble_outline))
+                  : const Icon(Icons.chat_bubble_outline);
+              },
+            ),
+            selectedIcon: Consumer(
+              builder: (context, ref, child) {
+                final count = ref.watch(unreadChatsCountProvider);
+                return count > 0 
+                  ? Badge(label: Text('$count'), child: const Icon(Icons.chat_bubble))
+                  : const Icon(Icons.chat_bubble);
+              },
+            ),
             label: 'Chat',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
+            key: TutorialKeys.profileTabKey,
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person),
             label: 'Profilo',
           ),
         ],

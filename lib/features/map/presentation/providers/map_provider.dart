@@ -1,28 +1,36 @@
 import 'dart:async';
-
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
+
+import '../../../../shared/constants/map_markers.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/map_service.dart';
 import '../../../../core/services/user_service.dart';
-import '../../../../core/services/sos_service.dart'; // Added
-import '../../../../core/services/event_service.dart'; // Added
+import '../../../../core/services/sos_service.dart';
+import '../../../../core/services/event_service.dart';
+import '../../../../core/services/pet_business_service.dart';
 import '../../../../shared/models/user_model.dart';
-import '../../../../shared/models/event_model.dart'; // Added
+import '../../../../shared/models/event_model.dart';
+import '../../../../shared/models/pet_business_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../walks/presentation/providers/walk_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../../shared/models/walk_model.dart';
 import '../../../../shared/models/announcement_model.dart';
 import '../../../../shared/models/safety_alert_model.dart';
-import '../../../../shared/models/lost_pet_alert_model.dart'; // Added
+import '../../../../shared/models/lost_pet_alert_model.dart';
+import '../../../../shared/models/lost_pet_sighting_model.dart';
 import '../../../nextdoor/presentation/providers/nextdoor_provider.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../core/services/dog_service.dart';
+import '../../../profile/presentation/providers/dog_provider.dart';
+import '../../../../core/services/notification_service.dart';
+
 
 /// Location Service Provider
 final locationServiceProvider = Provider<LocationService>((ref) {
@@ -34,10 +42,22 @@ final mapServiceProvider = Provider<MapService>((ref) {
   return MapService();
 });
 
-/// Dog Service Provider
-final dogServiceProvider = Provider<DogService>((ref) {
-  return DogService();
-});
+/// Proximity Alert Model (for in-app banner)
+class ProximityAlert {
+  final String id;
+  final String title;
+  final String message;
+  final String type; // 'safety' or 'sos'
+  final double distanceMeters;
+
+  const ProximityAlert({
+    required this.id,
+    required this.title,
+    required this.message,
+    required this.type,
+    required this.distanceMeters,
+  });
+}
 
 /// Map State
 class MapState {
@@ -54,26 +74,46 @@ class MapState {
   final List<AnnouncementModel> allAnnouncements;
   final List<SafetyAlertModel> allAlerts;
   final List<LostPetAlertModel> allSOSAlerts; // Added
+  final List<LostPetSightingModel> allSightings; // Added
   final List<EventModel> allEvents; // Added
   final WalkModel? selectedWalk;
   final AnnouncementModel? selectedAnnouncement;
   final SafetyAlertModel? selectedAlert;
   final LostPetAlertModel? selectedSOS; // Added
+  final LostPetSightingModel? selectedSighting; // Added
   final EventModel? selectedEvent; // Added
   final List<String> blockedUsers;
   // Filters
   // User Filters
   final String? filterBreed; // Legacy/User-based? Or reuse for Dog Breed? Let's use specific ones.
   final Gender? filterGender; // User Gender
-  final PetSpecies? filterPetSpecies; // Added: Global Species Filter (Free)
+  final List<PetSpecies> filterPetSpecies; // Added: Global Species Filter (Free)
   
   // Dog Compatibility Filters (Premium)
   final Map<String, List<DogModel>> dogCache; // ownerId -> List<DogModel>
   final List<DogSize> filterDogSizes;
   final List<DogGender> filterDogGenders;
   final List<String> filterDogBreeds;
+  final bool? filterIsSterilized;
 
   final bool isGhostModeEnabled; // Local user setting state
+  final bool isSharingActive; // Manual Check-in State (Session)
+  
+  // Radar Logic (Discovery of Invisible Users)
+  final int radarMatchCount;
+  final List<String> radarMatchIds; 
+  
+  // Radius Configuration
+  final double radiusInKm;
+
+  // Pet Businesses
+  final List<PetBusinessModel> allPetBusinesses;
+  final PetBusinessModel? selectedPetBusiness;
+  final bool showPetBusinesses; // Toggle visibility of pet business markers
+  final List<PetBusinessCategory> filterBusinessCategories; // Empty = show all
+
+  // Proximity Alert (shown as banner when user approaches danger)
+  final ProximityAlert? proximityAlert;
 
   MapState({
     this.currentPosition,
@@ -89,21 +129,33 @@ class MapState {
     this.allAnnouncements = const [],
     this.allAlerts = const [],
     this.allSOSAlerts = const [],
+    this.allSightings = const [], // Added
     this.allEvents = const [],
     this.selectedWalk,
     this.selectedAnnouncement,
     this.selectedAlert,
     this.selectedSOS,
+    this.selectedSighting, // Added
     this.selectedEvent,
     this.blockedUsers = const [],
     this.filterBreed,
     this.filterGender,
-    this.filterPetSpecies, // Added
+    this.filterPetSpecies = const [], // Changed to list default empty
     this.dogCache = const {},
     this.filterDogSizes = const [],
     this.filterDogGenders = const [],
     this.filterDogBreeds = const [],
+    this.filterIsSterilized,
     this.isGhostModeEnabled = false,
+    this.isSharingActive = false, // Default false (Manual Check-in required)
+    this.radarMatchCount = 0,
+    this.radarMatchIds = const [],
+    this.radiusInKm = 10.0,
+    this.allPetBusinesses = const [],
+    this.selectedPetBusiness,
+    this.showPetBusinesses = true, // Show by default - loaded once on map init
+    this.filterBusinessCategories = const [],
+    this.proximityAlert,
   });
 
   MapState copyWith({
@@ -120,21 +172,33 @@ class MapState {
     List<AnnouncementModel>? allAnnouncements,
     List<SafetyAlertModel>? allAlerts,
     List<LostPetAlertModel>? allSOSAlerts,
+    List<LostPetSightingModel>? allSightings, // Added
     List<EventModel>? allEvents,
     WalkModel? selectedWalk,
     AnnouncementModel? selectedAnnouncement,
     SafetyAlertModel? selectedAlert,
     LostPetAlertModel? selectedSOS,
+    LostPetSightingModel? selectedSighting, // Added
     EventModel? selectedEvent,
     List<String>? blockedUsers,
     String? filterBreed,
     Gender? filterGender,
-    PetSpecies? filterPetSpecies, // Added
+    List<PetSpecies>? filterPetSpecies, // Changed to List
     Map<String, List<DogModel>>? dogCache,
     List<DogSize>? filterDogSizes,
     List<DogGender>? filterDogGenders,
     List<String>? filterDogBreeds,
+    bool? filterIsSterilized,
     bool? isGhostModeEnabled,
+    bool? isSharingActive,
+    int? radarMatchCount,
+    List<String>? radarMatchIds,
+    double? radiusInKm,
+    List<PetBusinessModel>? allPetBusinesses,
+    PetBusinessModel? selectedPetBusiness,
+    bool? showPetBusinesses,
+    List<PetBusinessCategory>? filterBusinessCategories,
+    ProximityAlert? proximityAlert,
   }) {
     return MapState(
       currentPosition: currentPosition ?? this.currentPosition,
@@ -150,21 +214,33 @@ class MapState {
       allAnnouncements: allAnnouncements ?? this.allAnnouncements,
       allAlerts: allAlerts ?? this.allAlerts,
       allSOSAlerts: allSOSAlerts ?? this.allSOSAlerts,
+      allSightings: allSightings ?? this.allSightings, // Added
       allEvents: allEvents ?? this.allEvents,
       selectedWalk: selectedWalk,
       selectedAnnouncement: selectedAnnouncement,
       selectedAlert: selectedAlert,
       selectedSOS: selectedSOS,
+      selectedSighting: selectedSighting, // Added
       selectedEvent: selectedEvent,
       blockedUsers: blockedUsers ?? this.blockedUsers,
       filterBreed: filterBreed ?? this.filterBreed,
       filterGender: filterGender ?? this.filterGender,
-      filterPetSpecies: filterPetSpecies ?? this.filterPetSpecies, // Added
+      filterPetSpecies: filterPetSpecies ?? this.filterPetSpecies, // Changed
       dogCache: dogCache ?? this.dogCache,
       filterDogSizes: filterDogSizes ?? this.filterDogSizes,
       filterDogGenders: filterDogGenders ?? this.filterDogGenders,
       filterDogBreeds: filterDogBreeds ?? this.filterDogBreeds,
+      filterIsSterilized: filterIsSterilized ?? this.filterIsSterilized,
       isGhostModeEnabled: isGhostModeEnabled ?? this.isGhostModeEnabled,
+      isSharingActive: isSharingActive ?? this.isSharingActive,
+      radarMatchCount: radarMatchCount ?? this.radarMatchCount,
+      radarMatchIds: radarMatchIds ?? this.radarMatchIds,
+      radiusInKm: radiusInKm ?? this.radiusInKm,
+      allPetBusinesses: allPetBusinesses ?? this.allPetBusinesses,
+      selectedPetBusiness: selectedPetBusiness,
+      showPetBusinesses: showPetBusinesses ?? this.showPetBusinesses,
+      filterBusinessCategories: filterBusinessCategories ?? this.filterBusinessCategories,
+      proximityAlert: proximityAlert,
     );
   }
 }
@@ -172,46 +248,46 @@ class MapState {
 /// Map Controller
 class MapStateController extends StateNotifier<MapState> {
   final LocationService _locationService;
-  final LocationService _locationService;
   final MapService _mapService;
   final UserService _userService;
-  final DogService _dogService; // Added
+  final DogService _dogService;
+  final PetBusinessService _petBusinessService;
   final Ref _ref;
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<List<UserLocation>>? _nearbyUsersSubscription;
   StreamSubscription<List<WalkModel>>? _walksSubscription;
   StreamSubscription<List<AnnouncementModel>>? _announcementsSubscription;
   StreamSubscription<List<SafetyAlertModel>>? _alertsSubscription;
-  StreamSubscription<List<LostPetAlertModel>>? _sosSubscription; // Added
-  StreamSubscription<List<EventModel>>? _eventsSubscription; // Added
-
-  MapStateController(
-    this._locationService,
-    this._mapService,
-    this._userService,
-    this._ref,
-  ) : super(MapState()) {
-    _initLocation();
-    _startListeningToWalks();
-    _startListeningToProfile();
-    _startListeningToAlerts();
-    _startListeningToSOS(); // Added
-    _startListeningToEvents(); // Added
-  }
+  StreamSubscription<List<LostPetAlertModel>>? _sosSubscription;
+  StreamSubscription<List<LostPetSightingModel>>? _sightingsSubscription; // Added
+  StreamSubscription<List<EventModel>>? _eventsSubscription;
+  
+  // MANUAL CHECK-IN STATE (Apple Guideline 5.1.2)
+  // Default to FALSE to ensure no automatic check-in.
+  bool _isSharingLocation = false;
+  
+  // Race condition guard for _updateMarkers() — prevents stale async executions
+  // from overwriting fresher data
+  int _markersVersion = 0;
+  Timer? _markersDebounce;
+  
+  // Track which alerts we already warned about (avoid repeating)
+  final Set<String> _notifiedAlertIds = {};
 
   MapStateController(
     this._locationService,
     this._mapService,
     this._userService,
     this._dogService,
+    this._petBusinessService,
     this._ref,
   ) : super(MapState()) {
-    _initLocation();
     _startListeningToWalks();
     _startListeningToProfile();
     _startListeningToAlerts();
-    _startListeningToSOS(); 
-    _startListeningToEvents(); 
+    _startListeningToSOS();
+    _startListeningToEvents();
+    _startListeningToSightings(); // Added
   }
 
   void _startListeningToEvents() {
@@ -236,9 +312,30 @@ class MapStateController extends StateNotifier<MapState> {
             isGhostModeEnabled: user.isGhost,
           );
           _updateMarkers(); 
+          _startListeningToSightings(); // Added
         }
       });
     });
+  }
+
+  void _startListeningToSightings() {
+    final user = _ref.read(authServiceProvider).currentUser;
+    if (user != null) {
+      _sightingsSubscription?.cancel();
+      _sightingsSubscription = _ref.read(sosServiceProvider).getSightingsForOwnerStream(user.uid).listen(
+        (sightings) {
+          state = state.copyWith(allSightings: sightings);
+          _updateMarkers();
+        },
+        onError: (e) {
+          print('Error fetching sightings: $e');
+        },
+      );
+    } else {
+      _sightingsSubscription?.cancel();
+      _sightingsSubscription = null;
+      state = state.copyWith(allSightings: const []);
+    }
   }
 
   void _startListeningToWalks() {
@@ -283,7 +380,7 @@ class MapStateController extends StateNotifier<MapState> {
     _announcementsSubscription = _ref.read(nextdoorServiceProvider).getNearbyAnnouncements(
       latitude: center.latitude,
       longitude: center.longitude,
-      radiusInKm: 10.0,
+      radiusInKm: state.radiusInKm,
     ).listen(
       (announcements) {
         final activeAnnouncements = announcements.where((a) => a.isActive).toList();
@@ -296,7 +393,7 @@ class MapStateController extends StateNotifier<MapState> {
     );
   }
 
-  Future<void> _initLocation() async {
+  Future<void> initLocation() async {
     try {
       final isEnabled = await _locationService.isLocationServiceEnabled();
       if (!isEnabled) {
@@ -320,18 +417,19 @@ class MapStateController extends StateNotifier<MapState> {
 
       state = state.copyWith(isLocationEnabled: true);
 
-      // STRATEGY: 
-      // 1. Try Last Known Position (Fastest) to show something immediately
+      // 3. Try Last Known Position (Fastest) to show something immediately
       final lastKnown = await _locationService.getLastKnownPosition();
       if (lastKnown != null) {
         print('Using Last Known Position: ${lastKnown.latitude}, ${lastKnown.longitude}');
         _updatePosition(lastKnown);
-        // Don't turn off loading yet if we want to wait for fresh, 
-        // but often it's better to show map immediately.
+      } else {
+        // IMPROVED: If no last known, apply fallback IMMEDIATELY so map renders.
+        // Don't wait 30s while staring at a white screen.
+        print('No last known position. Applying fallback immediately while searching...');
+        await _applyFallbackPosition();
       }
 
-      // 2. Start Listening (Best for updates)
-      // We start listening immediately so we catch the fresh fix whenever it comes
+      // 4. Start Listening (Best for updates)
       _positionSubscription = _locationService.getPositionStream().listen(
         (position) {
           print('Position update: ${position.latitude}, ${position.longitude}');
@@ -339,44 +437,72 @@ class MapStateController extends StateNotifier<MapState> {
         },
         onError: (e) {
           print('Position stream error: $e');
-          // Only show error if we have NO position at all
-          if (state.currentPosition == null) {
-            state = state.copyWith(error: e.toString(), isLoading: false);
-          }
         },
       );
 
-      // 3. If no last known, try to urge a current position fetch
+      // 5. Urge a fresh fix (Background)
+      // We do this even if we applied fallback, to try and get real GPS.
+      // We don't await this to avoid blocking UI.
       if (lastKnown == null) {
-        try {
-          // Allow the service to handle the time limit
-          final position = await _locationService.getCurrentPosition();
-          _updatePosition(position);
-        } catch (e) {
-           // If stream hasn't picked up yet, show the specific error
-           if (state.currentPosition == null) {
-              String errorMsg = 'Impossibile rilevare la posizione GPS.';
-              if (e.toString().contains('disabilitati')) {
-                errorMsg = 'Attiva il GPS nelle impostazioni.';
-              } else if (e.toString().contains('negati')) {
-                errorMsg = 'Permessi GPS necessari.';
-              } else if (e.toString().contains('Timeout')) {
-                errorMsg = 'Segnale GPS debole o assente.';
-              }
-              state = state.copyWith(isLoading: false, error: errorMsg);
-           }
-        }
-      } 
-      
-      // Ensure loading is off eventually
-      if (state.currentPosition != null) {
-         state = state.copyWith(isLoading: false);
+         _locationService.getCurrentPosition().then((position) {
+            print('Fresh GPS fix obtained!');
+            _updatePosition(position);
+         }).catchError((e) {
+            print('Fresh GPS fix failed: $e');
+            // We already have fallback, so no need to show error causing white screen.
+            // Maybe show a snackbar? For now silent is better than broken UI.
+         });
       }
-
+      
     } catch (e) {
       print('Error initializing location: $e');
-      state = state.copyWith(isLoading: false, error: 'Errore GPS: $e');
+      // If we completely failed (e.g. permission error before fallback), we might need to show it.
+      // If we have no position yet, show error.
+      if (state.currentPosition == null) {
+         state = state.copyWith(isLoading: false, error: 'Errore GPS: $e');
+      }
     }
+  }
+
+  Future<void> _applyFallbackPosition() async {
+    double fallbackLat = 41.9028; // Rome
+    double fallbackLng = 12.4964;
+
+    try {
+      final firebaseUser = _ref.read(authServiceProvider).currentUser;
+      if (firebaseUser != null) {
+          final userProfile = await _userService.getUserById(firebaseUser.uid);
+          if (userProfile != null && userProfile.homeLatitude != null && userProfile.homeLongitude != null) {
+            print('Using User Home Location as fallback');
+            fallbackLat = userProfile.homeLatitude!;
+            fallbackLng = userProfile.homeLongitude!;
+          }
+      }
+    } catch (e) {
+      print('Error fetching user home for fallback: $e');
+    }
+
+    final fallbackPosition = Position(
+      latitude: fallbackLat,
+      longitude: fallbackLng,
+      timestamp: DateTime.now(),
+      accuracy: 0,
+      altitude: 0,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      altitudeAccuracy: 0, 
+      headingAccuracy: 0,
+      isMocked: true, 
+    );
+    
+    _updatePosition(fallbackPosition);
+    
+    // Explicitly ensure loading is off and error is clear
+    state = state.copyWith(
+      isLoading: false, 
+      error: null, // Clear any previous error since we have a position now
+    );
   }
 
   void _updatePosition(Position position) {
@@ -386,25 +512,186 @@ class MapStateController extends StateNotifier<MapState> {
       isLoading: false,
     );
 
-    // Update user location in Firestore
-    final user = _ref.read(authServiceProvider).currentUser;
-    if (user != null) {
-      _mapService.updateUserLocation(
-        user.uid,
-        position.latitude,
-        position.longitude,
-      );
+    // Load pet businesses ONCE on first position (not on every update)
+    // The 6h cache + 2-decimal key precision handles the rest
+    if (state.allPetBusinesses.isEmpty) {
+      _loadNearbyPetBusinesses(position);
+    }
 
-      // Fetch nearby users if not already listening
-      if (_nearbyUsersSubscription == null) {
-        _startListeningToNearbyUsers(position);
-      }
-      
-      // Fetch nearby announcements if not already listening
-      if (_announcementsSubscription == null) {
-        _startListeningToAnnouncements(position);
+    // Always load nearby announcements (read-only, public data)
+    if (_announcementsSubscription == null) {
+      _startListeningToAnnouncements(position);
+    }
+
+    // Check proximity to active alerts (works even without check-in)
+    _checkProximityAlerts(position);
+
+    // Update user location in Firestore ONLY IF sharing is active (Manual Check-In)
+    if (_isSharingLocation) {
+      final user = _ref.read(authServiceProvider).currentUser;
+      if (user != null) {
+        _mapService.updateUserLocation(
+          user.uid,
+          position.latitude,
+          position.longitude,
+        );
+
+        // Fetch nearby users if not already listening
+        if (_nearbyUsersSubscription == null) {
+          _startListeningToNearbyUsers(position);
+        }
       }
     }
+  }
+
+  // ── PROXIMITY ALERT SYSTEM ─────────────────────────────
+  // Checks if the user is within 500m of any active safety alert or SOS.
+  // Shows a warning banner and local notification when approaching danger.
+  static const double _proximityThresholdKm = 0.5; // 500 meters, walking distance
+
+  void _checkProximityAlerts(Position userPos) {
+    ProximityAlert? closestAlert;
+    double closestDistance = double.infinity;
+
+    // Check safety alerts
+    for (final alert in state.allAlerts) {
+      final dist = _haversineDistance(
+        userPos.latitude, userPos.longitude,
+        alert.latitude, alert.longitude,
+      );
+      if (dist <= _proximityThresholdKm && dist < closestDistance) {
+        if (_notifiedAlertIds.contains('safety_${alert.id}')) continue;
+        closestDistance = dist;
+        String typeLabel;
+        switch (alert.type) {
+          case SafetyAlertType.poison:
+            typeLabel = '☠️ Bocconi avvelenati';
+            break;
+          case SafetyAlertType.glass:
+            typeLabel = '⚠️ Vetri/Pericoli';
+            break;
+          case SafetyAlertType.aggression:
+            typeLabel = '🐕 Cane aggressivo';
+            break;
+          case SafetyAlertType.police:
+            typeLabel = '👮 Controllo';
+            break;
+          default:
+            typeLabel = '⚠️ Pericolo';
+        }
+        closestAlert = ProximityAlert(
+          id: 'safety_${alert.id}',
+          title: typeLabel,
+          message: alert.description ?? 'Pericolo segnalato a ${(dist * 1000).round()}m da te!',
+          type: 'safety',
+          distanceMeters: dist * 1000,
+        );
+      }
+    }
+
+    // Check SOS alerts
+    for (final sos in state.allSOSAlerts) {
+      final dist = _haversineDistance(
+        userPos.latitude, userPos.longitude,
+        sos.latitude, sos.longitude,
+      );
+      if (dist <= _proximityThresholdKm && dist < closestDistance) {
+        if (_notifiedAlertIds.contains('sos_${sos.id}')) continue;
+        closestDistance = dist;
+        closestAlert = ProximityAlert(
+          id: 'sos_${sos.id}',
+          title: '🆘 Pet smarrito nelle vicinanze',
+          message: sos.message ?? 'Un animale si è perso a ${(dist * 1000).round()}m da te!',
+          type: 'sos',
+          distanceMeters: dist * 1000,
+        );
+      }
+    }
+
+    if (closestAlert != null) {
+      _notifiedAlertIds.add(closestAlert.id);
+      state = state.copyWith(proximityAlert: closestAlert);
+
+      // Fire a local notification with sound so user is alerted
+      // even if not actively looking at the map
+      try {
+        _ref.read(notificationServiceProvider).showProximityAlert(
+          title: closestAlert.title,
+          body: closestAlert.message,
+          alertId: closestAlert.id,
+        );
+      } catch (e) {
+        print('Error showing proximity notification: $e');
+      }
+    }
+  }
+
+  /// Dismiss the current proximity alert banner
+  void dismissProximityAlert() {
+    state = state.copyWith(proximityAlert: null);
+  }
+
+  /// Haversine distance between two GPS coordinates (in km)
+  double _haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+    const R = 6371.0; // Earth's radius in km
+    final dLat = (lat2 - lat1) * math.pi / 180;
+    final dLon = (lon2 - lon1) * math.pi / 180;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return R * c;
+  }
+
+  void setSearchRadius(double radiusInKm) {
+    state = state.copyWith(radiusInKm: radiusInKm);
+    // Restart listeners with new radius
+    if (state.currentPosition != null) {
+       _startListeningToNearbyUsers(state.currentPosition!);
+       _startListeningToAnnouncements(state.currentPosition!);
+    }
+  }
+
+  void _startListeningToNearbyUsers(Position center) {
+    _nearbyUsersSubscription?.cancel();
+    _nearbyUsersSubscription = _mapService.getNearbyUsers(
+      latitude: center.latitude,
+      longitude: center.longitude,
+      radiusInKm: state.radiusInKm,
+    ).listen(
+      (userLocations) {
+        _currentUserLocations = userLocations;
+        _updateMarkers();
+      },
+      onError: (e) {
+        print('Error fetching nearby users: $e');
+      },
+    );
+  }
+
+  // MANUAL CHECK-IN TOGGLE
+  Future<void> toggleLocationSharing(bool enable) async {
+    _isSharingLocation = enable;
+    // Force update immediately if enabled
+    if (enable && state.currentPosition != null) {
+       _updatePosition(state.currentPosition!);
+    } else if (!enable) {
+       // Go Offline
+       final user = _ref.read(authServiceProvider).currentUser;
+       if (user != null) {
+         // Optionally delete location or set offline
+         // For now, implementation implies just stop updating. 
+         // But to disappear immediately, we might want to remove from Firestore.
+         // _mapService.deleteUserLocation(user.uid); // If this method exists.
+       }
+    }
+    // Update State to reflect UI (we reuse isGhostModeEnabled or add a new field?)
+    // Actually we should map this to GhostMode or a new field.
+    // Let's use isGhostModeEnabled inverted for now, OR better, 
+    // since isGhost is persisted, we treat this toggle as the "Session Switch".
+    
+    // Changing state to reflect UI change (e.g. icon color)
+    state = state.copyWith(isSharingActive: enable); 
   }
 
   // Cache for user profiles to avoid re-fetching and allow filtering
@@ -453,18 +740,20 @@ class MapStateController extends StateNotifier<MapState> {
 
   Future<void> retryLocation() async {
     state = state.copyWith(isLoading: true, error: null);
-    await _initLocation();
+    await initLocation();
   }
 
   void setDogFilters({
     List<DogSize>? sizes,
     List<DogGender>? genders,
     List<String>? breeds,
+    bool? isSterilized,
   }) {
     state = state.copyWith(
       filterDogSizes: sizes,
       filterDogGenders: genders,
       filterDogBreeds: breeds,
+      filterIsSterilized: isSterilized,
     );
      _updateMarkers();
   }
@@ -474,14 +763,96 @@ class MapStateController extends StateNotifier<MapState> {
        filterDogSizes: [],
        filterDogGenders: [],
        filterDogBreeds: [],
+       filterIsSterilized: null,
      );
      _updateMarkers();
   }
 
-  void _updateMarkers() async {
+  void setPetSpeciesFilter(List<PetSpecies> species) { // Changed to List
+    state = state.copyWith(filterPetSpecies: species);
+    _updateMarkers();
+  }
+
+  // ============================
+  // PET BUSINESSES
+  // ============================
+
+  /// Load nearby pet businesses from Google Places API + Firestore
+  Future<void> _loadNearbyPetBusinesses(Position position) async {
+    try {
+      print('[BIZ DEBUG] Starting _loadNearbyPetBusinesses lat=${position.latitude}, lng=${position.longitude}');
+      final businesses = await _petBusinessService.fetchNearbyPetBusinesses(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        radiusInMeters: state.radiusInKm * 1000,
+      );
+      print('[BIZ DEBUG] Received ${businesses.length} businesses from service');
+      if (businesses.isNotEmpty) {
+        print('[BIZ DEBUG] First business: ${businesses.first.name} at (${businesses.first.latitude}, ${businesses.first.longitude})');
+      }
+      if (mounted) {
+        state = state.copyWith(allPetBusinesses: businesses);
+        print('[BIZ DEBUG] State updated with ${state.allPetBusinesses.length} businesses, showPetBusinesses=${state.showPetBusinesses}');
+        _updateMarkers();
+      } else {
+        print('[BIZ DEBUG] NOT MOUNTED - skipping state update');
+      }
+    } catch (e, stack) {
+      print('[BIZ DEBUG] ERROR loading pet businesses: $e');
+      print('[BIZ DEBUG] Stack: $stack');
+    }
+  }
+
+  /// Toggle pet business marker visibility
+  void togglePetBusinesses(bool show) {
+    state = state.copyWith(showPetBusinesses: show);
+    // Load businesses on first enable (lazy load)
+    if (show && state.allPetBusinesses.isEmpty && state.currentPosition != null) {
+      _loadNearbyPetBusinesses(state.currentPosition!);
+    }
+    _updateMarkers();
+  }
+
+  /// Set business category filter (empty list = show all)
+  void setBusinessCategoryFilter(List<PetBusinessCategory> categories) {
+    state = state.copyWith(filterBusinessCategories: categories);
+    _updateMarkers();
+  }
+
+  /// Select a pet business
+  void selectPetBusiness(PetBusinessModel business) {
+    state = state.copyWith(selectedPetBusiness: business);
+  }
+
+  /// Clear selected pet business
+  void clearSelectedPetBusiness() {
+    state = state.copyWith(selectedPetBusiness: null);
+  }
+
+  /// Refresh pet businesses (force re-fetch)
+  Future<void> refreshPetBusinesses() async {
+    _petBusinessService.clearCache();
+    if (state.currentPosition != null) {
+      await _loadNearbyPetBusinesses(state.currentPosition!);
+    }
+  }
+
+  void _updateMarkers() {
+    _markersDebounce?.cancel();
+    _markersDebounce = Timer(const Duration(milliseconds: 100), () {
+      _updateMarkersImpl();
+    });
+  }
+
+  void _updateMarkersImpl() async {
+    final thisVersion = ++_markersVersion;
     final List<Marker> markers = [];
     final query = state.searchQuery.toLowerCase();
     final Map<String, List<DogModel>> pendingCacheUpdates = {};
+    
+    // RADAR: Reset counts
+    int newRadarCount = 0;
+    List<String> newRadarMatchIds = [];
 
     // 1. User Markers
     for (final userLoc in _currentUserLocations) {
@@ -502,91 +873,121 @@ class MapStateController extends StateNotifier<MapState> {
         }
 
         if (userProfile != null) {
-          // 0. Ghost Mode Check (Hide invisible users)
-          if (userProfile.isGhost) continue;
-
-          // Privacy Check
-          bool isVisible = false;
-          final currentUserId = currentUser!.uid;
-
-          switch (userProfile.locationPrivacy) {
-            case LocationPrivacy.everyone:
-              isVisible = true;
-              break;
-            case LocationPrivacy.friends:
-              isVisible = userProfile.friends.contains(currentUserId);
-              break;
-            case LocationPrivacy.closeFriends:
-              isVisible = userProfile.closeFriends.contains(currentUserId);
-              break;
-            case LocationPrivacy.custom:
-              isVisible = userProfile.locationWhitelist.contains(currentUserId);
-              break;
-          }
-
-          if (!isVisible) continue;
-
-          // Filter by name
+          // --- FILTER MATCHING LOGIC ---
+          // Determine if user matches filters irrespective of visibility
+          // We moved this UP to check before visibility for Radar purposes.
+          
+          // Filter by name (Search Bar) - Radar respects search too? Yes.
           if (query.isNotEmpty && !userProfile.fullName.toLowerCase().contains(query)) {
             continue;
           }
-          
+
           // --- PET FILTERS (Global & Premium) ---
           final hasPremiumDogFilters = state.filterDogSizes.isNotEmpty || 
                                        state.filterDogGenders.isNotEmpty ||
                                        state.filterDogBreeds.isNotEmpty;
 
-          final hasSpeciesFilter = state.filterPetSpecies != null;
+          final hasSpeciesFilter = state.filterPetSpecies.isNotEmpty; // Changed logic
           final hasDogFilters = hasPremiumDogFilters || hasSpeciesFilter;
 
+          // Always fetch pets 
+          List<DogModel>? userDogs = state.dogCache[userLoc.uid];
+          bool dogsFetchedNow = false;
+             
+          if (userDogs == null) {
+             try {
+               userDogs = await _dogService.getDogsByOwnerId(userLoc.uid);
+               dogsFetchedNow = true;
+             } catch (e) {
+                print('Error fetching dogs: $e');
+                userDogs = [];
+             }
+          }
+             
+          if (dogsFetchedNow) {
+             pendingCacheUpdates[userLoc.uid] = userDogs ?? [];
+          }
+
+          bool matchesFilters = true;
+
           if (hasDogFilters) {
-             List<DogModel>? userDogs = state.dogCache[userLoc.uid];
-             bool dogsFetchedNow = false;
-             
-             if (userDogs == null) {
-                try {
-                  userDogs = await _dogService.getDogsByOwnerId(userLoc.uid);
-                  dogsFetchedNow = true;
-                } catch (e) {
-                   print('Error fetching dogs: $e');
-                   userDogs = [];
-                }
-             }
-             
              // 0. Empty check: If filtering by pets, user must HAVE pets.
-             if (userDogs == null || userDogs.isEmpty) continue;
-
-             if (dogsFetchedNow) {
-                pendingCacheUpdates[userLoc.uid] = userDogs;
-             }
-
-             // 1. Check Species Filter (Global)
-             if (hasSpeciesFilter) {
-               final hasSpecies = userDogs.any((pet) => pet.species == state.filterPetSpecies);
-               if (!hasSpecies) continue;
-             }
-
-             // 2. Check Premium Filters (Dog Specific)
-             if (hasPremiumDogFilters) {
-                 bool isMatch(DogModel dog) {
-                    if (state.filterDogSizes.isNotEmpty && !state.filterDogSizes.contains(dog.size)) return false;
-                    if (state.filterDogGenders.isNotEmpty && !state.filterDogGenders.contains(dog.gender)) return false;
-                    
-                    if (state.filterDogBreeds.isNotEmpty) {
-                       bool breedMatch = false;
-                       for (final filter in state.filterDogBreeds) {
-                          if (dog.breed.toLowerCase().contains(filter.toLowerCase())) {
-                            breedMatch = true;
-                            break;
-                          }
-                       }
-                       if (!breedMatch) return false;
-                    }
-                    return true;
-                 }
+             if (userDogs == null || userDogs.isEmpty) {
+                matchesFilters = false;
+             } else {
+               // 1. Check Species Filter (Global)
+               if (hasSpeciesFilter) {
+                 // Multi-Selection Logic:
+                 // The user dogs must contain ANY of the selected species?
+                 // Or ALL? Usually "Show me Dogs OR Cats". So if I have a fish, I don't show up.
+                 // If I have a Dog, I show up if Dog is selected.
                  
-                 if (!userDogs.any(isMatch)) continue;
+                 final hasMatchingSpecies = userDogs.any((pet) => state.filterPetSpecies.contains(pet.species));
+                 if (!hasMatchingSpecies) matchesFilters = false;
+               }
+
+               // 2. Check Premium Filters (Dog Specific)
+               if (matchesFilters && hasPremiumDogFilters) {
+                   bool isMatch(DogModel dog) {
+                      if (state.filterDogSizes.isNotEmpty && !state.filterDogSizes.contains(dog.size)) return false;
+                      if (state.filterDogGenders.isNotEmpty && !state.filterDogGenders.contains(dog.gender)) return false;
+                      
+                      if (state.filterDogBreeds.isNotEmpty) {
+                         bool breedMatch = false;
+                         for (final filter in state.filterDogBreeds) {
+                            if (dog.breed.toLowerCase().contains(filter.toLowerCase())) {
+                              breedMatch = true;
+                              break;
+                            }
+                         }
+                         if (!breedMatch) return false;
+                      }
+                       return true;
+                    }
+
+                    // Also check sterilized filter
+                    bool isMatchWithSterilized(DogModel dog) {
+                       if (!isMatch(dog)) return false;
+                       if (state.filterIsSterilized != null && dog.isSterilized != state.filterIsSterilized) return false;
+                       return true;
+                    }
+                    
+                    if (!userDogs.any(isMatchWithSterilized)) matchesFilters = false;
+               }
              }
+          }
+          
+          if (!matchesFilters) continue; // Skip if doesn't match filters
+
+          // 0. Ghost Mode Check (Hide invisible users)
+          bool isVisible = true;
+          if (userProfile.isGhost) isVisible = false;
+
+          // Privacy Check
+          final currentUserId = currentUser!.uid;
+          if (isVisible) {
+            switch (userProfile.locationPrivacy) {
+              case LocationPrivacy.everyone:
+                isVisible = true;
+                break;
+              case LocationPrivacy.friends:
+                isVisible = userProfile.friends.contains(currentUserId);
+                break;
+              case LocationPrivacy.closeFriends:
+                isVisible = userProfile.closeFriends.contains(currentUserId);
+                break;
+              case LocationPrivacy.custom:
+                isVisible = userProfile.locationWhitelist.contains(currentUserId);
+                break;
+            }
+          }
+          
+          // RADAR LOGIC
+          if (!isVisible) {
+             // If invisible BUT matches filters, add to Radar
+             newRadarCount++;
+             newRadarMatchIds.add(userLoc.uid);
+             continue; // Don't add marker
           }
 
           markers.add(
@@ -598,7 +999,7 @@ class MapStateController extends StateNotifier<MapState> {
                 onTap: () {
                    state = state.copyWith(selectedUser: userProfile);
                 },
-                child: _buildUserMarker(userProfile),
+                child: _buildUserMarker(userProfile, userDogs ?? []),
               ),
             ),
           );
@@ -659,30 +1060,45 @@ class MapStateController extends StateNotifier<MapState> {
         if (!matches) continue;
       }
 
+      // Use SOS-style marker for lost pet announcements
+      final isLost = announcement.category == AnnouncementCategory.lost;
+
       markers.add(
         Marker(
           point: LatLng(announcement.location.latitude, announcement.location.longitude),
-          width: 40,
-          height: 40,
+          width: isLost ? 50 : 40,
+          height: isLost ? 50 : 40,
           child: GestureDetector(
             onTap: () {
                state = state.copyWith(selectedAnnouncement: announcement);
             },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+            child: isLost
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)
+                      ],
+                    ),
+                    child: const Icon(Icons.sos, color: Colors.white, size: 30),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.campaign, color: Colors.white, size: 24),
                   ),
-                ],
-              ),
-              child: const Icon(Icons.campaign, color: Colors.white, size: 24),
-            ),
           ),
         ),
       );
@@ -739,42 +1155,61 @@ class MapStateController extends StateNotifier<MapState> {
       markers.add(
         Marker(
           point: LatLng(sos.latitude, sos.longitude),
-          width: 60,
-          height: 60,
+          width: 50,
+          height: 50,
           child: GestureDetector(
             onTap: () {
               state = state.copyWith(selectedSOS: sos);
             },
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // "Pulse" effect ring (static for now)
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                     color: Colors.red.withOpacity(0.3),
-                     shape: BoxShape.circle,
-                  ),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.8, end: 1.2),
+              duration: const Duration(seconds: 1),
+              builder: (context, value, child) {
+                 return Transform.scale(scale: value, child: child);
+              },
+              onEnd: () {/* Loop handled elsewhere or stateless */}, 
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3),
+                  boxShadow: [
+                     BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)
+                  ]
                 ),
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(0.5),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.sos, color: Colors.white, size: 30),
-                ),
-              ],
+                child: const Icon(Icons.sos, color: Colors.white, size: 30),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 5.5. Sighting Markers (Only visible to the owner of the lost pet)
+    for (final sighting in state.allSightings) {
+      markers.add(
+        Marker(
+          point: LatLng(sighting.latitude, sighting.longitude),
+          width: 45,
+          height: 45,
+          child: GestureDetector(
+            onTap: () {
+              state = state.copyWith(selectedSighting: sighting);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  )
+                ],
+              ),
+              child: const Icon(Icons.location_on, color: Colors.white, size: 24),
             ),
           ),
         ),
@@ -821,37 +1256,80 @@ class MapStateController extends StateNotifier<MapState> {
       );
     }
 
+    // 7. Pet Business Markers
+    final markersBeforeBusinesses = markers.length;
+    print('[MAP DEBUG] showPetBusinesses=${state.showPetBusinesses}, allPetBusinesses.length=${state.allPetBusinesses.length}');
+    if (state.showPetBusinesses) {
+      for (final biz in state.allPetBusinesses) {
+        // Category Filter
+        if (state.filterBusinessCategories.isNotEmpty &&
+            !state.filterBusinessCategories.contains(biz.category)) {
+          continue;
+        }
 
+        // Search Filter
+        if (query.isNotEmpty) {
+          final matches = biz.name.toLowerCase().contains(query) ||
+                          biz.category.displayName.toLowerCase().contains(query) ||
+                          biz.address.toLowerCase().contains(query);
+          if (!matches) continue;
+        }
 
-    if (mounted) {
+        markers.add(
+          Marker(
+            point: LatLng(biz.latitude, biz.longitude),
+            width: 44,
+            height: 44,
+            child: GestureDetector(
+              onTap: () {
+                state = state.copyWith(selectedPetBusiness: biz);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _petBusinessColor(biz.category),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: biz.isClaimed ? Colors.amber : Colors.white,
+                    width: biz.isClaimed ? 3 : 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _petBusinessColor(biz.category).withOpacity(0.4),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    _petBusinessIcon(biz.category),
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    final businessMarkersAdded = markers.length - markersBeforeBusinesses;
+    print('[MAP DEBUG] Business markers added: $businessMarkersAdded, total markers: ${markers.length}');
+
+    if (mounted && _markersVersion == thisVersion) {
        final finalCache = Map<String, List<DogModel>>.from(state.dogCache);
        if (pendingCacheUpdates.isNotEmpty) {
           finalCache.addAll(pendingCacheUpdates);
        }
        state = state.copyWith(markers: markers, dogCache: finalCache);
+       print('[MAP DEBUG] State updated with ${markers.length} markers (version $thisVersion)');
+    } else {
+       print('[MAP DEBUG] Discarding stale markers (version $thisVersion, current $_markersVersion)');
     }
   }
 
-  void _startListeningToNearbyUsers(Position center) {
-    // Cancel existing subscription if any
-    _nearbyUsersSubscription?.cancel();
 
-    _nearbyUsersSubscription = _mapService
-        .getNearbyUsers(
-      latitude: center.latitude,
-      longitude: center.longitude,
-      radiusInKm: 5.0, // 5km radius
-    )
-        .listen(
-      (userLocations) {
-        _currentUserLocations = userLocations;
-        _updateMarkers();
-      },
-      onError: (e) {
-        print('Error fetching nearby users: $e');
-      },
-    );
-  }
 
   void clearSelectedUser() {
     state = state.copyWith(selectedUser: null);
@@ -873,8 +1351,72 @@ class MapStateController extends StateNotifier<MapState> {
     state = state.copyWith(selectedSOS: null);
   }
 
+  void clearSelectedSighting() { // Added
+    state = state.copyWith(selectedSighting: null);
+  }
+
   void clearSelectedEvent() { // Added
     state = state.copyWith(selectedEvent: null);
+  }
+
+  // Pet business marker icon helper
+  static IconData _petBusinessIcon(PetBusinessCategory category) {
+    switch (category) {
+      case PetBusinessCategory.vetClinic:
+        return Icons.local_hospital;
+      case PetBusinessCategory.petShop:
+        return Icons.shopping_bag;
+      case PetBusinessCategory.groomer:
+        return Icons.content_cut;
+      case PetBusinessCategory.petSitter:
+        return Icons.home;
+      case PetBusinessCategory.dogTrainer:
+        return Icons.school;
+      case PetBusinessCategory.petHotel:
+        return Icons.hotel;
+      case PetBusinessCategory.petFriendlyCafe:
+        return Icons.coffee;
+      case PetBusinessCategory.petPharmacy:
+        return Icons.local_pharmacy;
+      case PetBusinessCategory.dogPark:
+        return Icons.park;
+      case PetBusinessCategory.petFriendlyBeach:
+        return Icons.beach_access;
+      case PetBusinessCategory.petFriendlyBathhouse:
+        return Icons.beach_access;
+      case PetBusinessCategory.other:
+        return Icons.store;
+    }
+  }
+
+  // Pet business marker color helper
+  static Color _petBusinessColor(PetBusinessCategory category) {
+    switch (category) {
+      case PetBusinessCategory.vetClinic:
+        return const Color(0xFFE53935); // Red
+      case PetBusinessCategory.petShop:
+        return const Color(0xFF00897B); // Teal
+      case PetBusinessCategory.groomer:
+        return const Color(0xFF8E24AA); // Purple
+      case PetBusinessCategory.petSitter:
+        return const Color(0xFF1E88E5); // Blue
+      case PetBusinessCategory.dogTrainer:
+        return const Color(0xFFF4511E); // Deep Orange
+      case PetBusinessCategory.petHotel:
+        return const Color(0xFF3949AB); // Indigo
+      case PetBusinessCategory.petFriendlyCafe:
+        return const Color(0xFF6D4C41); // Brown
+      case PetBusinessCategory.petPharmacy:
+        return const Color(0xFF00ACC1); // Cyan
+      case PetBusinessCategory.dogPark:
+        return const Color(0xFF43A047); // Green
+      case PetBusinessCategory.petFriendlyBeach:
+        return const Color(0xFFFFB300); // Amber
+      case PetBusinessCategory.petFriendlyBathhouse:
+        return const Color(0xFFFF8F00); // Dark Amber
+      case PetBusinessCategory.other:
+        return const Color(0xFF757575); // Grey
+    }
   }
 
   @override
@@ -885,7 +1427,9 @@ class MapStateController extends StateNotifier<MapState> {
     _announcementsSubscription?.cancel();
     _alertsSubscription?.cancel();
     _sosSubscription?.cancel(); // Added
+    _sightingsSubscription?.cancel(); // Added
     _eventsSubscription?.cancel(); // Added
+    _markersDebounce?.cancel();
     super.dispose();
   }
   Future<bool> _tryFallbackToUserAddress() async {
@@ -899,9 +1443,12 @@ class MapStateController extends StateNotifier<MapState> {
 
           // If coordinates are missing, try geocoding with better accuracy
           if (lat == null || lng == null) {
-            if (userModel.address != null && userModel.address!.isNotEmpty) {
-              print('Attempting to geocode address: ${userModel.address}, Italia');
-              final locations = await locationFromAddress('${userModel.address!}, Italia');
+            final queryAddress = (userModel.address != null && userModel.address!.isNotEmpty)
+                ? userModel.address!
+                : userModel.zone;
+            if (queryAddress.isNotEmpty) {
+              print('Attempting to geocode address/zone: $queryAddress, Italia');
+              final locations = await locationFromAddress('$queryAddress, Italia');
               if (locations.isNotEmpty) {
                 lat = locations.first.latitude;
                 lng = locations.first.longitude;
@@ -935,7 +1482,7 @@ class MapStateController extends StateNotifier<MapState> {
     return false;
   }
 
-  Widget _buildUserMarker(UserModel user) {
+  Widget _buildUserMarker(UserModel user, List<DogModel> pets) {
       if (user.accountType == AccountType.business) {
           return Container(
              padding: const EdgeInsets.all(4),
@@ -947,23 +1494,26 @@ class MapStateController extends StateNotifier<MapState> {
                  BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 5, offset: const Offset(0, 3))
                ]
              ),
-             child: const Icon(Icons.store, color: Colors.white, size: 20),
+             child: const Icon(Icons.store, color: Colors.white, size: 24),
           );
       }
       
+      // Use Custom Marker Icon from MapMarkers
+      // The mapMarkerId in UserModel stores the selected icon ID
+      // If pets are passed, we could use them for logic later, but for now we prioritize the user's selected avatar
+      final iconData = MapMarkers.getIcon(user.mapMarkerId);
+
       return Container(
         decoration: BoxDecoration(
-           color: Colors.white,
+           color: Colors.deepPurple, // Brand color background
            shape: BoxShape.circle,
-           border: Border.all(color: Colors.deepPurple, width: 2), 
+           border: Border.all(color: Colors.white, width: 2), 
            boxShadow: [
               BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))
            ]
         ),
-        child: ClipOval(
-           child: user.photoUrl != null 
-              ? Image.network(user.photoUrl!, fit: BoxFit.cover)
-              : const Icon(Icons.person, color: Colors.deepPurple),
+        child: Center(
+          child: Icon(iconData, color: Colors.white, size: 28), // White icon on colored background
         ),
       );
   }
@@ -976,7 +1526,8 @@ final mapControllerProvider =
     ref.watch(locationServiceProvider),
     ref.watch(mapServiceProvider),
     ref.watch(userServiceProvider),
+    ref.watch(dogServiceProvider),
+    ref.watch(petBusinessServiceProvider),
     ref,
   );
 });
-

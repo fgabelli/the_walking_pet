@@ -37,6 +37,8 @@ class WalkController extends StateNotifier<WalkState> {
     required int duration,
     required MeetingPoint meetingPoint,
     int? maxParticipants,
+    Recurrence recurrence = Recurrence.none,
+    List<int> recurrenceDays = const [], // Added
   }) async {
     state = WalkState(isLoading: true);
     try {
@@ -44,18 +46,7 @@ class WalkController extends StateNotifier<WalkState> {
       if (currentUser == null) throw Exception('User not authenticated');
 
       // 1. Create a chat for the walk (optional, or create it when first person joins?)
-      // Let's create it now so we have the ID.
-      // For group chats, we might need a different createChat method or just use a list.
-      // Since my ChatService.createChat takes a list of userIds and checks for existing 1-on-1...
-      // I might need to update ChatService to support group chats or just create a doc directly here.
-      // For simplicity, let's assume we create a chat doc with just the creator for now.
-      // But wait, ChatService.createChat logic was specific to 1-on-1.
-      // I should probably add createGroupChat to ChatService or handle it here.
-      // Let's skip chat creation for a second and just use a placeholder or empty string, 
-      // OR better: Update ChatService to handle group chats.
-      
-      // Assuming we just generate a UUID for chat or let Firestore generate it.
-      // Let's just create the walk first.
+      // ... (comments)
       
       final newWalk = WalkModel(
         id: '', // Will be set by Firestore
@@ -70,6 +61,8 @@ class WalkController extends StateNotifier<WalkState> {
         chatId: '', // TODO: Implement group chat creation
         status: WalkStatus.upcoming,
         createdAt: DateTime.now(),
+        recurrence: recurrence,
+        recurrenceDays: recurrenceDays, // Added
       );
 
       await _walkService.createWalk(newWalk);

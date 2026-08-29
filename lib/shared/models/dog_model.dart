@@ -27,10 +27,22 @@ class DogModel {
   final int energyLevel; // 1-5
   final List<String> character;
   final String? notes;
-  final String? photoUrl;
+  final List<String> mediaUrls;
+
+  /// Backward compat: ritorna la prima media URL come foto profilo
+  String? get photoUrl => mediaUrls.isNotEmpty ? mediaUrls.first : null;
   final DateTime createdAt;
   final DogGender gender;
   final PetSpecies species; // Added
+  
+  // Medical & Health Fields (Babalù style)
+  final String? microchipNumber;
+  final double? weight;
+  final String? bloodType;
+  final List<String> allergies;
+  final List<String> intolerances;
+  final List<String> pathologies;
+  final bool isSterilized;
 
   DogModel({
     required this.id,
@@ -42,14 +54,28 @@ class DogModel {
     required this.energyLevel,
     required this.character,
     this.notes,
-    this.photoUrl,
+    this.mediaUrls = const [],
     required this.createdAt,
     this.gender = DogGender.male,
     this.species = PetSpecies.dog, // Default for existing records
+    this.microchipNumber,
+    this.weight,
+    this.bloodType,
+    this.allergies = const [],
+    this.intolerances = const [],
+    this.pathologies = const [],
+    this.isSterilized = false,
   });
 
   factory DogModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    // Backward compat: migra il vecchio photoUrl in mediaUrls
+    final mediaUrls = List<String>.from(data['mediaUrls'] ?? []);
+    if (mediaUrls.isEmpty && data['photoUrl'] != null) {
+      mediaUrls.add(data['photoUrl']);
+    }
+
     return DogModel(
       id: doc.id,
       ownerId: data['ownerId'] ?? '',
@@ -63,7 +89,7 @@ class DogModel {
       energyLevel: data['energyLevel'] ?? 3,
       character: List<String>.from(data['character'] ?? []),
       notes: data['notes'],
-      photoUrl: data['photoUrl'],
+      mediaUrls: mediaUrls,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       gender: DogGender.values.firstWhere(
         (e) => e.name == (data['gender'] ?? 'male'),
@@ -73,6 +99,13 @@ class DogModel {
         (e) => e.name == (data['species'] ?? 'dog'),
         orElse: () => PetSpecies.dog,
       ),
+      microchipNumber: data['microchipNumber'],
+      weight: (data['weight'] as num?)?.toDouble(),
+      bloodType: data['bloodType'],
+      allergies: List<String>.from(data['allergies'] ?? []),
+      intolerances: List<String>.from(data['intolerances'] ?? []),
+      pathologies: List<String>.from(data['pathologies'] ?? []),
+      isSterilized: data['isSterilized'] ?? false,
     );
   }
 
@@ -86,10 +119,18 @@ class DogModel {
       'energyLevel': energyLevel,
       'character': character,
       'notes': notes,
-      'photoUrl': photoUrl,
+      'mediaUrls': mediaUrls,
+      'photoUrl': photoUrl, // backward compat
       'createdAt': Timestamp.fromDate(createdAt),
       'gender': gender.name,
       'species': species.name,
+      'microchipNumber': microchipNumber,
+      'weight': weight,
+      'bloodType': bloodType,
+      'allergies': allergies,
+      'intolerances': intolerances,
+      'pathologies': pathologies,
+      'isSterilized': isSterilized,
     };
   }
 
@@ -103,10 +144,17 @@ class DogModel {
     int? energyLevel,
     List<String>? character,
     String? notes,
-    String? photoUrl,
+    List<String>? mediaUrls,
     DateTime? createdAt,
     DogGender? gender,
     PetSpecies? species,
+    String? microchipNumber,
+    double? weight,
+    String? bloodType,
+    List<String>? allergies,
+    List<String>? intolerances,
+    List<String>? pathologies,
+    bool? isSterilized,
   }) {
     return DogModel(
       id: id ?? this.id,
@@ -118,10 +166,17 @@ class DogModel {
       energyLevel: energyLevel ?? this.energyLevel,
       character: character ?? this.character,
       notes: notes ?? this.notes,
-      photoUrl: photoUrl ?? this.photoUrl,
+      mediaUrls: mediaUrls ?? this.mediaUrls,
       createdAt: createdAt ?? this.createdAt,
       gender: gender ?? this.gender,
       species: species ?? this.species,
+      microchipNumber: microchipNumber ?? this.microchipNumber,
+      weight: weight ?? this.weight,
+      bloodType: bloodType ?? this.bloodType,
+      allergies: allergies ?? this.allergies,
+      intolerances: intolerances ?? this.intolerances,
+      pathologies: pathologies ?? this.pathologies,
+      isSterilized: isSterilized ?? this.isSterilized,
     );
   }
 }

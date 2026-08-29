@@ -1,11 +1,14 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/sos_service.dart';
 import '../../../../shared/models/announcement_model.dart';
+import '../../../../shared/models/lost_pet_alert_model.dart';
 import '../../../../shared/models/user_model.dart'; // Added
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/nextdoor_service.dart';
@@ -21,6 +24,7 @@ final nextdoorServiceProvider = Provider<NextdoorService>((ref) {
 class NextdoorState {
   final List<AnnouncementModel> announcements;
   final List<UserModel> businesses; // Added
+  final List<LostPetAlertModel> lostPetAlerts; // SOS alerts
   final bool isLoading;
   final bool isSubmitting;
   final String? error;
@@ -29,6 +33,7 @@ class NextdoorState {
   NextdoorState({
     this.announcements = const [],
     this.businesses = const [], // Added
+    this.lostPetAlerts = const [],
     this.isLoading = true,
     this.isSubmitting = false,
     this.error,
@@ -38,6 +43,7 @@ class NextdoorState {
   NextdoorState copyWith({
     List<AnnouncementModel>? announcements,
     List<UserModel>? businesses, // Added
+    List<LostPetAlertModel>? lostPetAlerts,
     bool? isLoading,
     bool? isSubmitting,
     String? error,
@@ -46,6 +52,7 @@ class NextdoorState {
     return NextdoorState(
       announcements: announcements ?? this.announcements,
       businesses: businesses ?? this.businesses, // Added
+      lostPetAlerts: lostPetAlerts ?? this.lostPetAlerts,
       isLoading: isLoading ?? this.isLoading,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       error: error,
@@ -60,6 +67,7 @@ class NextdoorController extends StateNotifier<NextdoorState> {
   final LocationService _locationService;
   final StorageService _storageService; // Add this
   final Ref _ref;
+  StreamSubscription<List<LostPetAlertModel>>? _sosSubscription;
 
   NextdoorController(
     this._nextdoorService,
@@ -69,6 +77,24 @@ class NextdoorController extends StateNotifier<NextdoorState> {
   ) : super(NextdoorState()) {
     _init();
     _startListeningToProfile();
+    _startListeningToSOS();
+  }
+
+  @override
+  void dispose() {
+    _sosSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _startListeningToSOS() {
+    _sosSubscription = _ref.read(sosServiceProvider).getActiveSOSStream().listen(
+      (alerts) {
+        state = state.copyWith(lostPetAlerts: alerts);
+      },
+      onError: (e) {
+        print('Error fetching SOS for nextdoor: $e');
+      },
+    );
   }
 
   void _startListeningToProfile() {
@@ -162,12 +188,13 @@ class NextdoorController extends StateNotifier<NextdoorState> {
     }
   }
 
-  Future<void> createAnnouncement({
+  Future<String> createAnnouncement({
     required String message,
     required String zone,
     required int durationInHours,
     AnnouncementCategory category = AnnouncementCategory.news,
     File? imageFile,
+    String? imageUrl,
     double? latitude,
     double? longitude,
   }) async {
@@ -210,6 +237,7 @@ class NextdoorController extends StateNotifier<NextdoorState> {
           geohash: geoFirePoint.geohash,
         ),
         responses: [],
+        imageUrl: imageUrl, // Pre-set if provided (e.g. pet photo URL)
         authorName: authorName,
         authorPhotoUrl: authorPhotoUrl,
         createdAt: now,
@@ -220,25 +248,20 @@ class NextdoorController extends StateNotifier<NextdoorState> {
       // 2. Save to Firestore to get ID
       final announcementId = await _nextdoorService.createAnnouncement(announcement);
 
-      // 3. Upload image if exists
-      String? imageUrl;
+      // 3. Upload image file if provided (takes priority over imageUrl)
       if (imageFile != null) {
-        imageUrl = await _storageService.uploadAnnouncementImage(announcementId, imageFile);
+        final uploadedUrl = await _storageService.uploadAnnouncementImage(announcementId, imageFile);
         
-        // 4. Update announcement with image URL and ID
+        // 4. Update announcement with uploaded image URL
         final updatedAnnouncement = announcement.copyWith(
           id: announcementId,
-          imageUrl: imageUrl,
+          imageUrl: uploadedUrl,
         );
         await _nextdoorService.updateAnnouncement(updatedAnnouncement);
-      } else {
-         // Just update ID if no image (though createAnnouncement returned ID, the model needs it if we were to use it locally, but we rely on stream)
-         // Actually, createAnnouncement in service just adds it. We might want to update the ID in the doc if we want the doc to contain its own ID, but Firestore doc ID is usually separate.
-         // However, our model has an 'id' field. It's good practice to ensure it matches.
-         // But for now, let's just leave it as is if no image, or update it if we want consistency.
       }
 
       state = state.copyWith(isSubmitting: false);
+      return announcementId;
     } catch (e) {
       state = state.copyWith(isSubmitting: false, error: e.toString());
       rethrow;

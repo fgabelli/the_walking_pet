@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - DOGZN</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 80px;
+        }
+
+        .legal-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+        }
+
+        p,
+        ul,
+        li {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--text-main);
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <div class="logo">
+                <a href="index.html" style="text-decoration:none; display:flex; align-items:center;">
+                    <img src="icons/logo_horizontal.png" alt="DOGZN Logo" class="logo-img-horizontal">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Torna alla Home</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="legal-content">
+        <h1>Privacy Policy - DOGZN</h1>
+        <p><strong>Ultimo Aggiornamento</strong>: 19 Maggio 2026<br>
+            <strong>Versione</strong>: 1.3
+        </p>
+
+        <hr>
+
+        <h2>1. Introduzione</h2>
+        <p>Benvenuto su DOGZN (DOGZN). La tua privacy è importante per noi. Questa Informativa sulla Privacy
+            spiega come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali quando utilizzi la nostra
+            applicazione mobile.</p>
+        <p>Leggi attentamente questa Privacy Policy. Utilizzando DOGZN, accetti le pratiche descritte in questo
+            documento.
+            Se non sei d'accordo, ti preghiamo di non utilizzare l'app.</p>
+
+        <hr>
+
+        <h2>2. Titolare del Trattamento</h2>
+        <p><strong>DOGZN - Vega Lab SRL</strong></p>
+        <p>Per qualsiasi domanda sulla privacy, contattaci:</p>
+        <ul>
+            <li>📧 <strong>Email</strong>: privacy@thewalkingpet.it</li>
+            <li>📧 <strong>Supporto</strong>: support@thewalkingpet.it</li>
+        </ul>
+
+        <hr>
+
+        <h2>3. Dati Raccolti</h2>
+
+        <h3>3.1 Dati di Registrazione e Account</h3>
+        <p>Quando crei un account su DOGZN (tramite Google Sign-In, Apple Sign-In o email/password), raccogliamo:</p>
+        <ul>
+            <li>Nome e cognome</li>
+            <li>Indirizzo email</li>
+            <li>Foto profilo (upload utente)</li>
+            <li>User ID univoco</li>
+            <li>Tipo di account: "Personale" o "Business" (per attività commerciali)</li>
+        </ul>
+
+        <h3>3.2 Dati dell'Animale Domestico</h3>
+        <p>Per utilizzare le funzionalità di DOGZN, crei un profilo per il tuo animale inserendo:</p>
+        <ul>
+            <li>Nome, razza, sesso</li>
+            <li>Età e peso (facoltativo)</li>
+            <li>Foto dell'animale</li>
+            <li>Informazioni mediche (facoltativo, es. "Allergico al pollo")</li>
+        </ul>
+
+        <h3>3.3 Dati di Geolocalizzazione</h3>
+        <p>L'app utilizza il GPS in tre modalità:</p>
+        <p><strong>In Primo Piano (Foreground)</strong><br>
+            Mostrare la tua posizione sulla mappa durante l'uso attivo dell'app</p>
+        <p><strong>In Background</strong><br>
+            Tracciamento della "Passeggiata" tramite SDK nativo Transistor Software
+            (flutter_background_geolocation), anche con schermo bloccato o app in background.<br>
+            Il tracking richiede il permesso "Sempre" per la posizione ed è attivo
+            esclusivamente durante le sessioni di passeggiata.<br>
+            Funzionamento del Radar/SOS se abiliti esplicitamente questa funzione "always-on"</p>
+        <p><strong>Condivisione</strong><br>
+            La posizione viene inviata al server Firebase<br>
+            Nel Radar Mode: posizione approssimativa condivisa con altri utenti<br>
+            Nel SOS: posizione esatta condivisa con utenti nel raggio di 5km<br>
+            Nelle Passeggiate: tracciamento del percorso GPS</p>
+        <p><strong>Controllo della Privacy</strong>: Puoi disattivare la geolocalizzazione in qualsiasi momento dalle
+            impostazioni del dispositivo.</p>
+
+        <h3>3.4 Contenuti Generati dall'Utente</h3>
+        <p>Raccogliamo i contenuti che carichi volontariamente:</p>
+        <ul>
+            <li>Post e commenti nel feed della community</li>
+            <li>Foto e video delle passeggiate</li>
+            <li>Messaggi chat privati 1:1</li>
+            <li>Like e interazioni</li>
+            <li>Annunci sulla Bacheca Locale (es. "Cerco Dog Sitter", "Trovato cane")</li>
+        </ul>
+        <p><strong>Nota Importante</strong>: Tutti i contenuti generati dagli utenti (testo e immagini) vengono
+            processati
+            automaticamente da <strong>sistemi di intelligenza artificiale</strong> per la moderazione dei contenuti
+            (vedi sezione 4.6).</p>
+
+        <h3>3.5 Dati per Riscatto Attività Commerciali (Business Claim)</h3>
+        <p>Se richiedi il riscatto di un esercizio commerciale, raccogliamo:</p>
+        <ul>
+            <li>Nome e cognome del titolare/responsabile</li>
+            <li>Ruolo (Titolare, Direttore, Responsabile)</li>
+            <li>Numero di telefono di contatto</li>
+            <li>Email aziendale</li>
+            <li>Partita IVA (P.IVA)</li>
+            <li>Foto di verifica (insegna, Visura Camerale, documento di proprietà)</li>
+            <li>Note aggiuntive (opzionale)</li>
+        </ul>
+        <p>Questi dati vengono conservati nella collection <code>business_claims</code> e revisionati manualmente dal
+            team DOGZN. Le foto vengono caricate su Firebase Storage.</p>
+
+        <h3>3.5 Dati sulla Salute e Attività Fisica (Health Connect / Apple Health)</h3>
+        <p>Se l'utente concede il consenso esplicito, l'app accede ai seguenti dati tramite <strong>Health
+                Connect</strong> (Android) o <strong>Apple Health</strong> (iOS):</p>
+        <ul>
+            <li><strong>Passi</strong> — Conteggio dei passi effettuati durante le passeggiate</li>
+            <li><strong>Calorie attive bruciate</strong> — Consumo calorico durante l'attività fisica</li>
+            <li><strong>Calorie totali bruciate</strong> — Consumo calorico complessivo</li>
+            <li><strong>Distanza percorsa</strong> — Chilometri e metri durante le passeggiate</li>
+            <li><strong>Sessioni di allenamento</strong> — Dati sulle sessioni di camminata/corsa</li>
+        </ul>
+        <p><strong>Finalità</strong>: Questi dati vengono utilizzati esclusivamente per mostrare all'utente le
+            statistiche della propria attività fisica durante le passeggiate con il cane. I dati di salute:</p>
+        <ul>
+            <li>Non vengono mai condivisi con terze parti</li>
+            <li>Non vengono utilizzati per pubblicità</li>
+            <li>Non vengono mai venduti</li>
+            <li>Sono visualizzati solo all'utente nel riepilogo della passeggiata e nel profilo</li>
+            <li>Possono essere revocati in qualsiasi momento dalle impostazioni del dispositivo</li>
+        </ul>
+        <p><strong>Base Legale</strong>: Consenso esplicito dell'utente (Art. 9 GDPR per dati sanitari).</p>
+
+        <h3>3.6 Dati Tecnici e di Dispositivo</h3>
+        <p>Raccogliamo automaticamente informazioni tecniche:</p>
+        <ul>
+            <li>Identificatori Pubblicitari: IDFA (iOS) e AAID (Android)</li>
+            <li>Modello del dispositivo e versione del sistema operativo</li>
+            <li>Indirizzo IP</li>
+            <li>Lingua del dispositivo</li>
+            <li>Log di crash (tramite Firebase Crashlytics)</li>
+            <li>Dati di utilizzo dell'app (pagine visitate, tempo trascorso, clic)</li>
+        </ul>
+
+        <h3>3.7 Dati di Pagamento</h3>
+        <p>Per gli abbonamenti, raccogliamo:</p>
+        <ul>
+            <li>Informazioni sulla transazione (tramite RevenueCat)</li>
+            <li>Tipo di piano sottoscritto (Premium, Business, Business Pro)</li>
+            <li>Data di inizio e scadenza dell'abbonamento</li>
+            <li>Stato del pagamento</li>
+        </ul>
+        <p><strong>Nota Importante</strong>: DOGZN non gestisce né memorizza mai i dati della carta di credito
+            dell'utente. I pagamenti sono gestiti direttamente da Apple App Store e Google Play Store tramite
+            RevenueCat.</p>
+
+        <hr>
+
+        <h2>4. Finalità del Trattamento</h2>
+        <p>Utilizziamo i tuoi dati per i seguenti scopi:</p>
+
+        <h3>4.1 Fornitura del Servizio</h3>
+        <ul>
+            <li>Creare e gestire il tuo account</li>
+            <li>Fornire le funzionalità di DOGZN (Radar Mode, Passeggiate, SOS, Community, Bacheca Locale)</li>
+            <li>Tracciare i tuoi percorsi di passeggiata</li>
+            <li>Inviare notifiche push per allarmi SOS, messaggi e inviti a passeggiate</li>
+            <li>Gestire gli abbonamenti Premium e Business</li>
+        </ul>
+
+        <h3>4.2 Comunicazione</h3>
+        <ul>
+            <li>Inviare aggiornamenti sulla piattaforma</li>
+            <li>Rispondere alle tue domande e richieste di supporto</li>
+            <li>Inviare comunicazioni importanti sulla sicurezza</li>
+        </ul>
+
+        <h3>4.3 Miglioramento del Servizio</h3>
+        <ul>
+            <li>Analizzare come utilizzi l'app</li>
+            <li>Identificare problemi tecnici e bug</li>
+            <li>Sviluppare nuove funzionalità</li>
+            <li>Ottimizzare performance e user experience</li>
+        </ul>
+
+        <h3>4.4 Pubblicità</h3>
+        <ul>
+            <li>Mostrare annunci pubblicitari personalizzati (tramite Google AdMob)</li>
+            <li>Analizzare l'efficacia delle campagne pubblicitarie</li>
+        </ul>
+
+        <h3>4.5 Sicurezza e Conformità</h3>
+        <ul>
+            <li>Prevenire frodi e attività illegali</li>
+            <li>Proteggere i diritti e la sicurezza di DOGZN, degli utenti e del pubblico</li>
+            <li>Conformarsi a obblighi legali</li>
+            <li>Moderare contenuti inappropriati sulla Community e Bacheca Locale</li>
+        </ul>
+
+        <h3>4.6 Moderazione Automatica con AI</h3>
+        <p>Utilizziamo sistemi di intelligenza artificiale per analizzare automaticamente tutti i contenuti generati
+            dagli utenti:</p>
+        <ul>
+            <li><strong>Google Cloud Vision (SafeSearch)</strong>: le immagini vengono inviate a Google Cloud per
+                l'analisi automatica di contenuti adulti, violenti o offensivi</li>
+            <li><strong>Google Gemini (Vertex AI)</strong>: i testi vengono inviati a Google Gemini per l'analisi
+                automatica di hate speech, molestie, spam, profanità e maltrattamento animali</li>
+        </ul>
+        <p><strong>Dati conservati</strong>: I risultati della moderazione vengono archiviati nella collection
+            <code>moderation_log</code>, che include: tipo di contenuto, ID, userId, azione presa, motivo e timestamp.
+            Per i messaggi chat bloccati, il testo originale viene conservato per eventuale revisione.
+        </p>
+        <p><strong>Decisioni automatizzate (Art. 22 GDPR)</strong>: Il sistema di moderazione può prendere decisioni
+            automatizzate con impatto significativo sul tuo account, inclusa la sospensione automatica dopo 5
+            violazioni. Hai il diritto di:</p>
+        <ul>
+            <li>Contestare la decisione contattando support@thewalkingpet.it</li>
+            <li>Ottenere l'intervento umano nella revisione</li>
+            <li>Esprimere il tuo punto di vista</li>
+        </ul>
+
+        <h3>4.7 Notifiche di Prossimità</h3>
+        <p>Utilizziamo la tua posizione (dalla collection <code>user_locations</code>) esclusivamente <strong>lato
+                server</strong> per:</p>
+        <ul>
+            <li>Inviare notifiche push per nuovi annunci nella Bacheca Locale nel raggio di <strong>10 km</strong></li>
+            <li>Inviare notifiche push per nuove offerte di attività commerciali nel raggio di <strong>10 km</strong>
+            </li>
+            <li>Inviare allarmi SOS nel raggio di <strong>5 km</strong></li>
+            <li>Inviare segnalazioni di pericolo nel raggio di <strong>2 km</strong></li>
+        </ul>
+        <p>La tua posizione <strong>non viene condivisa</strong> con gli altri utenti per questo scopo; viene
+            utilizzata solo per il calcolo della prossimità nelle Cloud Functions.</p>
+
+        <hr>
+
+        <h2>5. Base Legale per il Trattamento</h2>
+        <p>Il trattamento dei tuoi dati personali è basato su:</p>
+
+        <table>
+            <tr>
+                <th>Base Legale</th>
+                <th>Tipo di Dati</th>
+                <th>Descrizione</th>
+            </tr>
+            <tr>
+                <td><strong>Consenso</strong></td>
+                <td>Geolocalizzazione, Pubblicità, Identificatori pubblicitari</td>
+                <td>Hai esplicitamente acconsentito</td>
+            </tr>
+            <tr>
+                <td><strong>Esecuzione del Contratto</strong></td>
+                <td>Dati di account, pet, pagamenti</td>
+                <td>Necessari per fornire il servizio</td>
+            </tr>
+            <tr>
+                <td><strong>Obblighi Legali</strong></td>
+                <td>Dati identificativi</td>
+                <td>Richiesti da leggi applicabili</td>
+            </tr>
+            <tr>
+                <td><strong>Interessi Legittimi</strong></td>
+                <td>Dati di utilizzo, crash reports</td>
+                <td>Necessari per sicurezza e miglioramento</td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <h2>6. Condivisione dei Dati</h2>
+
+        <h3>6.1 Non Vendiamo i Tuoi Dati</h3>
+        <p><strong>Non vendiamo mai i tuoi dati personali a terzi.</strong></p>
+
+        <h3>6.2 Condivisione con Fornitori di Servizi (Sub-processors)</h3>
+        <p>Condividiamo dati con fornitori tecnici necessari al funzionamento dell'app:</p>
+
+        <table>
+            <tr>
+                <th>Fornitore</th>
+                <th>Tipo di Dati</th>
+                <th>Scopo</th>
+                <th>Sede</th>
+            </tr>
+            <tr>
+                <td><strong>Google Firebase</strong></td>
+                <td>Dati di account, geolocalizzazione, contenuti</td>
+                <td>Hosting, database, autenticazione, storage foto</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google Maps Platform</strong></td>
+                <td>Geolocalizzazione</td>
+                <td>Visualizzazione mappe e geocoding</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>RevenueCat</strong></td>
+                <td>Dati di pagamento, ID utente</td>
+                <td>Gestione tecnica degli abbonamenti</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google AdMob</strong></td>
+                <td>Identificatori pubblicitari (IDFA, AAID)</td>
+                <td>Network pubblicitario</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Firebase Crashlytics</strong></td>
+                <td>Log di crash</td>
+                <td>Monitoraggio errori tecnici</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google Cloud Vision API</strong></td>
+                <td>Immagini caricate dagli utenti</td>
+                <td>Moderazione automatica contenuti visivi (SafeSearch)</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Google Gemini (Vertex AI)</strong></td>
+                <td>Testi generati dagli utenti</td>
+                <td>Moderazione automatica contenuti testuali</td>
+                <td>USA</td>
+            </tr>
+            <tr>
+                <td><strong>Transistor Software</strong></td>
+                <td>Dati di geolocalizzazione</td>
+                <td>Tracciamento GPS in background durante le passeggiate (dati processati localmente sul dispositivo, nessun dato inviato a server Transistor)</td>
+                <td>Australia</td>
+            </tr>
+        </table>
+
+        <h3>6.3 Dati Condivisi con Altri Utenti</h3>
+        <p>Condividi dati quando:</p>
+        <ul>
+            <li>Pubblichi contenuti nella Community (visibili ad altri utenti)</li>
+            <li>Pubblichi annunci sulla Bacheca Locale (visibili agli utenti della zona)</li>
+            <li>Partecipi a passeggiate di gruppo</li>
+            <li>Utilizzi Radar Mode (posizione approssimativa visibile ad altri utenti)</li>
+            <li>Invii messaggi privati (visibili solo al destinatario)</li>
+            <li>Crei un profilo Business (profilo visualizzato in modo prominente sulla mappa)</li>
+            <li>Attivi un <strong>SOS</strong>: il numero di telefono da te fornito e la posizione approssimativa
+                vengono condivisi pubblicamente nell'annuncio automatico creato sulla Bacheca</li>
+        </ul>
+
+        <h3>6.4 Condivisione Legale</h3>
+        <p>Potremmo divulgare i tuoi dati se richiesto da:</p>
+        <ul>
+            <li>Autorità governative o legali</li>
+            <li>Mandati, citazioni o ordini giudiziari</li>
+            <li>Investigazioni su attività illegali</li>
+        </ul>
+
+        <hr>
+
+        <h2>7. Geolocalizzazione e Privacy</h2>
+
+        <h3>7.1 Come Utilizziamo la Geolocalizzazione</h3>
+        <p><strong>Radar Mode</strong></p>
+        <ul>
+            <li>La tua posizione approssimativa viene mostrata ad altri utenti online nelle vicinanze</li>
+            <li>Puoi disattivare Radar Mode in qualsiasi momento</li>
+            <li>La tua posizione viene aggiornata solo quando l'app è attiva</li>
+        </ul>
+        <p><strong>SOS Network</strong></p>
+        <ul>
+            <li>Se il tuo animale si perde, la tua posizione esatta viene inviata a tutti gli utenti nel raggio di 5km
+            </li>
+            <li>Ricevono una notifica push con l'allarme</li>
+            <li>Puoi disattivare gli SOS alerts nelle impostazioni</li>
+        </ul>
+        <p><strong>Passeggiate (Walks)</strong></p>
+        <ul>
+            <li>Il tracciamento GPS del percorso viene registrato durante la passeggiata</li>
+            <li>Puoi salvare e condividere i percorsi con altri utenti</li>
+            <li>I percorsi rimangono nella cronologia dell'app</li>
+        </ul>
+        <p><strong>Bacheca Locale</strong></p>
+        <ul>
+            <li>Gli annunci geolocalizzati (es. "Cerco Dog Sitter") sono visibili agli utenti della zona</li>
+        </ul>
+
+        <h3>7.2 Controllo della Geolocalizzazione</h3>
+        <p>Puoi controllare le tue impostazioni di geolocalizzazione:</p>
+        <ul>
+            <li>Disattivare completamente la geolocalizzazione dalle impostazioni del dispositivo</li>
+            <li>Limitare la visibilità nel Radar Mode</li>
+            <li>Disattivare gli SOS alerts</li>
+            <li>Visualizzare e cancellare la cronologia delle passeggiate</li>
+        </ul>
+
+        <hr>
+
+        <h2>8. Conservazione dei Dati</h2>
+        <p>Conserviamo i tuoi dati personali per il periodo necessario a fornire il servizio:</p>
+
+        <table>
+            <tr>
+                <th>Tipo di Dato</th>
+                <th>Periodo di Conservazione</th>
+                <th>Motivo</th>
+            </tr>
+            <tr>
+                <td><strong>Dati di Account</strong></td>
+                <td>Per tutta la durata dell'account</td>
+                <td>Fornitura del servizio</td>
+            </tr>
+            <tr>
+                <td><strong>Dati del Pet</strong></td>
+                <td>Per tutta la durata dell'account</td>
+                <td>Fornitura del servizio</td>
+            </tr>
+            <tr>
+                <td><strong>Messaggi Chat</strong></td>
+                <td>2 anni</td>
+                <td>Conformità legale</td>
+            </tr>
+            <tr>
+                <td><strong>Post e Contenuti Community</strong></td>
+                <td>Fino a cancellazione</td>
+                <td>Proprietà dell'utente</td>
+            </tr>
+            <tr>
+                <td><strong>Annunci Bacheca Locale</strong></td>
+                <td>Fino a cancellazione</td>
+                <td>Proprietà dell'utente</td>
+            </tr>
+            <tr>
+                <td><strong>Cronologia Passeggiate</strong></td>
+                <td>Fino a cancellazione</td>
+                <td>Accesso utente illimitato (Premium)</td>
+            </tr>
+            <tr>
+                <td><strong>Geolocalizzazione</strong></td>
+                <td>30 giorni</td>
+                <td>Sicurezza e SOS</td>
+            </tr>
+            <tr>
+                <td><strong>Log di Accesso</strong></td>
+                <td>90 giorni</td>
+                <td>Sicurezza</td>
+            </tr>
+            <tr>
+                <td><strong>Dati Analitici</strong></td>
+                <td>12 mesi</td>
+                <td>Miglioramento servizio</td>
+            </tr>
+            <tr>
+                <td><strong>Dati di Pagamento</strong></td>
+                <td>7 anni</td>
+                <td>Conformità fiscale</td>
+            </tr>
+            <tr>
+                <td><strong>Log Moderazione AI</strong></td>
+                <td>12 mesi</td>
+                <td>Sicurezza, revisione e conformità</td>
+            </tr>
+            <tr>
+                <td><strong>Richieste Business Claim</strong></td>
+                <td>Per tutta la durata dell'account</td>
+                <td>Verifica proprietà e conformità</td>
+            </tr>
+        </table>
+        <p>Se elimini il tuo account, i tuoi dati personali verranno cancellati entro 30 giorni, salvo dove la
+            conservazione è richiesta dalla legge.</p>
+
+        <hr>
+
+        <h2>9. I Tuoi Diritti GDPR</h2>
+        <p>Se sei residente nell'Unione Europea, hai i seguenti diritti secondo il GDPR:</p>
+
+        <h3>9.1 Diritto di Accesso</h3>
+        <p>Hai il diritto di richiedere una copia dei tuoi dati personali. Forniremo i dati in un formato strutturato e
+            leggibile entro 30 giorni.</p>
+
+        <h3>9.2 Diritto di Rettifica</h3>
+        <p>Hai il diritto di correggere dati inesatti o incompleti. Puoi aggiornare molti dati direttamente nel tuo
+            profilo.</p>
+
+        <h3>9.3 Diritto di Cancellazione</h3>
+        <p>Hai il diritto di richiedere la cancellazione dei tuoi dati personali. Puoi richiedere l'eliminazione
+            completa dell'account direttamente dalle Impostazioni dell'app. Dopo la cancellazione, non saremo in grado
+            di fornire il servizio.</p>
+
+        <h3>9.4 Diritto di Limitazione del Trattamento</h3>
+        <p>Hai il diritto di chiedere che limitiamo il trattamento dei tuoi dati mentre verifichiamo l'accuratezza o la
+            legalità.</p>
+
+        <h3>9.5 Diritto alla Portabilità dei Dati</h3>
+        <p>Hai il diritto di ricevere i tuoi dati in un formato strutturato e leggibile, e di trasferirli a un altro
+            servizio.</p>
+
+        <h3>9.6 Diritto di Opposizione</h3>
+        <p>Hai il diritto di opporti al trattamento dei tuoi dati per marketing diretto, pubblicità personalizzata e
+            altri scopi.</p>
+
+        <h3>9.7 Esercitare i Tuoi Diritti</h3>
+        <p>Per esercitare uno qualsiasi di questi diritti, contattaci a privacy@thewalkingpet.it. Verificheremo la tua
+            identità e risponderemo entro 30 giorni.</p>
+
+        <hr>
+
+        <h2>10. Sicurezza dei Dati</h2>
+        <p>Implementiamo misure di sicurezza per proteggere i tuoi dati personali:</p>
+        <ul>
+            <li><strong>Crittografia SSL/TLS</strong>: Tutti i dati in transito sono crittografati</li>
+            <li><strong>Crittografia End-to-End</strong>: I messaggi privati sono crittografati end-to-end</li>
+            <li><strong>Autenticazione Sicura</strong>: Password crittografate e sessioni sicure</li>
+            <li><strong>Accesso Limitato</strong>: Solo personale autorizzato ha accesso ai dati</li>
+            <li><strong>Backup Automatici</strong>: I dati vengono sottoposti a backup regolarmente</li>
+            <li><strong>Monitoraggio della Sicurezza</strong>: Monitoriamo costantemente per attività sospette</li>
+            <li><strong>Conformità SOC 2</strong>: I nostri fornitori di servizi sono conformi agli standard di
+                sicurezza</li>
+        </ul>
+        <p>Tuttavia, nessun metodo di trasmissione su Internet è completamente sicuro. Anche se utilizziamo misure
+            ragionevoli, non possiamo garantire la sicurezza assoluta.</p>
+
+        <hr>
+
+        <h2>11. Consensi e Tracciamento</h2>
+
+        <h3>11.1 Consenso alla Geolocalizzazione</h3>
+        <p>All'avvio dell'app, ti chiediamo il consenso per accedere alla tua geolocalizzazione. Puoi rifiutare e
+            modificare questa impostazione in qualsiasi momento dalle impostazioni del dispositivo.</p>
+
+        <h3>11.2 Consenso al Tracciamento (iOS)</h3>
+        <p>Su iOS, ti chiediamo il consenso al tracciamento (ATT - App Tracking Transparency) per la pubblicità
+            personalizzata tramite Google AdMob. Puoi rifiutare e modificare questa impostazione in qualsiasi momento.
+        </p>
+
+        <h3>11.3 Cookie e Identificatori Pubblicitari</h3>
+        <p>Utilizziamo cookie e identificatori pubblicitari (IDFA, AAID) per personalizzare la pubblicità. Puoi
+            disabilitare il tracciamento pubblicitario dalle impostazioni del tuo dispositivo.</p>
+
+        <hr>
+
+        <h2>12. Dati dei Minori</h2>
+        <p>DOGZN non è indirizzata a minori di 13 anni (o 14/16 a seconda del paese EU). Non raccogliamo consapevolmente
+            dati personali da minori di 13 anni.</p>
+        <p>L'app non effettua una verifica dell'età rigida (age-gating) oltre a quella degli store (Apple App Store e
+            Google Play Store).</p>
+        <p>Se sei un genitore e credi che tuo figlio abbia fornito dati personali, contattaci immediatamente a
+            privacy@thewalkingpet.it.</p>
+
+        <hr>
+
+        <h2>13. Trasferimenti Internazionali</h2>
+        <p>I tuoi dati personali vengono trasferiti, archiviati e elaborati negli USA (tramite Google Firebase, Google
+            Maps, RevenueCat, AdMob). Quando trasferiamo dati internazionalmente, implementiamo misure di protezione
+            appropriate, incluse Clausole Contrattuali Standard (SCC).</p>
+
+        <hr>
+
+        <h2>14. Modifiche a Questa Privacy Policy</h2>
+        <p>Potremmo aggiornare questa Privacy Policy periodicamente. Ti notificheremo di modifiche materiali tramite:
+        </p>
+        <ul>
+            <li>Email all'indirizzo associato al tuo account</li>
+            <li>Notifica prominente sull'app</li>
+            <li>Richiesta di consenso esplicito, se necessario</li>
+        </ul>
+        <p>L'utilizzo continuato dell'app dopo le modifiche costituisce accettazione della Privacy Policy aggiornata.
+        </p>
+
+        <hr>
+
+        <h2>15. Contatti</h2>
+        <p>Se hai domande, dubbi o desideri esercitare i tuoi diritti GDPR, contattaci:</p>
+        <p><strong>DOGZN - Vega Lab SRL</strong></p>
+        <p>📧 <strong>Email Privacy</strong>: privacy@thewalkingpet.it<br>
+            📧 <strong>Email Supporto</strong>: support@thewalkingpet.it</p>
+        <p>Se non sei soddisfatto della nostra risposta, hai il diritto di presentare un reclamo all'autorità di
+            protezione dei dati del tuo paese.</p>
+
+        <hr>
+
+        <p><strong>© 2026 Vega Lab SRL. Tutti i diritti riservati.</strong><br>
+            DOGZN® è un marchio di Vega Lab SRL (registrazione in corso).</p>
+        <p><strong>Versione</strong>: 1.3<br>
+            <strong>Data di Entrata in Vigore</strong>: 26 Gennaio 2026<br>
+            <strong>Ultima Modifica</strong>: 19 Maggio 2026
+        </p>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="icons/logo_horizontal.png" alt="DOGZN" class="footer-logo">
+                <p>Connetti. Cammina. Condividi.<br>Il social network definitivo per i pet lovers.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Esplora</h4>
+                <a href="#features">Funzionalità</a>
+                <a href="#safety">Sicurezza</a>
+                <a href="#community">Storie</a>
+            </div>
+            <div class="footer-links">
+                <h4>Legale</h4>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Termini e Condizioni</a>
+                <a href="data_safety.html">Data Safety</a>
+            </div>
+            <div class="footer-social">
+                <h4>Seguici</h4>
+                <div class="social-icons">
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                    <a href="#">Facebook</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Vega Lab SRL. Made with ❤️ for pets.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

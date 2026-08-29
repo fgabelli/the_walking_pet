@@ -57,14 +57,14 @@ class ChatListScreen extends ConsumerWidget {
   }
 }
 
-class _ChatList extends StatelessWidget {
+class _ChatList extends ConsumerWidget {
   final List<ChatModel> chats;
   final String emptyMessage;
 
   const _ChatList({required this.chats, required this.emptyMessage});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (chats.isEmpty) {
       return Center(
         child: Column(
@@ -83,7 +83,57 @@ class _ChatList extends StatelessWidget {
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final chat = chats[index];
-        return _ChatListItem(chat: chat);
+        return Dismissible(
+          key: ValueKey(chat.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 24),
+            color: Colors.red,
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.delete, color: Colors.white),
+                SizedBox(height: 4),
+                Text('Elimina', style: TextStyle(color: Colors.white, fontSize: 12)),
+              ],
+            ),
+          ),
+          confirmDismiss: (direction) async {
+            return await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                title: const Text('Elimina conversazione'),
+                content: const Text(
+                  'Sei sicuro di voler eliminare questa conversazione?\n'
+                  'Tutti i messaggi verranno eliminati.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Annulla'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Elimina'),
+                  ),
+                ],
+              ),
+            ) ?? false;
+          },
+          onDismissed: (direction) {
+            ref.read(chatControllerProvider.notifier).deleteChat(chat.id);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Conversazione eliminata')),
+            );
+          },
+          child: _ChatListItem(chat: chat),
+        );
       },
     );
   }

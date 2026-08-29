@@ -70,6 +70,18 @@ class StorageService {
     }
   }
 
+  // Upload dog media image (gallery)
+  Future<String> uploadDogMediaImage(String dogId, File imageFile, int index) async {
+    try {
+      final compressedFile = await _compressImage(imageFile);
+      final ref = _storage.ref().child('dogs/$dogId/media/$index.jpg');
+      final uploadTask = await ref.putFile(compressedFile);
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Upload chat image
   Future<String> uploadChatImage(String chatId, File imageFile) async {
     try {
@@ -102,6 +114,19 @@ class StorageService {
       final uploadTask = await ref.putFile(compressedFile);
 
       // Get download URL
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Upload sighting image
+  Future<String> uploadSightingImage(String alertId, File imageFile) async {
+    try {
+      final compressedFile = await _compressImage(imageFile);
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final ref = _storage.ref().child('sightings/$alertId/$timestamp.jpg');
+      final uploadTask = await ref.putFile(compressedFile);
       return await uploadTask.ref.getDownloadURL();
     } catch (e) {
       rethrow;

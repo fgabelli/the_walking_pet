@@ -62,25 +62,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 40),
                 // Logo
                 Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/icons/app_icon.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                  child: Image.asset(
+                    'assets/images/dogzn/dogzn_logo.png',
+                    width: 200,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -216,7 +201,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    'Continuando, accetti i Termini e Condizioni e la Privacy Policy di The Walking Pet.',
+                    'Continuando, accetti i Termini e Condizioni e la Privacy Policy di DOGZN.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey,

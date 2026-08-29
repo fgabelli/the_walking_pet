@@ -1,0 +1,4 @@
+Novità nella versione 1.2.1:
+- Migliorata la schermata di avvio
+- Ottimizzazioni delle prestazioni
+- Correzioni di bug minori

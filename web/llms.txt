@@ -1,0 +1,35 @@
+# DOGZN
+
+> DOGZN è l'app italiana per dog parent: community di quartiere,
+> tracking GPS passeggiate, scheda medica digitale e rete SOS
+> entro 5 km. Gratis su iOS e Android. Pre-lancio NoLo Milano,
+> aprile 2026.
+
+## Cosa fa DOGZN
+- Radar di prossimità (privacy-aware, geohash approssimato)
+- Tracciamento GPS passeggiate + Walk Card condivisibile
+- Scheda medica digitale offline-first
+- Rete SOS quartiere (notifica utenti entro 5 km)
+- Marketplace iperlocale per veterinari, toelettatori, dog sitter, petshop
+
+## Per chi
+- B2C: dog parent urbani italiani, 25-55 anni, città dense (Milano, Roma, Torino, Bologna, Firenze, Genova)
+- B2B: micro-attività pet locali (1-3 sedi)
+
+## Piani
+- Free: €0
+- Premium: €2,99/mese (zero ads, storico illimitato, statistiche avanzate)
+- Business: €9,99/mese (profilo professionale, promozioni locali, analytics)
+
+## Link chiave
+- [Funzionalità](https://dogzn.com/funzionalita/)
+- [Per Business](https://dogzn.com/business/)
+- [Piani e Prezzi](https://dogzn.com/piani/)
+- [FAQ](https://dogzn.com/faq/)
+- [Pricing machine-readable](https://dogzn.com/pricing.md)
+- [Chi siamo](https://dogzn.com/chi-siamo/)
+
+## Azienda
+- Vega Lab SRL, Lissone (MB), Italia
+- Founder: Fabio Gabelli, Mirko [Cognome]
+- Lancio: aprile 2026 (pilota Milano NoLo)

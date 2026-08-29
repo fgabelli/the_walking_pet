@@ -5,7 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../shared/data/breeds_data.dart'; // Added
+import '../../../../shared/utils/breed_validator.dart';
 import '../providers/dog_provider.dart';
+import '../widgets/pet_photo_picker.dart';
 import '../../../../features/health_record/presentation/screens/health_record_list_screen.dart';
 
 class CreateDogProfileScreen extends ConsumerStatefulWidget {
@@ -24,14 +26,23 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
   late TextEditingController _ageController;
   late TextEditingController _notesController;
   
+  late TextEditingController _weightController;
+  late TextEditingController _microchipController;
+  late TextEditingController _bloodTypeController;
+  
   late DogSize _selectedSize;
   late DogGender _selectedGender;
   late PetSpecies _selectedSpecies; // Added
+  late bool _isSterilized;
   late double _energyLevel;
   late List<String> _selectedCharacter;
   
   File? _imageFile;
   final _picker = ImagePicker();
+
+  // Multi-photo state
+  List<String> _selectedMediaUrls = [];
+  List<File> _newMediaFiles = [];
 
   final List<String> _characterTraits = [
     'Amichevole', 'Timido', 'Giocherellone', 'Calmo', 
@@ -49,11 +60,17 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
     _ageController = TextEditingController(text: widget.dogToEdit?.age.toString() ?? '');
     _notesController = TextEditingController(text: widget.dogToEdit?.notes ?? '');
     
+    _weightController = TextEditingController(text: widget.dogToEdit?.weight?.toString() ?? '');
+    _microchipController = TextEditingController(text: widget.dogToEdit?.microchipNumber ?? '');
+    _bloodTypeController = TextEditingController(text: widget.dogToEdit?.bloodType ?? '');
+    
     _selectedSize = widget.dogToEdit?.size ?? DogSize.medium;
     _selectedGender = widget.dogToEdit?.gender ?? DogGender.male;
     _selectedSpecies = widget.dogToEdit?.species ?? PetSpecies.dog; // Added
+    _isSterilized = widget.dogToEdit?.isSterilized ?? false;
     _energyLevel = widget.dogToEdit?.energyLevel.toDouble() ?? 3.0;
     _selectedCharacter = List.from(widget.dogToEdit?.character ?? []);
+    _selectedMediaUrls = List.from(widget.dogToEdit?.mediaUrls ?? []);
   }
 
   @override
@@ -62,6 +79,9 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
     _breedController.dispose();
     _ageController.dispose();
     _notesController.dispose();
+    _weightController.dispose();
+    _microchipController.dispose();
+    _bloodTypeController.dispose();
     super.dispose();
   }
 
@@ -74,6 +94,25 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
     }
   }
 
+  Future<void> _openPhotoPicker() async {
+    final result = await showModalBottomSheet<PetPhotoPickerResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PetPhotoPicker(
+        alreadySelected: _selectedMediaUrls,
+        maxPhotos: 9,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedMediaUrls = result.selectedUrls;
+        _newMediaFiles = result.newFiles;
+      });
+    }
+  }
+
   void _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
       // Dismiss keyboard
@@ -81,11 +120,33 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
       
       final controller = ref.read(dogControllerProvider.notifier);
       
+      // Validate and auto-correct breed
+      final rawBreed = _breedController.text.trim();
+      final validatedBreed = BreedValidator.validate(rawBreed, _selectedSpecies);
+      _breedController.text = validatedBreed;
+
+      // Show a snackbar if breed was corrected
+      if (rawBreed.isNotEmpty && rawBreed.toLowerCase() != validatedBreed.toLowerCase()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Razza corretta: "$rawBreed" → "$validatedBreed"'),
+              backgroundColor: AppColors.info,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+      
+      double? weight = double.tryParse(_weightController.text.trim().replaceAll(',', '.'));
+      String? microchip = _microchipController.text.trim().isEmpty ? null : _microchipController.text.trim();
+      String? bloodType = _bloodTypeController.text.trim().isEmpty ? null : _bloodTypeController.text.trim();
+
       if (widget.dogToEdit != null) {
         await controller.updateDog(
           id: widget.dogToEdit!.id,
           name: _nameController.text.trim(),
-          breed: _breedController.text.trim(),
+          breed: validatedBreed,
           age: int.parse(_ageController.text.trim()),
           size: _selectedSize,
           energyLevel: _energyLevel.round(),
@@ -94,12 +155,18 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           imageFile: _imageFile,
           currentPhotoUrl: widget.dogToEdit!.photoUrl,
           gender: _selectedGender,
-          species: _selectedSpecies, // Added
+          species: _selectedSpecies,
+          weight: weight,
+          microchipNumber: microchip,
+          bloodType: bloodType,
+          existingMediaUrls: _selectedMediaUrls,
+          newMediaFiles: _newMediaFiles,
+          isSterilized: _isSterilized,
         );
       } else {
         await controller.createDog(
           name: _nameController.text.trim(),
-          breed: _breedController.text.trim(),
+          breed: validatedBreed,
           age: int.parse(_ageController.text.trim()),
           size: _selectedSize,
           energyLevel: _energyLevel.round(),
@@ -107,7 +174,13 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           notes: _notesController.text.trim(),
           imageFile: _imageFile,
           gender: _selectedGender,
-          species: _selectedSpecies, // Added
+          species: _selectedSpecies,
+          weight: weight,
+          microchipNumber: microchip,
+          bloodType: bloodType,
+          existingMediaUrls: _selectedMediaUrls,
+          newMediaFiles: _newMediaFiles,
+          isSterilized: _isSterilized,
         );
       }
           
@@ -171,44 +244,21 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
               ),
               const SizedBox(height: 24),
 
-              // Image Picker
+              // === PHOTO GRID ===
+              const Text('Foto del Pet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              _buildMediaGrid(),
+              const SizedBox(height: 8),
               Center(
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
-                      shape: BoxShape.circle,
-                      image: _imageFile != null
-                          ? DecorationImage(
-                              image: FileImage(_imageFile!),
-                              fit: BoxFit.cover,
-                            )
-                          : (widget.dogToEdit?.photoUrl != null
-                              ? DecorationImage(
-                                  image: NetworkImage(widget.dogToEdit!.photoUrl!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null),
-                      border: Border.all(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    child: (_imageFile == null && widget.dogToEdit?.photoUrl == null)
-                        ? const Icon(
-                            Icons.add_a_photo,
-                            size: 40,
-                            color: AppColors.textTertiary,
-                          )
-                        : null,
+                child: TextButton.icon(
+                  onPressed: _openPhotoPicker,
+                  icon: const Icon(Icons.add_photo_alternate, size: 20),
+                  label: Text(
+                    _totalMediaCount == 0 ? 'Aggiungi foto' : 'Gestisci foto ($_totalMediaCount/9)',
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Center(child: Text('Foto del Pet')),
               
               if (isEditing && widget.dogToEdit != null) ...[
                 const SizedBox(height: 24),
@@ -231,8 +281,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                         context,
                         MaterialPageRoute(
                           builder: (context) => HealthRecordListScreen(
-                            petId: widget.dogToEdit!.id,
-                            petName: widget.dogToEdit!.name,
+                            dog: widget.dogToEdit!,
                             isOwner: true, 
                           ),
                         ),
@@ -296,15 +345,24 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                     controller: textEditingController, // Use the Autocomplete's controller
                     focusNode: focusNode,
                     textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Razza',
-                      prefixIcon: Icon(Icons.category),
-                      helperText: 'Seleziona dalla lista',
+                      prefixIcon: const Icon(Icons.category),
+                      helperText: 'Seleziona dalla lista o scrivi — correggiamo noi',
+                      helperMaxLines: 2,
+                      suffixIcon: _breedController.text.isNotEmpty &&
+                              !BreedValidator.isValid(_breedController.text, _selectedSpecies)
+                          ? Tooltip(
+                              message: 'Razza non riconosciuta — verrà corretta automaticamente',
+                              child: Icon(Icons.auto_fix_high, color: Colors.orange.shade600, size: 20),
+                            )
+                          : null,
                     ),
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Inserisci la razza' : null,
                     onChanged: (val) {
                       _breedController.text = val;
+                      setState(() {}); // Refresh suffix icon
                     },
                   );
                 },
@@ -324,6 +382,37 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                   if (int.tryParse(value) == null) return 'Inserisci un numero valido';
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              
+              // Weight
+              TextFormField(
+                controller: _weightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Peso (kg)',
+                  prefixIcon: Icon(Icons.monitor_weight),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Microchip
+              TextFormField(
+                controller: _microchipController,
+                decoration: const InputDecoration(
+                  labelText: 'Numero Microchip',
+                  prefixIcon: Icon(Icons.qr_code),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Blood Type
+              TextFormField(
+                controller: _bloodTypeController,
+                decoration: const InputDecoration(
+                  labelText: 'Gruppo Sanguigno',
+                  prefixIcon: Icon(Icons.bloodtype),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -347,6 +436,25 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                 },
               ),
               const SizedBox(height: 24),
+
+              // Sterilized/Castrated switch
+              SwitchListTile(
+                title: Text(
+                  _selectedGender == DogGender.male ? 'Castrato' : 'Sterilizzata',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  _selectedGender == DogGender.male
+                      ? 'Il pet è stato castrato'
+                      : 'La pet è stata sterilizzata',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+                value: _isSterilized,
+                activeColor: AppColors.primary,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                onChanged: (val) => setState(() => _isSterilized = val),
+              ),
+              const SizedBox(height: 16),
 
               // Size Dropdown
               DropdownButtonFormField<DogSize>(
@@ -394,6 +502,13 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                   return FilterChip(
                     label: Text(trait),
                     selected: isSelected,
+                    backgroundColor: Colors.grey.shade100,
+                    selectedColor: AppColors.primary.withOpacity(0.2),
+                    labelStyle: TextStyle(
+                      color: isSelected ? AppColors.primary : Colors.black87,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    checkmarkColor: AppColors.primary,
                     onSelected: (selected) {
                       setState(() {
                         if (selected) {
@@ -492,6 +607,97 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+  int get _totalMediaCount => _selectedMediaUrls.length + _newMediaFiles.length;
+
+  Widget _buildMediaGrid() {
+    final totalItems = _selectedMediaUrls.length + _newMediaFiles.length;
+    if (totalItems == 0) {
+      return GestureDetector(
+        onTap: _openPhotoPicker,
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 2, style: BorderStyle.solid),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_a_photo, size: 40, color: AppColors.primary),
+                SizedBox(height: 8),
+                Text('Aggiungi fino a 9 foto', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 90,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          // Existing URL photos
+          ..._selectedMediaUrls.asMap().entries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(entry.value, width: 86, height: 86, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(width: 86, height: 86, color: Colors.grey.shade200,
+                        child: const Icon(Icons.broken_image, color: Colors.grey))),
+                  ),
+                  if (entry.key == 0)
+                    Positioned(
+                      bottom: 0, left: 0, right: 0,
+                      child: Container(
+                        width: 86,
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.8),
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+                        ),
+                        child: const Text('Principale', textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+          // New file photos
+          ..._newMediaFiles.asMap().entries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(entry.value, width: 86, height: 86, fit: BoxFit.cover),
+              ),
+            );
+          }),
+          // Add more button
+          if (totalItems < 9)
+            GestureDetector(
+              onTap: _openPhotoPicker,
+              child: Container(
+                width: 86, height: 86,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: const Center(child: Icon(Icons.add, color: Colors.grey, size: 30)),
+              ),
+            ),
+        ],
       ),
     );
   }

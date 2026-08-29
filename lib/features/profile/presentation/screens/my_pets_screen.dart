@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
+import '../../../../shared/models/announcement_model.dart';
 import '../providers/dog_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'create_dog_profile_screen.dart'; // Same directory
@@ -9,6 +12,7 @@ import '../../../health_record/presentation/screens/health_record_list_screen.da
 import '../../../../core/services/location_service.dart';
 import '../../../../features/map/presentation/providers/map_provider.dart'; 
 import '../../../../core/services/sos_service.dart';
+import '../../../nextdoor/presentation/providers/nextdoor_provider.dart';
 
 class MyPetsScreen extends ConsumerWidget {
   const MyPetsScreen({super.key});
@@ -130,12 +134,22 @@ class MyPetsScreen extends ConsumerWidget {
     String? selectedPetId = dogs.first.id;
     final phoneController = TextEditingController();
     final messageController = TextEditingController();
+    File? pickedImageFile;
+    // Pre-load pet profile photo
+    String? petPhotoUrl = dogs.first.photoUrl;
+    bool useProfilePhoto = petPhotoUrl != null;
 
     if (context.mounted) {
       showDialog(
         context: context,
         builder: (context) => StatefulBuilder(
           builder: (context, setState) {
+            // Get currently selected dog
+            final selectedDog = dogs.firstWhere(
+              (d) => d.id == selectedPetId,
+              orElse: () => dogs.first,
+            );
+
             return AlertDialog(
               title: const Text('Lancia SOS Smarrimento 🚨', style: TextStyle(color: Colors.red)),
               content: SingleChildScrollView(
@@ -147,13 +161,165 @@ class MyPetsScreen extends ConsumerWidget {
                     
                     // Pet Selector
                     DropdownButtonFormField<String>(
-                      initialValue: selectedPetId,
+                      value: selectedPetId,
                       decoration: const InputDecoration(labelText: 'Quale pet hai smarrito?'),
                       items: dogs.map((dog) => DropdownMenuItem(
                         value: dog.id,
                         child: Text(dog.name),
                       )).toList(),
-                      onChanged: (val) => setState(() => selectedPetId = val),
+                      onChanged: (val) {
+                        setState(() {
+                          selectedPetId = val;
+                          final dog = dogs.firstWhere((d) => d.id == val);
+                          petPhotoUrl = dog.photoUrl;
+                          useProfilePhoto = petPhotoUrl != null;
+                          pickedImageFile = null; // Reset picked photo
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Photo Section
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          const Text(
+                            '📸 Foto del pet (molto importante!)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 8),
+                          // Photo preview
+                          if (pickedImageFile != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                pickedImageFile!,
+                                height: 120,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          else if (useProfilePhoto && petPhotoUrl != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                petPhotoUrl!,
+                                height: 120,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  height: 120,
+                                  color: Colors.grey.shade200,
+                                  child: const Center(child: Icon(Icons.broken_image, size: 40)),
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Center(
+                                child: Text('Nessuna foto', style: TextStyle(color: Colors.grey)),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          // Photo source buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              if (petPhotoUrl != null)
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        pickedImageFile = null;
+                                        useProfilePhoto = true;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.pets,
+                                      size: 16,
+                                      color: useProfilePhoto && pickedImageFile == null
+                                          ? AppColors.primary
+                                          : Colors.grey,
+                                    ),
+                                    label: Text(
+                                      'Profilo',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: useProfilePhoto && pickedImageFile == null
+                                            ? AppColors.primary
+                                            : Colors.grey.shade700,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(
+                                        color: useProfilePhoto && pickedImageFile == null
+                                            ? AppColors.primary
+                                            : Colors.grey.shade300,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                    ),
+                                  ),
+                                ),
+                              if (petPhotoUrl != null) const SizedBox(width: 6),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final picked = await ImagePicker().pickImage(
+                                      source: ImageSource.camera,
+                                      maxWidth: 800,
+                                      imageQuality: 80,
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        pickedImageFile = File(picked.path);
+                                        useProfilePhoto = false;
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.camera_alt, size: 16),
+                                  label: const Text('Scatta', style: TextStyle(fontSize: 12)),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final picked = await ImagePicker().pickImage(
+                                      source: ImageSource.gallery,
+                                      maxWidth: 800,
+                                      imageQuality: 80,
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        pickedImageFile = File(picked.path);
+                                        useProfilePhoto = false;
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.photo_library, size: 16),
+                                  label: const Text('Galleria', style: TextStyle(fontSize: 12)),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
                     
@@ -204,7 +370,8 @@ class MyPetsScreen extends ConsumerWidget {
                     try {
                       final position = await ref.read(locationServiceProvider).getCurrentPosition();
                       if (selectedPetId != null) {
-                        await ref.read(sosServiceProvider).triggerSOS(
+                        // 1. Send SOS alert (map + push notification)
+                        final alertId = await ref.read(sosServiceProvider).triggerSOS(
                           ownerId: userId,
                           petId: selectedPetId!,
                           latitude: position.latitude,
@@ -212,6 +379,36 @@ class MyPetsScreen extends ConsumerWidget {
                           contactPhone: phoneController.text,
                           message: messageController.text,
                         );
+
+                        // 2. Auto-create bacheca announcement with 'lost' category + photo
+                        final petName = selectedDog.name;
+                        final phone = phoneController.text;
+                        final userMessage = messageController.text;
+                        
+                        final announcementMessage = '🆘 PET SMARRITO: $petName\n'
+                            '${userMessage.isNotEmpty ? '$userMessage\n' : ''}'
+                            '📞 Contatto: $phone\n'
+                            'Se lo avvisti, contattami subito!';
+
+                        try {
+                          final announcementId = await ref.read(nextdoorControllerProvider.notifier).createAnnouncement(
+                            message: announcementMessage,
+                            zone: 'Nelle vicinanze',
+                            durationInHours: 72, // 3 days for lost pet
+                            category: AnnouncementCategory.lost,
+                            latitude: position.latitude,
+                            longitude: position.longitude,
+                            // Pass pet photo: new file takes priority, otherwise use profile URL
+                            imageFile: pickedImageFile,
+                            imageUrl: pickedImageFile == null ? petPhotoUrl : null,
+                          );
+
+                          // 3. Link SOS alert to announcement for comment support
+                          await ref.read(sosServiceProvider).linkAnnouncement(alertId, announcementId);
+                        } catch (e) {
+                          // Non-critical: SOS was sent, announcement is a bonus
+                          debugPrint('Failed to create bacheca announcement: $e');
+                        }
                         
                         if (context.mounted) {
                           Navigator.pop(context);
@@ -361,8 +558,8 @@ class _PetCard extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => HealthRecordListScreen(
-                                petId: dog.id, 
-                                petName: dog.name,
+                                dog: dog,
+                                isOwner: true,
                               ),
                             ),
                           );
