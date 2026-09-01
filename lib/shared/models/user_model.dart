@@ -113,8 +113,12 @@ class UserModel {
       bio: data['bio'],
       zone: data['zone'] ?? '',
       socialPreferences: SocialPreferences.fromMap(data['socialPreferences'] ?? {}),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] is Timestamp)
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      updatedAt: (data['updatedAt'] is Timestamp)
+          ? (data['updatedAt'] as Timestamp).toDate()
+          : DateTime.now(),
       fcmTokens: List<String>.from(data['fcmTokens'] ?? []),
       locationPrivacy: LocationPrivacy.values.firstWhere(
         (e) => e.name == (data['locationPrivacy'] ?? 'friends'),
@@ -146,7 +150,9 @@ class UserModel {
       gender: data['gender'] != null  
           ? Gender.values.firstWhere((e) => e.name == data['gender'], orElse: () => Gender.other)
           : null,
-      birthDate: data['birthDate'] != null ? (data['birthDate'] as Timestamp).toDate() : null,
+      birthDate: (data['birthDate'] is Timestamp)
+          ? (data['birthDate'] as Timestamp).toDate()
+          : null,
       address: data['address'],
       homeLatitude: (data['homeLatitude'] as num?)?.toDouble(),
       homeLongitude: (data['homeLongitude'] as num?)?.toDouble(),

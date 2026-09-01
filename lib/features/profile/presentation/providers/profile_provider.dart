@@ -7,6 +7,7 @@ import '../../../../core/services/review_service.dart';
 import '../../../../core/services/safety_service.dart';
 import '../../../../core/services/purchase_service.dart'; // Added
 import '../../../../core/services/map_service.dart'; // Added
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/osm_service.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -222,6 +223,14 @@ class ProfileController extends StateNotifier<ProfileState> {
       );
 
       await _userService.createUser(newUser);
+      
+      // Update push token now that the user profile document exists
+      try {
+        await _ref.read(notificationServiceProvider).updateToken();
+      } catch (e) {
+        print('Error updating push token after profile creation: $e');
+      }
+
       state = ProfileState(isLoading: false);
     } catch (e) {
       state = ProfileState(isLoading: false, error: e.toString());

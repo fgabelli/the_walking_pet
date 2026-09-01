@@ -36,11 +36,15 @@ class NotificationService with WidgetsBindingObserver {
       // 2. Clear tokens in Firestore
       final userId = _auth.currentUser?.uid;
       if (userId != null) {
-        await _firestore.collection('users').doc(userId).set({
-          'fcmTokens': [],
-          'tokenStatus': 'migrating',
-          'tokenUpdatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        try {
+          await _firestore.collection('users').doc(userId).update({
+            'fcmTokens': [],
+            'tokenStatus': 'migrating',
+            'tokenUpdatedAt': FieldValue.serverTimestamp(),
+          });
+        } catch (_) {
+          // Document does not exist yet; do not create ghost document
+        }
       }
 
       // 3. Small delay to let Firebase process the deletion
@@ -375,10 +379,12 @@ class NotificationService with WidgetsBindingObserver {
         if (apnsToken == null) {
           print('[FCM] APNs token still null after retries — cannot get FCM token');
           if (userId != null) {
-            await _firestore.collection('users').doc(userId).set({
-              'tokenStatus': 'apns_unavailable',
-              'tokenUpdatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+            try {
+              await _firestore.collection('users').doc(userId).update({
+                'tokenStatus': 'apns_unavailable',
+                'tokenUpdatedAt': FieldValue.serverTimestamp(),
+              });
+            } catch (_) {}
           }
           return;
         }
@@ -403,26 +409,29 @@ class NotificationService with WidgetsBindingObserver {
               diagnostics['apnsTokenLength'] = apns.length;
             }
           }
-          await _firestore.collection('users').doc(userId).set(
-            diagnostics, SetOptions(merge: true));
+          try {
+            await _firestore.collection('users').doc(userId).update(diagnostics);
+          } catch (_) {}
         }
       } else {
         print('[FCM] getToken() returned null');
         if (userId != null) {
-          await _firestore.collection('users').doc(userId).set({
-            'tokenStatus': 'null_token',
-            'tokenUpdatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+          try {
+            await _firestore.collection('users').doc(userId).update({
+              'tokenStatus': 'null_token',
+              'tokenUpdatedAt': FieldValue.serverTimestamp(),
+            });
+          } catch (_) {}
         }
       }
     } catch (e) {
       print('[FCM] Error getting FCM token: $e');
       if (userId != null) {
         try {
-          await _firestore.collection('users').doc(userId).set({
+          await _firestore.collection('users').doc(userId).update({
             'tokenStatus': 'error: ${e.toString()}',
             'tokenUpdatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+          });
         } catch (_) {}
       }
     }
@@ -433,13 +442,15 @@ class NotificationService with WidgetsBindingObserver {
     if (userId == null) return;
 
     try {
-      // [FIX] Use set(merge:true) instead of update() so it works even
-      // for newly registered users whose Firestore document doesn't exist yet.
-      await _firestore.collection('users').doc(userId).set({
+      // Use update() instead of set(merge:true) so we ONLY write to existing user profiles.
+      // This prevents creating ghost documents on new signups before profile completion.
+      await _firestore.collection('users').doc(userId).update({
         'fcmTokens': FieldValue.arrayUnion([token]),
-      }, SetOptions(merge: true));
+      });
     } catch (e) {
-      print('[FCM] Error saving FCM token: $e');
+      // Document doesn't exist yet (registration in progress).
+      // Token will be saved once profile is completed.
+      print('[FCM] Document not found or error saving token: $e');
     }
   }
   

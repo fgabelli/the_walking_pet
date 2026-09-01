@@ -52,16 +52,26 @@ class _UsersTableWidgetState extends State<UsersTableWidget> {
   void initState() {
     super.initState();
     
-    // Subscribe to users collection
+    // Subscribe to users collection (without orderBy so documents without createdAt are included)
     _usersSub = FirebaseFirestore.instance
         .collection('users')
-        .orderBy('createdAt', descending: true)
         .limit(1000)
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        final docs = List<DocumentSnapshot>.from(snapshot.docs);
+        docs.sort((a, b) {
+          final aData = a.data() as Map<String, dynamic>?;
+          final bData = b.data() as Map<String, dynamic>?;
+          final aTime = (aData?['createdAt'] as Timestamp?)?.toDate();
+          final bTime = (bData?['createdAt'] as Timestamp?)?.toDate();
+          if (aTime == null && bTime == null) return 0;
+          if (aTime == null) return 1;
+          if (bTime == null) return -1;
+          return bTime.compareTo(aTime);
+        });
         setState(() {
-          _allUsers = snapshot.docs;
+          _allUsers = docs;
           _loadingUsers = false;
         });
         _startLocationMigration();

@@ -11,7 +11,10 @@ class UserService {
     try {
       final doc = await _firestore.collection(_collection).doc(uid).get();
       if (doc.exists) {
-        return UserModel.fromFirestore(doc);
+        final data = doc.data();
+        if (data != null && data['createdAt'] != null) {
+          return UserModel.fromFirestore(doc);
+        }
       }
       return null;
     } catch (e) {
@@ -25,7 +28,12 @@ class UserService {
         .collection(_collection)
         .doc(uid)
         .snapshots()
-        .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
+        .map((doc) {
+          if (!doc.exists) return null;
+          final data = doc.data();
+          if (data == null || data['createdAt'] == null) return null;
+          return UserModel.fromFirestore(doc);
+        });
   }
 
   // Create user
@@ -34,7 +42,7 @@ class UserService {
       await _firestore
           .collection(_collection)
           .doc(user.uid)
-          .set(user.toFirestore());
+          .set(user.toFirestore(), SetOptions(merge: true));
     } catch (e) {
       rethrow;
     }
