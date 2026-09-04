@@ -228,6 +228,7 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
+            settings: const RouteSettings(name: 'connections_list'),
                                 builder: (_) => ConnectionsListScreen(
                                   title: 'Follower',
                                   userIds: user.followers,
@@ -240,6 +241,7 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
+            settings: const RouteSettings(name: 'connections_list'),
                                 builder: (_) => ConnectionsListScreen(
                                   title: 'Seguiti',
                                   userIds: user.following,
@@ -268,7 +270,8 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                 // ACTION BUTTONS
                 if (isMe)
                   Row(children: [
-                    Expanded(child: _actionBtn('Modifica profilo', () => Navigator.push(context, MaterialPageRoute(builder: (_) => CreateProfileScreen(userToEdit: user))))),
+                    Expanded(child: _actionBtn('Modifica profilo', () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_profile'),builder: (_) => CreateProfileScreen(userToEdit: user))))),
                     const SizedBox(width: 8),
                     Expanded(child: _actionBtn('Condividi profilo', () {
                       Share.share('Guarda il mio profilo su Dogzn! 🐾\nhttps://dogzn.com');
@@ -281,7 +284,8 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                     Expanded(child: _actionBtn('Messaggio', () async {
                       final chatId = await ref.read(chatControllerProvider.notifier).createChat(user.uid);
                       if (chatId != null && context.mounted) {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chatId, otherUser: user)));
+                        Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),builder: (_) => ChatScreen(chatId: chatId, otherUser: user)));
                       }
                     })),
                   ]),
@@ -304,7 +308,8 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                               width: 68,
                               child: Column(children: [
                                 GestureDetector(
-                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateDogProfileScreen())),
+                                  onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_dog_profile'),builder: (_) => const CreateDogProfileScreen())),
                                   child: Container(
                                     key: TutorialKeys.addPetKey,
                                     width: 64, height: 64,
@@ -319,7 +324,8 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> with SingleTic
                           }
                           final dog = dogs[isMe ? index - 1 : index];
                           return GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PetProfileScreen(dog: dog, isOwner: isMe))),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_profile'),builder: (_) => PetProfileScreen(dog: dog, isOwner: isMe))),
                             child: _PetAvatar(dog: dog),
                           );
                         },
@@ -636,6 +642,7 @@ class _ReelsGridView extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+            settings: const RouteSettings(name: 'reels'),
                     builder: (_) => ReelsScreen(
                       initialReels: reels,
                       initialIndex: index,
@@ -706,15 +713,18 @@ class _SettingsListView extends ConsumerWidget {
     return ListView(padding: const EdgeInsets.symmetric(vertical: 4), children: [
       ListTile(leading: const Icon(Icons.bar_chart, color: AppColors.accent), title: const Text('Le Tue Statistiche'),
         trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalkStatsScreen()))),
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_stats'),builder: (_) => const WalkStatsScreen()))),
       ListTile(leading: const Icon(Icons.visibility_outlined), title: const Text('Visite al Profilo'),
         trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WhoViewedMeScreen()))),
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'who_viewed_me'),builder: (_) => const WhoViewedMeScreen()))),
       const Divider(height: 1),
       if (user.isPremium)
         ListTile(leading: const Icon(Icons.credit_card, color: AppColors.primary), title: const Text('Il mio Abbonamento'),
           trailing: const Icon(Icons.chevron_right, size: 20),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionSettingsScreen()))),
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'subscription_settings'),builder: (_) => const SubscriptionSettingsScreen()))),
       if (!user.isPremium)
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -723,7 +733,8 @@ class _SettingsListView extends ConsumerWidget {
             leading: const Icon(Icons.star, color: Colors.white),
             title: const Text('Passa a Premium', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             trailing: const Icon(Icons.chevron_right, color: Colors.white, size: 20),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PaywallScreen())),
+            onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),builder: (_) => PaywallScreen())),
           ),
         ),
       ListTile(
@@ -736,19 +747,23 @@ class _SettingsListView extends ConsumerWidget {
           final isBiz = ci != null && ref.read(purchaseServiceProvider).isBusiness(ci);
           if (!context.mounted) return;
           if (isBiz || user.accountType == AccountType.business) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => BusinessProfileEditScreen(user: user)));
+            Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'business_profile_edit'),builder: (_) => BusinessProfileEditScreen(user: user)));
           } else {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PaywallScreen(offeringId: 'business_pro')));
+            Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),builder: (_) => PaywallScreen(offeringId: 'business_pro')));
           }
         },
       ),
       const Divider(height: 1),
       ListTile(leading: const Icon(Icons.smart_toy_outlined, color: AppColors.primary), title: const Text('Assistente AI'),
         trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()))),
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'chatbot'),builder: (_) => const ChatbotScreen()))),
       ListTile(leading: const Icon(Icons.block_outlined), title: const Text('Utenti Bloccati'),
         trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BlockedUsersScreen()))),
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'blocked_users'),builder: (_) => BlockedUsersScreen()))),
       const Divider(height: 1),
       ListTile(
         leading: const Icon(Icons.download_outlined),
@@ -766,7 +781,8 @@ class _SettingsListView extends ConsumerWidget {
               title: const Text('Abbonamento Attivo'),
               content: const Text('Hai un abbonamento attivo. L\'eliminazione dell\'account NON annullerà il rinnovo sullo store.'),
               actions: [
-                TextButton(onPressed: () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionSettingsScreen())); }, child: const Text('Gestisci Abbonamento')),
+                TextButton(onPressed: () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'subscription_settings'),builder: (_) => const SubscriptionSettingsScreen())); }, child: const Text('Gestisci Abbonamento')),
                 TextButton(onPressed: () { Navigator.pop(ctx); _showDeleteDialog(context, ref); }, style: TextButton.styleFrom(foregroundColor: AppColors.error), child: const Text('Procedi')),
               ],
             ));
@@ -930,7 +946,8 @@ class _PostDetailSheet extends ConsumerWidget {
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: post.authorId)));
+                    Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: post.authorId)));
                   },
                   child: CircleAvatar(
                     radius: 18,
@@ -951,7 +968,8 @@ class _PostDetailSheet extends ConsumerWidget {
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: post.authorId)));
+                      Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: post.authorId)));
                     },
                     child: Text(
                       post.authorName,
@@ -1104,7 +1122,8 @@ class _PostDetailSheet extends ConsumerWidget {
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),
+                                  MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: uid)),
                                 );
                               },
                             );

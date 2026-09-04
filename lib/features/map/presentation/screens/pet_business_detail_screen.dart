@@ -993,6 +993,7 @@ class _PetBusinessDetailScreenState extends ConsumerState<PetBusinessDetailScree
           final result = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'claim_business'),
               builder: (_) => ClaimBusinessScreen(business: biz),
             ),
           );

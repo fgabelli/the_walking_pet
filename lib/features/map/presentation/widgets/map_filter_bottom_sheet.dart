@@ -352,7 +352,8 @@ class _MapFilterBottomSheetState extends ConsumerState<MapFilterBottomSheet>
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const PetSearchScreen()),
+                  MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_search'),builder: (_) => const PetSearchScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -652,7 +653,8 @@ class _MapFilterBottomSheetState extends ConsumerState<MapFilterBottomSheet>
     return GestureDetector(
       onTap: () {
         Navigator.pop(context);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const PaywallScreen()));
+        Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),builder: (_) => const PaywallScreen()));
       },
       child: Container(
         padding: const EdgeInsets.all(14),

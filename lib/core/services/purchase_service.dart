@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../shared/models/user_model.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import 'analytics_service.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart'; // Added for userServiceProvider
 
 class PurchaseService {
@@ -95,7 +96,15 @@ class PurchaseService {
     try {
       await Purchases.purchasePackage(package);
       final info = await Purchases.getCustomerInfo();
-      return _syncWithFirestore(info);
+      final attivato = await _syncWithFirestore(info);
+      if (attivato) {
+        await AnalyticsService.abbonamentoAttivato(
+          pacchetto: package.identifier,
+          prezzo: package.storeProduct.price,
+          valuta: package.storeProduct.currencyCode,
+        );
+      }
+      return attivato;
     } catch (e) {
       print('Purchase failed: $e');
       return false;

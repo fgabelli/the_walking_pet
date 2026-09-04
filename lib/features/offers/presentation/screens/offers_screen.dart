@@ -270,7 +270,8 @@ class OffersScreen extends ConsumerWidget {
               onPressed: () {
                  Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreateOfferScreen()),
+                  MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_offer'),builder: (context) => const CreateOfferScreen()),
                 );
               },
               backgroundColor: Colors.amber,

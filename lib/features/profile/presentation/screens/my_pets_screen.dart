@@ -34,7 +34,8 @@ class MyPetsScreen extends ConsumerWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CreateDogProfileScreen()),
+            MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_dog_profile'),builder: (context) => CreateDogProfileScreen()),
           );
         },
         label: const Text('Aggiungi Pet', style: TextStyle(color: Colors.white)),
@@ -537,6 +538,7 @@ class _PetCard extends StatelessWidget {
                            Navigator.push(
                             context,
                             MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_dog_profile'),
                               builder: (context) => CreateDogProfileScreen(dogToEdit: dog),
                             ),
                           );
@@ -557,6 +559,7 @@ class _PetCard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
+            settings: const RouteSettings(name: 'health_record_list'),
                               builder: (context) => HealthRecordListScreen(
                                 dog: dog,
                                 isOwner: true,

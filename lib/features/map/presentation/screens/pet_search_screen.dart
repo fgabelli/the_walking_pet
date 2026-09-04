@@ -116,6 +116,7 @@ class _PetSearchScreenState extends ConsumerState<PetSearchScreen> {
            Navigator.push(
              context, 
              MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),
                builder: (_) => ProfileScreen(userId: dog.ownerId),
              ),
            );

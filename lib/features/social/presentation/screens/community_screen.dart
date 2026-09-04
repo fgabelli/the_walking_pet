@@ -75,6 +75,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
+            settings: const RouteSettings(name: 'notifications'),
                       builder: (context) => NotificationsScreen(),
                     ),
                   );

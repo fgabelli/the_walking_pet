@@ -75,6 +75,7 @@ class _BusinessCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'business_profile'),
             builder: (context) => BusinessProfileScreen(businessUser: user),
           ),
         );

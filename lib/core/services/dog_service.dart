@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/dog_model.dart';
+import 'analytics_service.dart';
 
 /// Dog service for Firestore operations
 class DogService {
@@ -48,6 +49,11 @@ class DogService {
       final docRef = await _firestore
           .collection(_collection)
           .add(dog.toFirestore());
+      await AnalyticsService.petProfiloCreato(
+        taglia: dog.size.name,
+        eta: dog.age,
+        specie: dog.species.name,
+      );
       return docRef.id;
     } catch (e) {
       rethrow;

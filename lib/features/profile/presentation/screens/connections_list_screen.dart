@@ -103,7 +103,8 @@ class _UserConnectionTile extends ConsumerWidget {
             leading: GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => ProfileScreen(userId: targetId)),
+                MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: targetId)),
               ),
               child: CircleAvatar(
                 radius: 24,
@@ -120,7 +121,8 @@ class _UserConnectionTile extends ConsumerWidget {
             title: GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => ProfileScreen(userId: targetId)),
+                MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: targetId)),
               ),
               child: Text(
                 user.fullName,
@@ -163,7 +165,8 @@ class _UserConnectionTile extends ConsumerWidget {
                   ),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ProfileScreen(userId: targetId)),
+              MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: targetId)),
             ),
           ),
         );

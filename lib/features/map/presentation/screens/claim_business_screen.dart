@@ -151,6 +151,7 @@ class _ClaimBusinessScreenState extends ConsumerState<ClaimBusinessScreen> {
         await Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),
             builder: (_) => const PaywallScreen(offeringId: 'business_pro'),
           ),
         );

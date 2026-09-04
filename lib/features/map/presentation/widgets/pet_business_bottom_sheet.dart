@@ -409,6 +409,7 @@ class _PetBusinessDetailSheetState extends State<_PetBusinessDetailSheet> {
                     Navigator.of(context).pop(); // Close bottom sheet
                     Navigator.of(context).push(
                       MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_business_detail'),
                         builder: (_) => PetBusinessDetailScreen(business: biz),
                       ),
                     );

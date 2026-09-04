@@ -190,6 +190,7 @@ class _ChatListItem extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
                 builder: (context) => ChatScreen(chatId: chat.id, otherUser: user), // Passing user to avoid refetching if possible
               ),
             );

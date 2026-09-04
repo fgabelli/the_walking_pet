@@ -63,6 +63,7 @@ class _NextdoorScreenState extends ConsumerState<NextdoorScreen> with SingleTick
               Navigator.push(
                 context,
                 MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_announcement'),
                   builder: (context) => const CreateAnnouncementScreen(),
                 ),
               );
@@ -485,6 +486,7 @@ class _AnnouncementCard extends ConsumerWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'announcement_detail'),
               builder: (context) => AnnouncementDetailScreen(announcement: announcement),
             ),
           );
@@ -635,6 +637,7 @@ class _AnnouncementCard extends ConsumerWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'announcement_detail'),
                           builder: (context) => AnnouncementDetailScreen(announcement: announcement),
                         ),
                       );
@@ -719,6 +722,7 @@ class _BusinessFeedCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'business_profile'),
               builder: (context) => BusinessProfileScreen(businessUser: business),
             ),
           );
@@ -850,6 +854,7 @@ class _BusinessFeedCard extends StatelessWidget {
                        Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'business_profile'),
                           builder: (context) => BusinessProfileScreen(businessUser: business),
                         ),
                       );
@@ -907,6 +912,7 @@ class _SOSAlertCard extends ConsumerWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
+            settings: const RouteSettings(name: 'announcement_detail'),
           builder: (context) => AnnouncementDetailScreen(announcement: announcement!),
         ),
       );

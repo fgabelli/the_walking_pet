@@ -341,6 +341,7 @@ class _InquiryCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_campaign'),
         builder: (_) => CreateCampaignScreen(
           prefillBusinessName: inquiry.businessName,
           prefillCity: inquiry.city,

@@ -275,6 +275,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                       onTap: () {
                          Navigator.of(context).push(
                            MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_walk_card'),
                              builder: (_) => PetWalkCardScreen(pet: dog),
                            ),
                          );
@@ -291,6 +292,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
+            settings: const RouteSettings(name: 'health_record_list'),
                             builder: (_) => HealthRecordListScreen(
                               dog: dog,
                               isOwner: true,

@@ -244,6 +244,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'privacy_policy'),
                           builder: (context) => const PrivacyPolicyScreen(),
                         ),
                       );
@@ -282,6 +283,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'terms_conditions'),
                           builder: (context) => const TermsConditionsScreen(),
                         ),
                       );

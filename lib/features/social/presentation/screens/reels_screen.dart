@@ -538,7 +538,8 @@ class _ReelPlayerState extends ConsumerState<_ReelPlayer> with WidgetsBindingObs
                     if (chatId != null && context.mounted) {
                       final otherUser = await ref.read(userServiceProvider).getUserById(widget.reel.authorId);
                       if (otherUser != null && context.mounted) {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
+                        Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
                       }
                     }
                   },
@@ -580,7 +581,8 @@ class _ReelPlayerState extends ConsumerState<_ReelPlayer> with WidgetsBindingObs
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.reel.authorId)),
+                    MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: widget.reel.authorId)),
                   ),
                   child: Row(
                     children: [
@@ -702,7 +704,8 @@ class _ReelPlayerState extends ConsumerState<_ReelPlayer> with WidgetsBindingObs
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),
+                                  MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: uid)),
                                 );
                               },
                             );

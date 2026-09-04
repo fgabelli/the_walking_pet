@@ -112,6 +112,7 @@ class _AnnouncementDetailScreenState extends ConsumerState<AnnouncementDetailScr
                   Navigator.push(
                     context,
                     MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_announcement'),
                       builder: (context) => CreateAnnouncementScreen(
                         announcementToEdit: updatedAnnouncement,
                       ),

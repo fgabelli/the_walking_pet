@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/completed_walk_model.dart';
+import 'analytics_service.dart';
 
 final completedWalkServiceProvider = Provider<CompletedWalkService>((ref) => CompletedWalkService());
 
@@ -61,6 +62,11 @@ class CompletedWalkService {
   /// Save a completed walk
   Future<String> saveCompletedWalk(CompletedWalkModel walk) async {
     final docRef = await _firestore.collection('completed_walks').add(walk.toFirestore());
+    await AnalyticsService.passeggiataCompletata(
+      durataMin: walk.durationMinutes,
+      distanzaKm: walk.distanceKm,
+      passi: walk.steps,
+    );
     return docRef.id;
   }
 

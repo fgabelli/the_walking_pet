@@ -98,6 +98,7 @@ class _WalksListScreenState extends ConsumerState<WalksListScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_walk'),
               builder: (context) => const CreateWalkScreen(),
             ),
           );
@@ -127,6 +128,7 @@ class _WalkCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_detail'),
               builder: (context) => WalkDetailScreen(walk: walk),
             ),
           );

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart' as bg;
 import 'package:latlong2/latlong.dart';
 import 'package:pedometer/pedometer.dart';
+import 'analytics_service.dart';
 
 // Stato della sessione
 enum WalkStatus { inactive, active, paused }
@@ -64,6 +65,8 @@ class WalkTrackerService extends StateNotifier<WalkSessionState> {
     );
     _lastPosition = null;
     _initialStepCount = null;
+
+    await AnalyticsService.passeggiataAvviata();
 
     // 2. Start Pedometer Stream (conteggio passi nativo dal sensore)
     _startPedometer();

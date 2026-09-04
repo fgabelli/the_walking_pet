@@ -280,6 +280,7 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'health_record_list'),
                           builder: (context) => HealthRecordListScreen(
                             dog: widget.dogToEdit!,
                             isOwner: true, 

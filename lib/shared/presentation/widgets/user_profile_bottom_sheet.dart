@@ -103,6 +103,7 @@ class UserProfileBottomSheet extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
+            settings: const RouteSettings(name: 'business_profile'),
                                 builder: (context) => BusinessProfileScreen(businessUser: user),
                               ),
                             );
@@ -249,6 +250,7 @@ class UserProfileBottomSheet extends ConsumerWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
             builder: (context) => ChatScreen(
               chatId: chatId,
               otherUser: user,

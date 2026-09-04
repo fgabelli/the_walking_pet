@@ -37,6 +37,7 @@ class WalkDetailScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_walk'),
                       builder: (context) => CreateWalkScreen(walkToEdit: walk),
                     ),
                   );

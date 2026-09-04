@@ -204,7 +204,8 @@ class _PetMatcherScreenState extends ConsumerState<PetMatcherScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyPetsScreen()),
+                  MaterialPageRoute(
+            settings: const RouteSettings(name: 'my_pets'),builder: (context) => const MyPetsScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -468,6 +469,7 @@ class _PetMatcherScreenState extends ConsumerState<PetMatcherScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
           builder: (_) => ChatScreen(
             chatId: chatId,
             otherUser: owner,
@@ -576,6 +578,7 @@ class _PetMatcherScreenState extends ConsumerState<PetMatcherScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
                         builder: (context) => ChatScreen(
                           chatId: chatId,
                           otherUser: match.targetOwner,
@@ -837,6 +840,7 @@ class _LikesHistorySheetState extends ConsumerState<_LikesHistorySheet>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_profile'),
                     builder: (_) => PetProfileScreen(dog: pet),
                   ),
                 );

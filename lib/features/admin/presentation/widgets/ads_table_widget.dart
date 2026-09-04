@@ -105,6 +105,7 @@ class AdsTableWidget extends ConsumerWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_campaign'),
                                   builder: (_) => CreateCampaignScreen(adToEdit: ad),
                                 ),
                               );

@@ -162,7 +162,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const CreateCampaignScreen()),
+                              MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_campaign'),builder: (_) => const CreateCampaignScreen()),
                             );
                           },
                           icon: const Icon(Icons.add),

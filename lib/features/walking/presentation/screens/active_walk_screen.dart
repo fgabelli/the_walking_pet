@@ -143,7 +143,8 @@ class _ActiveWalkScreenState extends ConsumerState<ActiveWalkScreen> {
     if (mounted) {
       // Naviga al riepilogo
        Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => WalkSummaryScreen(petIds: widget.petIds)),
+        MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_summary'),builder: (_) => WalkSummaryScreen(petIds: widget.petIds)),
       );
     }
   }

@@ -34,6 +34,7 @@ class NotificationRouter {
               final otherUser = UserModel.fromFirestore(userDoc);
               navigatorKey.currentState?.push(
                 MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
                   builder: (context) => ChatScreen(chatId: chatId, otherUser: otherUser),
                 ),
               );
@@ -64,6 +65,7 @@ class NotificationRouter {
         if (postId != null) {
           navigatorKey.currentState?.push(
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'post_detail'),
               builder: (context) => PostDetailScreen(postId: postId),
             ),
           );
@@ -86,6 +88,7 @@ class NotificationRouter {
       default:
         navigatorKey.currentState?.push(
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'notifications'),
             builder: (context) => const NotificationsScreen(),
           ),
         );

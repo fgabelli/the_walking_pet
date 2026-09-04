@@ -865,7 +865,8 @@ class _WalkSummaryScreenState extends ConsumerState<WalkSummaryScreen> {
                   ),
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const WalkStatsScreen()),
+                      MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_stats'),builder: (_) => const WalkStatsScreen()),
                     );
                   },
                   style: OutlinedButton.styleFrom(
@@ -894,7 +895,8 @@ class _WalkSummaryScreenState extends ConsumerState<WalkSummaryScreen> {
                     ),
                     onPressed: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => PetWalkCardScreen(pet: pet)),
+                        MaterialPageRoute(
+            settings: const RouteSettings(name: 'pet_walk_card'),builder: (_) => PetWalkCardScreen(pet: pet)),
                       );
                     },
                     style: OutlinedButton.styleFrom(

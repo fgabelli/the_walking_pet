@@ -186,7 +186,8 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CreateWalkScreen()),
+                    MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_walk'),builder: (context) => CreateWalkScreen()),
                   );
                 },
               ),
@@ -201,7 +202,8 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CreateEventScreen()),
+                    MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_event'),builder: (context) => CreateEventScreen()),
                   );
                 },
               ),
@@ -292,7 +294,8 @@ class _WalkCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => WalkDetailScreen(walk: walk)));
+          Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_detail'),builder: (_) => WalkDetailScreen(walk: walk)));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -370,7 +373,8 @@ class _EventCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)));
+          Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'event_detail'),builder: (_) => EventDetailScreen(event: event)));
         },
         child: Column(
           children: [

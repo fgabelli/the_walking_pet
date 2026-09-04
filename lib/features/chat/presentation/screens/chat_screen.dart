@@ -1156,6 +1156,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
         return GestureDetector(
           onTap: () {
             Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'scaffold'),
               builder: (_) => Scaffold(
                 backgroundColor: Colors.black,
                 appBar: AppBar(backgroundColor: Colors.black, iconTheme: const IconThemeData(color: Colors.white)),

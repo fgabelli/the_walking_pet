@@ -119,7 +119,8 @@ class _WhoViewedMeScreenState extends ConsumerState<WhoViewedMeScreen> {
                           onPressed: () {
                              Navigator.push(
                                context, 
-                               MaterialPageRoute(builder: (_) => const PaywallScreen())
+                               MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),builder: (_) => const PaywallScreen())
                              );
                           },
                           style: TextButton.styleFrom(
@@ -198,7 +199,8 @@ class _VisitorTile extends ConsumerWidget {
                   ? const Icon(Icons.lock, color: Colors.amber, size: 20)
                   : null,
              onTap: blur ? () {
-                 Navigator.push(context, MaterialPageRoute(builder: (_) => const PaywallScreen()));
+                 Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'paywall'),builder: (_) => const PaywallScreen()));
              } : () {
                  // Show profile?
                  // For now just null or maybe show profile bottom sheet

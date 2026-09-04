@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'; // Added
 import '../../../../core/services/purchase_service.dart';
+import '../../../../core/services/analytics_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Added // Added provider definition here
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -30,6 +31,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       _isLoading = true;
       _debugInfo = 'Fetching offerings...';
     });
+
+    await AnalyticsService.paywallVisto(origine: widget.offeringId);
     
     try {
       final offerings = await ref.read(purchaseServiceProvider).getOfferings();

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../shared/models/social_post_model.dart';
+import 'analytics_service.dart';
 
 final socialFeedServiceProvider = Provider<SocialFeedService>((ref) => SocialFeedService());
 
@@ -64,6 +65,7 @@ class SocialFeedService {
     );
 
     final docRef = await _firestore.collection('social_posts').add(postData.toFirestore());
+    await AnalyticsService.postPubblicato(tipo: postData.type.name);
     return docRef.id;
   }
 

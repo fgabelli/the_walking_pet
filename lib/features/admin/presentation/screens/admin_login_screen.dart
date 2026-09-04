@@ -54,7 +54,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        MaterialPageRoute(
+            settings: const RouteSettings(name: 'admin_dashboard'),builder: (_) => const AdminDashboardScreen()),
       );
     } catch (e) {
       setState(() {

@@ -13,6 +13,7 @@ import '../../../../shared/models/user_model.dart'; // Added
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/nextdoor_service.dart';
 import '../../../map/presentation/providers/map_provider.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../profile/presentation/providers/profile_provider.dart'; // For storageServiceProvider
 
 /// Nextdoor Service Provider
@@ -259,6 +260,8 @@ class NextdoorController extends StateNotifier<NextdoorState> {
         );
         await _nextdoorService.updateAnnouncement(updatedAnnouncement);
       }
+
+      await AnalyticsService.annuncioPubblicato(categoria: category.name);
 
       state = state.copyWith(isSubmitting: false);
       return announcementId;

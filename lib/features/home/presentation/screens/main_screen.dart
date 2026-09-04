@@ -17,6 +17,7 @@ import '../../../../core/services/notification_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/services/purchase_service.dart';
 import '../../../../core/services/device_health_service.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -27,6 +28,17 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
+
+  /// Le tab vivono dentro un IndexedStack e non passano dal Navigator:
+  /// l'observer in app.dart non le vedrebbe mai, vanno inviate a mano.
+  /// L'ordine deve restare allineato a _screens.
+  static const List<String> _nomiTab = [
+    'community',
+    'map',
+    'pet_matcher',
+    'chat_list',
+    'profile',
+  ];
 
   final List<Widget> _screens = [
     const CommunityScreen(),
@@ -41,12 +53,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       _selectedIndex = index;
     });
     ref.read(activeTabProvider.notifier).state = index;
+    AnalyticsService.schermataVista(_nomiTab[index]);
   }
 
   @override
   void initState() {
     super.initState();
     // Notification Service is already initialized in main.dart
+
+    // La prima tab non passa da _onItemTapped: va registrata qui.
+    AnalyticsService.schermataVista(_nomiTab[_selectedIndex]);
 
     // Request Health Permissions on Startup (iOS only — Health Connect disabled on Android)
     if (Platform.isIOS) {
@@ -106,6 +122,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           setState(() {
             _selectedIndex = activeTab;
           });
+          // Cambio tab pilotato da fuori (notifica, deep link).
+          AnalyticsService.schermataVista(_nomiTab[activeTab]);
         }
       });
     }

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'analytics_service.dart';
 
 /// Authentication service using Firebase Auth
 class AuthService {
@@ -34,10 +35,12 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      await AnalyticsService.registrazioneCompletata(metodo: 'email');
+      return credential;
     } catch (e) {
       rethrow;
     }
@@ -64,7 +67,12 @@ class AuthService {
       );
 
       // Sign in to Firebase with the Google credential
-      return await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+      // Solo i nuovi iscritti: signInWithGoogle serve anche per il login.
+      if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+        await AnalyticsService.registrazioneCompletata(metodo: 'google');
+      }
+      return userCredential;
     } catch (e) {
       rethrow;
     }
@@ -89,6 +97,11 @@ class AuthService {
 
       // Sign in to Firebase with the Apple credential
       final credential = await _auth.signInWithCredential(oauthCredential);
+
+      // Solo i nuovi iscritti: signInWithApple serve anche per il login.
+      if (credential.additionalUserInfo?.isNewUser ?? false) {
+        await AnalyticsService.registrazioneCompletata(metodo: 'apple');
+      }
       
       return (
         credential: credential,

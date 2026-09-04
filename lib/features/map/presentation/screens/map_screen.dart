@@ -113,6 +113,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'walk_detail'),
             builder: (context) => WalkDetailScreen(walk: next),
           ),
         ).then((_) {
@@ -168,6 +169,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'announcement_detail'),
             builder: (context) => AnnouncementDetailScreen(announcement: next),
           ),
         ).then((_) {
@@ -292,6 +294,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: const RouteSettings(name: 'event_detail'),
             builder: (context) => EventDetailScreen(event: next),
           ),
         ).then((_) {
@@ -455,6 +458,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),
                                 builder: (_) => ChatScreen(
                                   chatId: chatId,
                                   otherUser: finder,
@@ -735,6 +739,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                            Navigator.push(
                                              context,
                                              MaterialPageRoute(
+            settings: const RouteSettings(name: 'notifications'),
                                                builder: (context) => const NotificationsScreen(),
                                              ),
                                            );
@@ -859,6 +864,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'chatbot'),
                           builder: (context) => const ChatbotScreen(),
                         ),
                       );
@@ -892,6 +898,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+            settings: const RouteSettings(name: 'activities_list'),
                           builder: (context) => const ActivitiesListScreen(),
                         ),
                       );
@@ -980,7 +987,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const MyPetsScreen()),
+                      MaterialPageRoute(
+            settings: const RouteSettings(name: 'my_pets'),builder: (context) => const MyPetsScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
@@ -1155,6 +1163,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           Navigator.pop(context);
           Navigator.of(context).push(
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'active_walk'),
               builder: (_) => ActiveWalkScreen(petIds: selectedPetIds),
             ),
           );

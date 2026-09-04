@@ -309,7 +309,8 @@ class _ReelFeedCardState extends ConsumerState<_ReelFeedCard> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: reel.authorId))),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: reel.authorId))),
                   child: CircleAvatar(
                     radius: 16,
                     backgroundColor: Colors.white,
@@ -323,7 +324,8 @@ class _ReelFeedCardState extends ConsumerState<_ReelFeedCard> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: reel.authorId))),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: reel.authorId))),
                     child: Row(
                       children: [
                         Flexible(child: Text(reel.authorName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14))),
@@ -410,7 +412,8 @@ class _ReelFeedCardState extends ConsumerState<_ReelFeedCard> {
                     if (chatId != null && context.mounted) {
                       final otherUser = await ref.read(userServiceProvider).getUserById(reel.authorId);
                       if (otherUser != null && context.mounted) {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
+                        Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
                       }
                     }
                   },
@@ -1012,7 +1015,8 @@ class _PostCardState extends ConsumerState<PostCard> with SingleTickerProviderSt
                     final userService = ref.read(userServiceProvider);
                     final otherUser = await userService.getUserById(post.authorId);
                     if (otherUser != null && context.mounted) {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
+                      Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'chat'),builder: (_) => ChatScreen(chatId: chatId, otherUser: otherUser)));
                     }
                   }
                 },
@@ -1287,7 +1291,8 @@ class _PostCardState extends ConsumerState<PostCard> with SingleTickerProviderSt
                         subtitle: user.zone.isNotEmpty ? Text(user.zone, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)) : null,
                         onTap: () {
                           Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)));
+                          Navigator.push(context, MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),builder: (_) => ProfileScreen(userId: uid)));
                         },
                       );
                     },
@@ -1311,6 +1316,7 @@ void openAuthorProfile(BuildContext context, WidgetRef ref, String authorId) {
   Navigator.push(
     context,
     MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),
       builder: (_) => ProfileScreen(userId: authorId),
     ),
   );
@@ -1587,6 +1593,7 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
     Navigator.push(
       context,
       MaterialPageRoute(
+            settings: const RouteSettings(name: 'profile'),
         builder: (_) => ProfileScreen(userId: authorId),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/chat_model.dart';
+import 'analytics_service.dart';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -20,6 +21,8 @@ class ChatService {
           'status': initialStatus.name,
           'initiatorId': initiatorId,
         });
+        // Solo per le conversazioni nuove, non a ogni riapertura.
+        await AnalyticsService.chatAvviata();
       }
       
       return chatId;

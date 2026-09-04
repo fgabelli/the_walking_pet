@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'analytics_service.dart';
 
 final matcherServiceProvider = Provider<MatcherService>((ref) => MatcherService());
 
@@ -55,6 +56,7 @@ class MatcherService {
         };
         await _matchesCollection.add(matchData);
         debugPrint('[MatcherService] Match document created successfully');
+        await AnalyticsService.matchOttenuto();
         return true;
       }
     } catch (e, stackTrace) {

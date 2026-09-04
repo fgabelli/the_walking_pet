@@ -48,6 +48,7 @@ class HealthRecordListScreen extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+            settings: const RouteSettings(name: 'add_health_record'),
                     builder: (context) => AddHealthRecordScreen(
                       petId: dog.id,
                       pet: dog,

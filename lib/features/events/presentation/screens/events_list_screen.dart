@@ -32,7 +32,8 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateEventScreen()),
+            MaterialPageRoute(
+            settings: const RouteSettings(name: 'create_event'),builder: (context) => const CreateEventScreen()),
           );
         },
         backgroundColor: AppColors.primary,
@@ -197,6 +198,7 @@ class _EventCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
+            settings: const RouteSettings(name: 'event_detail'),
                builder: (context) => EventDetailScreen(event: event),
             ),
           );
