@@ -12,10 +12,7 @@ class UserService {
       final doc = await _firestore.collection(_collection).doc(uid).get();
       if (doc.exists) {
         final data = doc.data();
-        if (data != null &&
-            data['createdAt'] != null &&
-            data['firstName'] != null &&
-            data['firstName'].toString().trim().isNotEmpty) {
+        if (data != null && data['createdAt'] != null) {
           return UserModel.fromFirestore(doc);
         }
       }
@@ -34,12 +31,7 @@ class UserService {
         .map((doc) {
           if (!doc.exists) return null;
           final data = doc.data();
-          if (data == null ||
-              data['createdAt'] == null ||
-              data['firstName'] == null ||
-              data['firstName'].toString().trim().isEmpty) {
-            return null;
-          }
+          if (data == null || data['createdAt'] == null) return null;
           return UserModel.fromFirestore(doc);
         });
   }

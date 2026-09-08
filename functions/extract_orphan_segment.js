@@ -1,29 +1,67 @@
 /**
  * Utility per estrazione e ispezione del segmento utenti orfani su thewalkingpet-a1578
  * 
+ * Funziona nativamente su Mac usando il token gcloud autenticato, senza dipendere da ADC file.
+ *
  * Esecuzione:
- *   node extract_orphan_segment.js              (Stampa statistiche e controprova 109)
- *   node extract_orphan_segment.js --list       (Stampa lista uid e conteggio token)
- *   node extract_orphan_segment.js --export-json segment_export.json (Salva file locale ignorato da git)
+ *   node functions/extract_orphan_segment.js              (Stampa statistiche e controprova 109)
+ *   node functions/extract_orphan_segment.js --list       (Stampa lista uid e conteggio token)
+ *   node functions/extract_orphan_segment.js --export-json segment_export.json (Salva file locale ignorato da git)
  */
 
-const admin = require("firebase-admin");
+const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId: "thewalkingpet-a1578",
-  });
+const PROJECT_ID = "thewalkingpet-a1578";
+
+function getAccessToken() {
+  try {
+    return execSync("gcloud auth print-access-token", { encoding: "utf8" }).trim();
+  } catch (e) {
+    throw new Error("Impossibile ottenere il token da gcloud. Esegui 'gcloud auth login'.");
+  }
+}
+
+async function fetchWithAuth(url, options = {}) {
+  const token = getAccessToken();
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "x-goog-user-project": PROJECT_ID,
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  const res = await fetch(url, { ...options, headers });
+  return res;
 }
 
 async function run() {
-  const db = admin.firestore();
-  console.log("📥 Caricamento documenti dalla collection 'users'...");
+  console.log("📥 Caricamento documenti dalla collection 'users' via Firestore REST API...");
 
-  const snapshot = await db.collection("users").get();
-  console.log(`Totale documenti caricati: ${snapshot.size}`);
+  let documents = [];
+  let nextPageToken = null;
+
+  do {
+    let url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users?pageSize=300`;
+    if (nextPageToken) {
+      url += `&pageToken=${encodeURIComponent(nextPageToken)}`;
+    }
+
+    const res = await fetchWithAuth(url);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Errore caricamento Firestore (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    if (data.documents) {
+      documents = documents.concat(data.documents);
+    }
+    nextPageToken = data.nextPageToken || null;
+  } while (nextPageToken);
+
+  console.log(`Totale documenti caricati: ${documents.length}`);
 
   let countWithFirstName = 0;
   let countWithoutFirstName = 0;
@@ -31,12 +69,16 @@ async function run() {
   const tokenSet = new Set();
   const platformBreakdown = {};
 
-  snapshot.forEach((doc) => {
-    const data = doc.data() || {};
-    const firstName = data.firstName;
-    const hasFirstName = firstName != null && String(firstName).trim().length > 0;
-    const tokens = Array.isArray(data.fcmTokens) ? data.fcmTokens : [];
-    const platform = data.tokenPlatform || "non_specificata";
+  for (const doc of documents) {
+    const fields = doc.fields || {};
+    const uid = doc.name.split("/").pop();
+
+    const firstNameVal = fields.firstName ? fields.firstName.stringValue : null;
+    const hasFirstName = firstNameVal != null && firstNameVal.trim().length > 0;
+
+    const tokensVal = fields.fcmTokens && fields.fcmTokens.arrayValue ? fields.fcmTokens.arrayValue.values || [] : [];
+    const tokens = tokensVal.map(v => v.stringValue).filter(Boolean);
+    const platform = fields.tokenPlatform ? fields.tokenPlatform.stringValue : "non_specificata";
 
     if (hasFirstName) {
       countWithFirstName++;
@@ -44,26 +86,24 @@ async function run() {
       countWithoutFirstName++;
       if (tokens.length > 0) {
         orphanedSegment.push({
-          uid: doc.id,
+          uid,
           tokenCount: tokens.length,
-          tokens: tokens,
-          platform: platform,
-          email: data.email || null,
-          createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate().toISOString() : data.createdAt) : null,
+          tokens,
+          platform,
         });
 
         platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
         for (const t of tokens) {
-          if (t && typeof t === "string") tokenSet.add(t);
+          tokenSet.add(t);
         }
       }
     }
-  });
+  }
 
   console.log("\n==========================================");
   console.log("📊 REPORT SEGMENTAZIONE ORPHANED USERS");
   console.log("==========================================");
-  console.log(`- Totale documenti users: ${snapshot.size}`);
+  console.log(`- Totale documenti users: ${documents.length}`);
   console.log(`- Controprova con firstName: ${countWithFirstName} (Target atteso: 109)`);
   console.log(`- Senza firstName (orfani): ${countWithoutFirstName}`);
   console.log(`- Segmento raggiungibile via Push: ${orphanedSegment.length} utenti`);
@@ -85,7 +125,7 @@ async function run() {
     const outPath = path.resolve(__dirname, filename);
     const exportData = {
       timestamp: new Date().toISOString(),
-      totalUsers: snapshot.size,
+      totalUsers: documents.length,
       countWithFirstName,
       countWithoutFirstName,
       segmentTargetCount: orphanedSegment.length,

@@ -1,41 +1,59 @@
 /**
  * CLI Tool per l'esecuzione sicura e parametrizzata delle campagne push su The Walking Pet (DOGZN).
  *
+ * Funziona nativamente da terminale Mac usando il token gcloud autenticato,
+ * interfacciandosi direttamente con le API REST di Firestore e FCM v1.
+ *
  * Di DEFAULT è SEMPRE in modalità --dry-run (validazione simulata con APNs senza invio reale).
  * Per eseguire un invio reale è TASSATIVO specificare esplicitamente il flag --execute.
  *
  * Esempi di utilizzo:
  *
  * 1. Test su un singolo device interno:
- *    node run_campaign.js --test-token <FCM_TOKEN> \
+ *    node functions/run_campaign.js --test-token <FCM_TOKEN> \
  *      --title "Bentornato su DOGZN!" \
  *      --body "Completa il tuo profilo per trovare nuovi compagni di passeggiata" \
  *      --campaign-id "test_interno_01" \
  *      --execute
  *
  * 2. Dry run sul segmento completo utenti orfani iOS (validazione token senza invio):
- *    node run_campaign.js --segment orphaned_users_ios \
+ *    node functions/run_campaign.js --segment orphaned_users_ios \
  *      --title "Bentornato su DOGZN!" \
  *      --body "Completa il tuo profilo per trovare nuovi compagni di passeggiata" \
  *      --campaign-id "recovery_orphans_ios_v1" \
  *      --dry-run
  *
  * 3. Invio effettivo finale sul segmento utenti orfani iOS:
- *    node run_campaign.js --segment orphaned_users_ios \
+ *    node functions/run_campaign.js --segment orphaned_users_ios \
  *      --title "Bentornato su DOGZN!" \
  *      --body "Completa il tuo profilo per trovare nuovi compagni di passeggiata" \
  *      --campaign-id "recovery_orphans_ios_v1" \
  *      --execute
  */
 
-const admin = require("firebase-admin");
-const { executeCampaign } = require("./campaigns");
+const { execSync } = require("child_process");
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId: "thewalkingpet-a1578",
-  });
+const PROJECT_ID = "thewalkingpet-a1578";
+
+function getAccessToken() {
+  try {
+    return execSync("gcloud auth print-access-token", { encoding: "utf8" }).trim();
+  } catch (e) {
+    throw new Error("Impossibile ottenere il token da gcloud. Assicurati che gcloud sia configurato.");
+  }
+}
+
+async function fetchWithAuth(url, options = {}) {
+  const token = getAccessToken();
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "x-goog-user-project": PROJECT_ID,
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  const res = await fetch(url, { ...options, headers });
+  return res;
 }
 
 function getArgValue(flag) {
@@ -46,11 +64,112 @@ function getArgValue(flag) {
   return null;
 }
 
+async function getOrphanedRecipients() {
+  let documents = [];
+  let nextPageToken = null;
+
+  do {
+    let url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users?pageSize=300`;
+    if (nextPageToken) {
+      url += `&pageToken=${encodeURIComponent(nextPageToken)}`;
+    }
+
+    const res = await fetchWithAuth(url);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Errore caricamento Firestore (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    if (data.documents) {
+      documents = documents.concat(data.documents);
+    }
+    nextPageToken = data.nextPageToken || null;
+  } while (nextPageToken);
+
+  const recipients = [];
+  for (const doc of documents) {
+    const fields = doc.fields || {};
+    const uid = doc.name.split("/").pop();
+
+    const firstNameVal = fields.firstName ? fields.firstName.stringValue : null;
+    const isFirstNameMissing = firstNameVal == null || firstNameVal.trim().length === 0;
+
+    const tokensVal = fields.fcmTokens && fields.fcmTokens.arrayValue ? fields.fcmTokens.arrayValue.values || [] : [];
+    const tokens = tokensVal.map(v => v.stringValue).filter(Boolean);
+    const platform = fields.tokenPlatform ? fields.tokenPlatform.stringValue : "";
+
+    if (isFirstNameMissing && tokens.length > 0 && platform !== "android") {
+      for (const t of tokens) {
+        recipients.push({ uid, token: t.trim() });
+      }
+    }
+  }
+
+  return recipients;
+}
+
+async function sendFcmV1Message(token, { title, body, deepLink, campaignId, isDryRun }) {
+  const url = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
+  
+  const payload = {
+    validate_only: isDryRun,
+    message: {
+      token: token,
+      notification: {
+        title: title.trim(),
+        body: body.trim(),
+      },
+      data: {
+        type: "resume_onboarding",
+        deepLink: deepLink.trim(),
+        campaignId: campaignId.trim(),
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            badge: 1,
+          },
+        },
+      },
+    },
+  };
+
+  const res = await fetchWithAuth(url, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    return { success: true };
+  } else {
+    const errText = await res.text();
+    let errCode = "UNKNOWN";
+    try {
+      const errJson = JSON.parse(errText);
+      const details = errJson.error?.details || [];
+      for (const det of details) {
+        if (det.errorCode) errCode = det.errorCode;
+      }
+      if (errCode === "UNKNOWN" && res.status === 404) errCode = "UNREGISTERED";
+    } catch (_) {}
+
+    return {
+      success: false,
+      status: res.status,
+      code: errCode,
+      raw: errText,
+    };
+  }
+}
+
 async function main() {
   const hasHelp = process.argv.includes("--help") || process.argv.includes("-h");
   if (hasHelp) {
     console.log(`
-Uso: node run_campaign.js [opzioni]
+Uso: node functions/run_campaign.js [opzioni]
 
 Opzioni obbligatorie per l'invio:
   --title <testo>          Titolo della notifica push
@@ -77,63 +196,93 @@ Opzioni opzionali:
   const isExecute = process.argv.includes("--execute");
   const isDryRun = !isExecute; // Se non c'è --execute, è sempre dry-run di sicurezza
 
-  let customTokens = [];
-  if (testToken) {
-    segment = "internal_test";
-    customTokens = [testToken];
-  }
-
   if (!title || !body || !campaignId) {
     console.error("❌ Parametri mancanti obbligatori: --title, --body e --campaign-id sono richiesti.");
-    console.log("Esegui 'node run_campaign.js --help' per la guida completa.");
+    console.log("Esegui 'node functions/run_campaign.js --help' per la guida completa.");
     process.exit(1);
   }
 
-  if (!isExecute) {
-    console.log("\n⚠️ ATTENZIONE: Esecuzione in modalità DRY-RUN (simulazione). Nessuna push verrà inviata.");
-    console.log("Per effettuare l'invio reale, aggiungi il flag '--execute'.\n");
+  console.log(`\n========================================`);
+  console.log(`🚀 AVVIO CAMPAGNA PUSH: ${campaignId}`);
+  console.log(`Modalità: ${isDryRun ? "🛡️ DRY-RUN (Nessuna notifica inviata)" : "🔴 INVIO EFFETTIVO"}`);
+  console.log(`Segmento: ${testToken ? "internal_test" : segment}`);
+  console.log(`Deep Link: ${deepLink}`);
+  console.log(`========================================\n`);
+
+  let recipients = [];
+  if (testToken) {
+    recipients = [{ uid: "test_device", token: testToken.trim() }];
   } else {
-    console.log("\n🔴 ATTENZIONE: ESECUZIONE REALE CONSEGNA NOTIFICHE IN CORSO...\n");
+    console.log("🔍 Estrazione destinatari da Firestore...");
+    recipients = await getOrphanedRecipients();
   }
 
-  try {
-    const report = await executeCampaign({
+  // Deduplica token: mappa token -> lista uid
+  const tokenToUids = new Map();
+  for (const { uid, token } of recipients) {
+    if (!tokenToUids.has(token)) {
+      tokenToUids.set(token, []);
+    }
+    tokenToUids.get(token).push(uid);
+  }
+
+  const uniqueTokens = Array.from(tokenToUids.keys());
+  console.log(`Destinatari: ${recipients.length} profili target, ${uniqueTokens.length} token UNICI da contattare.`);
+
+  let deliveredCount = 0;
+  let unregisteredCount = 0;
+  let otherErrorsCount = 0;
+  const unregisteredTokens = [];
+
+  console.log(`\nElaborazione ${uniqueTokens.length} token in corso...`);
+  for (let i = 0; i < uniqueTokens.length; i++) {
+    const tok = uniqueTokens[i];
+    const res = await sendFcmV1Message(tok, {
       title,
       body,
       deepLink,
       campaignId,
-      segment,
-      customTokens,
-      dryRun: isDryRun,
+      isDryRun,
     });
 
-    console.log("\n==========================================");
-    console.log("📋 REPORT FINALE ESECUZIONE CAMPAGNA");
-    console.log("==========================================");
-    console.log(`- Campagna ID: ${report.campaignId}`);
-    console.log(`- Segmento: ${report.segment}`);
-    console.log(`- Modalità: ${report.dryRun ? "DRY-RUN (Simulazione)" : "REALE (Inviato)"}`);
-    console.log(`- Token destinatari totali: ${report.totalTokensTarget}`);
-    console.log(`- Token univoci (device distinti): ${report.uniqueTokensTarget}`);
-    console.log(`- Notifiche consegnate ad APNs: ${report.deliveredCount}`);
-    console.log(`- Token UNREGISTERED (app disinstallata): ${report.unregisteredCount}`);
-    console.log(`- Errori non gestiti: ${report.failedCount - report.unregisteredCount}`);
-    if (report.reportId) {
-      console.log(`- Report salvato su Firestore: campaign_reports/${report.reportId}`);
-    }
-    console.log("==========================================\n");
-
-    if (report.unregisteredCount > 0) {
-      console.log(`ℹ️ I ${report.unregisteredCount} token disinstallati sono stati censiti.`);
-      if (!report.dryRun) {
-        console.log("   I profili corrispondenti in Firestore sono stati contrassegnati e ripuliti dai token obsoleti.");
+    if (res.success) {
+      deliveredCount++;
+    } else {
+      if (res.code === "UNREGISTERED" || res.status === 404 || res.code === "INVALID_ARGUMENT") {
+        unregisteredCount++;
+        unregisteredTokens.push({
+          token: tok,
+          uids: tokenToUids.get(tok) || [],
+          code: res.code,
+        });
+      } else {
+        otherErrorsCount++;
       }
     }
+  }
 
-  } catch (error) {
-    console.error("\n❌ Errore durante l'esecuzione della campagna:", error.message);
-    process.exit(1);
+  console.log("\n==========================================");
+  console.log("📋 REPORT FINALE ESECUZIONE CAMPAGNA");
+  console.log("==========================================");
+  console.log(`- Campagna ID: ${campaignId}`);
+  console.log(`- Modalità: ${isDryRun ? "DRY-RUN (Simulazione APNs)" : "REALE (Consegnato ad APNs)"}`);
+  console.log(`- Profili target orfani: ${recipients.length}`);
+  console.log(`- Token UNICI (device distinti): ${uniqueTokens.length}`);
+  console.log(`- Consegnati / Validi: ${deliveredCount}`);
+  console.log(`- Token UNREGISTERED (disinstallati): ${unregisteredCount}`);
+  console.log(`- Altri errori: ${otherErrorsCount}`);
+  console.log("==========================================\n");
+
+  if (unregisteredCount > 0) {
+    console.log(`ℹ️ I ${unregisteredCount} token disinstallati sono stati identificati.`);
+  }
+
+  if (isDryRun) {
+    console.log("🛡️ Dry-run completato. Nessuna notifica reale inviata.");
   }
 }
 
-main();
+main().catch((err) => {
+  console.error("Errore durante l'esecuzione:", err);
+  process.exit(1);
+});
