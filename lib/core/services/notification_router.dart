@@ -6,7 +6,10 @@ import '../../shared/models/user_model.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/social/presentation/screens/post_detail_screen.dart';
+import '../../features/profile/presentation/screens/create_profile_screen.dart';
+import '../../features/auth/presentation/screens/resume_onboarding_screen.dart';
 import '../../core/providers/ad_readiness_provider.dart';
+import 'analytics_service.dart';
 
 class NotificationRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -17,6 +20,60 @@ class NotificationRouter {
     if (context == null) return;
 
     print("Navigating to notification of type: $type with data: $data");
+
+    // Intercetta campagne e deep link di recupero
+    final deepLink = data['deepLink']?.toString();
+    final campaignId = data['campaignId']?.toString();
+    if (type == 'resume_onboarding' || deepLink == '/resume-onboarding' || deepLink == 'resume_onboarding') {
+      if (campaignId != null) {
+        await AnalyticsService.campagnaPushAperta(
+          campaignId: campaignId,
+          deepLink: deepLink,
+        );
+      }
+
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+          final dataDoc = userDoc.data();
+          final firstName = dataDoc != null ? (dataDoc['firstName'] as String?) : null;
+          final hasProfile = userDoc.exists && firstName != null && firstName.trim().isNotEmpty;
+
+          if (!hasProfile) {
+            navigatorKey.currentState?.pushAndRemoveUntil(
+              MaterialPageRoute(
+                settings: const RouteSettings(name: 'create_profile'),
+                builder: (_) => const CreateProfileScreen(),
+              ),
+              (route) => false,
+            );
+          } else {
+            if (ref != null) {
+              ref!.read(activeTabProvider.notifier).state = 0;
+            }
+          }
+        } catch (e) {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              settings: const RouteSettings(name: 'create_profile'),
+              builder: (_) => const CreateProfileScreen(),
+            ),
+          );
+        }
+      } else {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            settings: const RouteSettings(name: 'resume_onboarding'),
+            builder: (_) => ResumeOnboardingScreen(campaignId: campaignId),
+          ),
+        );
+      }
+      return;
+    }
 
     switch (type) {
       case 'chat_message':

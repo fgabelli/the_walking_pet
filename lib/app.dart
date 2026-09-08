@@ -68,7 +68,7 @@ class AuthWrapper extends ConsumerWidget {
           
           return profileAsync.when(
             data: (profile) {
-              if (profile != null) {
+              if (profile != null && profile.firstName.trim().isNotEmpty) {
                 if (profile.isBanned) {
                   return const BlockedUserScreen();
                 }

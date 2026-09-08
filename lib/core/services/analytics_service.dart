@@ -103,4 +103,26 @@ class AnalyticsService {
       debugPrint('[Analytics] invio fallito per "purchase": $e');
     }
   }
+
+  /// Evento generico per campagne e flussi speciali
+  static Future<void> logEvent(String name, [Map<String, Object>? parameters]) =>
+      _log(name, parameters);
+
+  /// Tracciamento apertura da push di campagna
+  static Future<void> campagnaPushAperta({
+    required String campaignId,
+    String? deepLink,
+  }) =>
+      _log('campaign_push_opened', {
+        'campaign_id': campaignId,
+        if (deepLink != null) 'deep_link': deepLink,
+      });
+
+  /// Tracciamento profilo completato a seguito di campagna
+  static Future<void> campagnaProfiloCompletato({
+    required String campaignId,
+  }) =>
+      _log('campaign_profile_completed', {
+        'campaign_id': campaignId,
+      });
 }

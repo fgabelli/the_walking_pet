@@ -51,6 +51,11 @@ const socialAutopublish = require("./socialAutopublish");
 exports.socialAutopublish = socialAutopublish.socialAutopublish;
 
 
+// ── Push Notification Campaigns ──
+const campaigns = require("./campaigns");
+exports.sendTargetedCampaignPush = campaigns.sendTargetedCampaignPush;
+
+
 // ── Business Claim Approval ──
 exports.onBusinessClaimUpdate = functions
   .region("europe-west1")
