@@ -13,11 +13,11 @@ import '../../../../core/providers/ad_readiness_provider.dart';
 import '../../../notifications/presentation/screens/notifications_screen.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 
-import '../../../../core/services/notification_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/services/purchase_service.dart';
 import '../../../../core/services/device_health_service.dart';
 import '../../../../core/services/analytics_service.dart';
+import '../../../../core/services/remote_config_service.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -40,13 +40,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     'profile',
   ];
 
-  final List<Widget> _screens = [
-    const CommunityScreen(),
-    const MapScreen(),
-    const PetMatcherScreen(),
-    const ChatListScreen(),
-    const ProfileScreen(),
-  ];
+  List<int> _getVisibleTabs(bool datingEnabled) =>
+      datingEnabled ? const [0, 1, 2, 3, 4] : const [0, 1, 3, 4];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -102,8 +97,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Future<void> _maybeStartTutorial() async {
     final completed = await TutorialService.isOnboardingCompleted();
     if (!completed && mounted) {
+      final datingEnabled = ref.read(datingEnabledProvider);
       TutorialService.startOnboarding(
         context: context,
+        datingEnabled: datingEnabled,
         tabSwitcher: (index) {
           if (mounted) {
             setState(() => _selectedIndex = index);
@@ -115,8 +112,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final datingEnabled = ref.watch(datingEnabledProvider);
+    final visibleTabs = _getVisibleTabs(datingEnabled);
     final activeTab = ref.watch(activeTabProvider);
-    if (activeTab != _selectedIndex) {
+
+    if (!datingEnabled && activeTab == 2) {
+      // Se dating è in pausa e arriva una richiesta su tab 2 (es. vecchia notifica),
+      // reindirizziamo su Social (0) per evitare di visualizzare la tab vuota.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(activeTabProvider.notifier).state = 0;
+        }
+      });
+    } else if (activeTab != _selectedIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -128,14 +136,31 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       });
     }
 
+    final screens = [
+      const CommunityScreen(),
+      const MapScreen(),
+      datingEnabled ? const PetMatcherScreen() : const SizedBox.shrink(),
+      const ChatListScreen(),
+      const ProfileScreen(),
+    ];
+
+    // Indice per la barra di navigazione: mappa l'indice reale sull'indice visibile
+    int navBarIndex = visibleTabs.indexOf(_selectedIndex);
+    if (navBarIndex == -1) {
+      navBarIndex = 0;
+    }
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
+        selectedIndex: navBarIndex,
+        onDestinationSelected: (barIndex) {
+          final realIndex = visibleTabs[barIndex];
+          _onItemTapped(realIndex);
+        },
         height: 64,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         destinations: [
@@ -165,12 +190,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             selectedIcon: const Icon(Icons.map),
             label: 'Mappa',
           ),
-          NavigationDestination(
-            key: TutorialKeys.datingTabKey,
-            icon: const Icon(Icons.favorite_border),
-            selectedIcon: const Icon(Icons.favorite),
-            label: 'Dating',
-          ),
+          if (datingEnabled)
+            NavigationDestination(
+              key: TutorialKeys.datingTabKey,
+              icon: const Icon(Icons.favorite_border),
+              selectedIcon: const Icon(Icons.favorite),
+              label: 'Dating',
+            ),
           NavigationDestination(
             key: TutorialKeys.chatTabKey,
             icon: Consumer(

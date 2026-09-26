@@ -4,6 +4,7 @@ import '../../../../core/services/dog_service.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/map_service.dart';
 import '../../../../core/services/matcher_service.dart';
+import '../../../../core/services/remote_config_service.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../shared/models/user_model.dart';
@@ -115,6 +116,13 @@ class MatcherNotifier extends StateNotifier<MatcherState> {
 
   /// Initial load of the user's own pets
   Future<void> _init() async {
+    final datingEnabled = _ref.read(datingEnabledProvider);
+    if (!datingEnabled) {
+      debugPrint('[MatcherProvider] Dating in pausa: skip caricamento deck e pet.');
+      state = state.copyWith(isLoading: false);
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final user = _ref.read(authServiceProvider).currentUser;
@@ -283,6 +291,12 @@ class MatcherNotifier extends StateNotifier<MatcherState> {
 
   /// Perform swipe
   Future<void> swipe({required String targetPetId, required bool isLike}) async {
+    final datingEnabled = _ref.read(datingEnabledProvider);
+    if (!datingEnabled) {
+      debugPrint('[MatcherProvider] Dating in pausa: swipe ignorato.');
+      return;
+    }
+
     final selectedPet = state.selectedPet;
     if (selectedPet == null) return;
 

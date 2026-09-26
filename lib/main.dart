@@ -14,6 +14,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'core/services/purchase_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/consent_service.dart';
+import 'core/services/remote_config_service.dart';
 import 'core/providers/ad_readiness_provider.dart';
 
 @pragma('vm:entry-point')
@@ -77,6 +78,16 @@ Future<void> main() async {
       debugPrint('Error requesting tracking authorization: $e');
     }
   });
+
+  // Initialize Remote Config (Feature flags)
+  try {
+    final remoteConfig = container.read(remoteConfigServiceProvider);
+    await remoteConfig.init(onDatingChanged: (enabled) {
+      container.read(datingEnabledProvider.notifier).state = enabled;
+    });
+  } catch (e) {
+    debugPrint('RemoteConfig Init Error: $e');
+  }
 
   // Initialize Providers & Services
   try {

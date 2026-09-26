@@ -2,11 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'analytics_service.dart';
+import 'remote_config_service.dart';
 
-final matcherServiceProvider = Provider<MatcherService>((ref) => MatcherService());
+final matcherServiceProvider = Provider<MatcherService>((ref) => MatcherService(
+  remoteConfigService: ref.watch(remoteConfigServiceProvider),
+));
 
 class MatcherService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+  final RemoteConfigService? _remoteConfigService;
+
+  MatcherService({
+    FirebaseFirestore? firestore,
+    RemoteConfigService? remoteConfigService,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _remoteConfigService = remoteConfigService;
 
   CollectionReference get _swipesCollection => _firestore.collection('pet_swipes');
   CollectionReference get _matchesCollection => _firestore.collection('pet_matches');
@@ -20,6 +30,12 @@ class MatcherService {
     required String targetUid,
     required bool isLike,
   }) async {
+    // Se il dating è in pausa, blocca a monte qualsiasi scrittura su Firestore
+    if (_remoteConfigService != null && !_remoteConfigService.isDatingEnabled) {
+      debugPrint('[MatcherService] Dating in pausa: swipe ignorato (nessuna scrittura su Firestore).');
+      return false;
+    }
+
     final swipeData = {
       'senderPetId': senderPetId,
       'targetPetId': targetPetId,

@@ -23,8 +23,9 @@ class TutorialService {
   static void startOnboarding({
     required BuildContext context,
     required void Function(int tabIndex) tabSwitcher,
+    bool datingEnabled = false,
   }) {
-    final targets = _buildTargets(tabSwitcher);
+    final targets = _buildTargets(tabSwitcher, datingEnabled: datingEnabled);
 
     // Track the current tab so we know when a switch is needed
     int currentTab = 0;
@@ -77,7 +78,7 @@ class TutorialService {
     });
   }
 
-  static List<TargetFocus> _buildTargets(void Function(int) tabSwitcher) {
+  static List<TargetFocus> _buildTargets(void Function(int) tabSwitcher, {bool datingEnabled = false}) {
     return [
       // ═══════════════════════════════════════════
       // STEP 1: Welcome overlay (no specific target)
@@ -281,22 +282,23 @@ class TutorialService {
       // ═══════════════════════════════════════════
 
       // STEP 11: Dating tab
-      TargetFocus(
-        identify: 'dating_tab',
-        keyTarget: TutorialKeys.datingTabKey,
-        enableOverlayTab: true,
-        alignSkip: Alignment.topCenter,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) => _buildCard(
-              icon: Icons.favorite,
-              title: 'Pet Dating',
-              body: 'Trova compagni di gioco e amici per il tuo pet con lo swipe!',
+      if (datingEnabled)
+        TargetFocus(
+          identify: 'dating_tab',
+          keyTarget: TutorialKeys.datingTabKey,
+          enableOverlayTab: true,
+          alignSkip: Alignment.topCenter,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) => _buildCard(
+                icon: Icons.favorite,
+                title: 'Pet Dating',
+                body: 'Trova compagni di gioco e amici per il tuo pet con lo swipe!',
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
 
       // ═══════════════════════════════════════════
       // TAB 3 — CHAT (auto-switch)

@@ -10,6 +10,7 @@ import '../../features/profile/presentation/screens/create_profile_screen.dart';
 import '../../features/auth/presentation/screens/resume_onboarding_screen.dart';
 import '../../core/providers/ad_readiness_provider.dart';
 import 'analytics_service.dart';
+import 'remote_config_service.dart';
 
 class NotificationRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -104,7 +105,12 @@ class NotificationRouter {
 
       case 'pet_match':
         if (ref != null) {
-          ref!.read(activeTabProvider.notifier).state = 2;
+          final datingEnabled = ref!.read(datingEnabledProvider);
+          if (datingEnabled) {
+            ref!.read(activeTabProvider.notifier).state = 2;
+          } else {
+            debugPrint('[NotificationRouter] pet_match ricevuto ma dating_enabled è false. Nessuna azione.');
+          }
         }
         break;
 

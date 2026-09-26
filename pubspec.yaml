@@ -21,6 +21,7 @@ dependencies:
   firebase_messaging: ^15.2.0
   firebase_database: ^11.3.0
   firebase_analytics: ^11.4.0
+  firebase_remote_config: ^5.5.0
   flutter_local_notifications: ^18.0.0 # Added
   
   # Google Sign In
