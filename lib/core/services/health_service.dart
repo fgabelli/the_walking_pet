@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/health_record_model.dart';
 import '../../shared/models/dog_model.dart';
@@ -53,8 +54,146 @@ class HealthService {
     });
   }
 
+  /// Calcola i record raccomandati per il protocollo sanitario.
+  /// Metodo statico puro per facilitare unit test e garantire zero date inventate.
+  static List<Map<String, dynamic>> calculateRecommendedProtocol({
+    required String petId,
+    required int age,
+    DateTime? birthDate,
+    DateTime? lastVaccinationDate,
+    DateTime? referenceDate,
+  }) {
+    final now = referenceDate ?? DateTime.now();
+    final List<Map<String, dynamic>> records = [];
+
+    // Protocollo cucciolo: valido solo se birthDate è fornita E il cane ha meno di 16 settimane (112 giorni)
+    final bool isPuppy = birthDate != null && now.difference(birthDate).inDays < 16 * 7;
+
+    if (isPuppy) {
+      // 1. Prima dose Core CEP + Lepto (~7-8 settimane: birthDate + 49 giorni)
+      final d1 = birthDate.add(const Duration(days: 49));
+      final bool d1IsPast = !d1.isAfter(now);
+      records.add({
+        'petId': petId,
+        'type': HealthRecordType.vaccine.name,
+        'title': '1° Vaccino Core (CEP + Lepto)',
+        'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
+        'date': Timestamp.fromDate(d1),
+        'nextDueDate': d1IsPast ? null : Timestamp.fromDate(d1),
+        'reminderEnabled': !d1IsPast,
+        'isCompleted': d1IsPast,
+        'notes': d1IsPast
+            ? 'Dose primaria cucciolo eseguita da calendario (7-8 settimane)'
+            : 'Protocollo raccomandato cucciolo (7-8 settimane) • Da confermare con il veterinario',
+      });
+
+      // 2. Secondo richiamo Core CEP + Lepto (~10-11 settimane: birthDate + 70 giorni)
+      final d2 = birthDate.add(const Duration(days: 70));
+      final bool d2IsPast = !d2.isAfter(now);
+      records.add({
+        'petId': petId,
+        'type': HealthRecordType.vaccine.name,
+        'title': '2° Richiamo Core (CEP + Lepto)',
+        'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
+        'date': Timestamp.fromDate(d2),
+        'nextDueDate': d2IsPast ? null : Timestamp.fromDate(d2),
+        'reminderEnabled': !d2IsPast,
+        'isCompleted': d2IsPast,
+        'notes': d2IsPast
+            ? 'Secondo richiamo cucciolo eseguito da calendario (10-11 settimane)'
+            : 'Protocollo raccomandato cucciolo (10-11 settimane) • Da confermare con il veterinario',
+      });
+
+      // 3. Terzo richiamo Core CEP + Lepto + Tosse canili (~14-16 settimane: birthDate + 98 giorni)
+      final d3 = birthDate.add(const Duration(days: 98));
+      final bool d3IsPast = !d3.isAfter(now);
+      records.add({
+        'petId': petId,
+        'type': HealthRecordType.vaccine.name,
+        'title': '3° Richiamo Core + Tosse dei Canili',
+        'specificName': 'CEP + Lepto + Bordetella bronchiseptica',
+        'date': Timestamp.fromDate(d3),
+        'nextDueDate': d3IsPast ? null : Timestamp.fromDate(d3),
+        'reminderEnabled': !d3IsPast,
+        'isCompleted': d3IsPast,
+        'notes': d3IsPast
+            ? 'Terzo richiamo cucciolo eseguito da calendario (14-16 settimane)'
+            : 'Protocollo raccomandato cucciolo (14-16 settimane) • Da confermare con il veterinario',
+      });
+    } else {
+      // Adulto o cucciolo senza birthDate: generare SOLO i due richiami dell'adulto
+      if (lastVaccinationDate != null) {
+        // Data ultimo vaccino fornita dall'utente:
+        // 1. Richiamo annuale: lastVaccinationDate + 365 giorni
+        final annualDue = lastVaccinationDate.add(const Duration(days: 365));
+        final bool isAnnualFuture = annualDue.isAfter(now);
+        records.add({
+          'petId': petId,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Annuale (Leptospirosi + Tosse Canili)',
+          'specificName': 'Leptospirosi e Bordetella',
+          'date': Timestamp.fromDate(lastVaccinationDate),
+          'nextDueDate': isAnnualFuture ? Timestamp.fromDate(annualDue) : null,
+          'reminderEnabled': isAnnualFuture,
+          'isCompleted': !isAnnualFuture,
+          'notes': isAnnualFuture
+              ? 'Richiamo annuale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
+              : 'Ultimo vaccino effettuato oltre un anno fa. Prenota il richiamo annuale con il veterinario.',
+        });
+
+        // 2. Richiamo triennale Core (CEP): lastVaccinationDate + 1095 giorni (3 anni)
+        final triennialDue = lastVaccinationDate.add(const Duration(days: 1095));
+        final bool isTriennialFuture = triennialDue.isAfter(now);
+        records.add({
+          'petId': petId,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Triennale Core (CEP)',
+          'specificName': 'Cimurro, Epatite, Parvovirosi',
+          'date': Timestamp.fromDate(lastVaccinationDate),
+          'nextDueDate': isTriennialFuture ? Timestamp.fromDate(triennialDue) : null,
+          'reminderEnabled': isTriennialFuture,
+          'isCompleted': !isTriennialFuture,
+          'notes': isTriennialFuture
+              ? 'Richiamo triennale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
+              : 'Richiamo triennale Core scaduto. Consulta il veterinario di fiducia.',
+        });
+      } else {
+        // Nessuna data fornita dall'utente: NESSUNA DATA INVENTATA!
+        // nextDueDate nullo, promemoria disabilitato, isCompleted: false.
+        const noteNoDate = 'Inserisci la data dell\'ultimo vaccino col veterinario per attivare i promemoria di richiamo.';
+
+        records.add({
+          'petId': petId,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Annuale (Leptospirosi + Tosse Canili)',
+          'specificName': 'Leptospirosi e Bordetella',
+          'date': Timestamp.fromDate(now),
+          'nextDueDate': null,
+          'reminderEnabled': false,
+          'isCompleted': false,
+          'notes': noteNoDate,
+        });
+
+        records.add({
+          'petId': petId,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Triennale Core (CEP)',
+          'specificName': 'Cimurro, Epatite, Parvovirosi',
+          'date': Timestamp.fromDate(now),
+          'nextDueDate': null,
+          'reminderEnabled': false,
+          'isCompleted': false,
+          'notes': noteNoDate,
+        });
+      }
+    }
+
+    return records;
+  }
+
   /// Generates initial recommended health protocol records for a newly created dog.
   /// Strictly idempotent: if any record already exists for [dog.id], does nothing.
+  /// Strictly adheres to the rule: No nextDueDate is generated unless derived from a user-supplied date.
   Future<void> precompileHealthProtocol(DogModel dog) async {
     if (dog.id.isEmpty) return;
 
@@ -65,108 +204,23 @@ class HealthService {
         return;
       }
 
-      final now = DateTime.now();
+      final recordsData = calculateRecommendedProtocol(
+        petId: dog.id,
+        age: dog.age,
+        birthDate: dog.birthDate,
+        lastVaccinationDate: dog.lastVaccinationDate,
+      );
+
       final batch = _firestore.batch();
-      const recommendedNote = 'Protocollo raccomandato • Da confermare con il veterinario';
-
-      if (dog.age == 0) {
-        // Cucciolo: protocollo primovaccinale
-        // 1. Prima dose Core CEP + Lepto (~7-8 settimane)
-        final doc1 = _healthRef.doc();
-        final date1 = now.add(const Duration(days: 14));
-        batch.set(doc1, {
-          'petId': dog.id,
-          'type': HealthRecordType.vaccine.name,
-          'title': '1° Vaccino Core (CEP + Lepto)',
-          'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
-          'date': Timestamp.fromDate(date1),
-          'nextDueDate': Timestamp.fromDate(date1),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
-
-        // 2. Secondo richiamo Core CEP + Lepto (~10-11 settimane, 21 giorni dopo)
-        final doc2 = _healthRef.doc();
-        final date2 = date1.add(const Duration(days: 21));
-        batch.set(doc2, {
-          'petId': dog.id,
-          'type': HealthRecordType.vaccine.name,
-          'title': '2° Richiamo Core (CEP + Lepto)',
-          'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
-          'date': Timestamp.fromDate(date2),
-          'nextDueDate': Timestamp.fromDate(date2),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
-
-        // 3. Terzo richiamo Core CEP + Lepto + Tosse canili (~14-16 settimane, 28 giorni dopo)
-        final doc3 = _healthRef.doc();
-        final date3 = date2.add(const Duration(days: 28));
-        batch.set(doc3, {
-          'petId': dog.id,
-          'type': HealthRecordType.vaccine.name,
-          'title': '3° Richiamo Core + Tosse dei Canili',
-          'specificName': 'CEP + Lepto + Bordetella bronchiseptica',
-          'date': Timestamp.fromDate(date3),
-          'nextDueDate': Timestamp.fromDate(date3),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
-      } else {
-        // Adulto: protocollo di mantenimento annuale e triennale
-        // 1. Richiamo annuale Leptospirosi e Tosse dei canili (+365 giorni)
-        final doc1 = _healthRef.doc();
-        final date1 = now.add(const Duration(days: 365));
-        batch.set(doc1, {
-          'petId': dog.id,
-          'type': HealthRecordType.vaccine.name,
-          'title': 'Richiamo Annuale (Leptospirosi + Tosse Canili)',
-          'specificName': 'Leptospirosi e Bordetella',
-          'date': Timestamp.fromDate(date1),
-          'nextDueDate': Timestamp.fromDate(date1),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
-
-        // 2. Richiamo triennale Core CEP (+1095 giorni / 3 anni)
-        final doc2 = _healthRef.doc();
-        final date2 = now.add(const Duration(days: 1095));
-        batch.set(doc2, {
-          'petId': dog.id,
-          'type': HealthRecordType.vaccine.name,
-          'title': 'Richiamo Triennale Core (CEP)',
-          'specificName': 'Cimurro, Epatite, Parvovirosi',
-          'date': Timestamp.fromDate(date2),
-          'nextDueDate': Timestamp.fromDate(date2),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
-
-        // 3. Profilassi stagionale Leishmaniosi / Antiparassitari (+180 giorni)
-        final doc3 = _healthRef.doc();
-        final date3 = now.add(const Duration(days: 180));
-        batch.set(doc3, {
-          'petId': dog.id,
-          'type': HealthRecordType.treatment.name,
-          'title': 'Profilassi Antiparassitaria / Leishmaniosi',
-          'specificName': 'Collare o spot-on repellente e test annuale',
-          'date': Timestamp.fromDate(date3),
-          'nextDueDate': Timestamp.fromDate(date3),
-          'reminderEnabled': true,
-          'isCompleted': false,
-          'notes': recommendedNote,
-        });
+      for (final data in recordsData) {
+        final doc = _healthRef.doc();
+        batch.set(doc, data);
       }
 
       await batch.commit();
     } catch (e) {
       // Non-blocking: fail gracefully without crashing dog creation
-      print('Errore durante la precompilazione del protocollo sanitario: $e');
+      debugPrint('Errore durante la precompilazione del protocollo sanitario: $e');
     }
   }
 }

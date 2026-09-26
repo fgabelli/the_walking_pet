@@ -1,13 +1,15 @@
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:the_walking_pet/core/providers/ad_readiness_provider.dart';
+import 'package:the_walking_pet/core/services/health_service.dart';
 import 'package:the_walking_pet/shared/models/dog_model.dart';
 import 'package:the_walking_pet/shared/models/health_record_model.dart';
 import 'package:the_walking_pet/features/health_record/data/services/health_record_pdf_service.dart';
 
 void main() {
-  group('HealthRecordModel tests', () {
+  group('DogModel tests', () {
     test('copyWith and defaults include veterinarianBusinessId and reminder14dSent', () {
       final now = DateTime(2026, 9, 26);
       final record = HealthRecordModel(
@@ -55,6 +57,231 @@ void main() {
       expect(map['veterinarianBusinessId'], 'place_abc');
       expect(map['reminder14dSent'], isTrue);
       expect(map['type'], 'vaccine');
+    });
+
+    test('DogModel formattedAge calculates puppy weeks, months, or years', () {
+      final now = DateTime.now();
+
+      // Cucciolo di 8 settimane
+      final puppy = DogModel(
+        id: 'p1',
+        ownerId: 'u1',
+        name: 'Boby',
+        breed: 'Labrador',
+        age: 0,
+        size: DogSize.medium,
+        energyLevel: 3,
+        character: [],
+        createdAt: now,
+        birthDate: now.subtract(const Duration(days: 56)),
+      );
+      expect(puppy.formattedAge, '8 settimane');
+
+      // Cucciolo di 7 mesi
+      final dog7m = puppy.copyWith(birthDate: now.subtract(const Duration(days: 215)));
+      expect(dog7m.formattedAge, '7 mesi');
+
+      // Cane di 3 anni con birthDate
+      final dog3y = puppy.copyWith(birthDate: now.subtract(const Duration(days: 365 * 3 + 10)));
+      expect(dog3y.formattedAge, '3 anni');
+
+      // Cane senza birthDate
+      DogModel makeDogNoBirth(int age) => DogModel(
+        id: 'p0',
+        ownerId: 'u1',
+        name: 'Boby',
+        breed: 'Labrador',
+        age: age,
+        size: DogSize.medium,
+        energyLevel: 3,
+        character: [],
+        createdAt: now,
+      );
+      expect(makeDogNoBirth(0).formattedAge, '< 1 anno');
+      expect(makeDogNoBirth(1).formattedAge, '1 anno');
+      expect(makeDogNoBirth(4).formattedAge, '4 anni');
+    });
+
+    test('DogModel toFirestore serializes birthDate and lastVaccinationDate', () {
+      final birth = DateTime(2026, 1, 15);
+      final lastVac = DateTime(2026, 6, 20);
+      final dog = DogModel(
+        id: 'd1',
+        ownerId: 'u1',
+        name: 'Milo',
+        breed: 'Beagle',
+        age: 0,
+        size: DogSize.small,
+        energyLevel: 3,
+        character: [],
+        createdAt: DateTime(2026, 9, 26),
+        birthDate: birth,
+        lastVaccinationDate: lastVac,
+      );
+
+      final map = dog.toFirestore();
+      expect(map['birthDate'], Timestamp.fromDate(birth));
+      expect(map['lastVaccinationDate'], Timestamp.fromDate(lastVac));
+    });
+  });
+
+  group('HealthService Protocol Precompilation Rules', () {
+    final refDate = DateTime(2026, 9, 26);
+
+    test('Dog without birthDate and without lastVaccinationDate: zero invented dates', () {
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-1',
+        age: 3,
+        birthDate: null,
+        lastVaccinationDate: null,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 2, reason: 'Solo 2 richiami adulti');
+      // Nessun antiparassitario
+      expect(records.any((r) => r['type'] == HealthRecordType.treatment.name), isFalse);
+
+      for (final r in records) {
+        expect(r['nextDueDate'], isNull, reason: 'Nessuna data inventata se utente non la fornisce');
+        expect(r['reminderEnabled'], isFalse, reason: 'Promemoria disabilitato se data non fornita');
+        expect(r['isCompleted'], isFalse);
+      }
+    });
+
+    test('Dog age=0 but NO birthDate: does NOT generate puppy primary series', () {
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-puppy-nodate',
+        age: 0,
+        birthDate: null,
+        lastVaccinationDate: null,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 2, reason: 'Senza data nascita non si ipotizza il ciclo cucciolo');
+      for (final r in records) {
+        expect(r['nextDueDate'], isNull);
+        expect(r['reminderEnabled'], isFalse);
+      }
+    });
+
+    test('Puppy < 16 weeks with birthDate generates primary series strictly from birthDate', () {
+      // Cucciolo nato 6 settimane fa (42 giorni fa)
+      final birth = refDate.subtract(const Duration(days: 42));
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-puppy',
+        age: 0,
+        birthDate: birth,
+        lastVaccinationDate: null,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 3, reason: '3 dosi primovaccinali del cucciolo');
+      expect(records.any((r) => r['type'] == HealthRecordType.treatment.name), isFalse);
+
+      // Dose 1: a 49 giorni dalla nascita (tra 7 giorni)
+      final d1 = records[0];
+      expect(d1['title'], contains('1° Vaccino Core'));
+      expect(d1['date'], Timestamp.fromDate(birth.add(const Duration(days: 49))));
+      expect(d1['nextDueDate'], Timestamp.fromDate(birth.add(const Duration(days: 49))));
+      expect(d1['reminderEnabled'], isTrue);
+      expect(d1['isCompleted'], isFalse);
+
+      // Dose 2: a 70 giorni dalla nascita
+      final d2 = records[1];
+      expect(d2['title'], contains('2° Richiamo Core'));
+      expect(d2['nextDueDate'], Timestamp.fromDate(birth.add(const Duration(days: 70))));
+      expect(d2['reminderEnabled'], isTrue);
+
+      // Dose 3: a 98 giorni dalla nascita
+      final d3 = records[2];
+      expect(d3['title'], contains('3° Richiamo Core'));
+      expect(d3['nextDueDate'], Timestamp.fromDate(birth.add(const Duration(days: 98))));
+      expect(d3['reminderEnabled'], isTrue);
+    });
+
+    test('Puppy of 11 weeks: past doses are marked completed without reminder', () {
+      // Cucciolo nato 11 settimane fa (77 giorni fa)
+      final birth = refDate.subtract(const Duration(days: 77));
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-puppy-11w',
+        age: 0,
+        birthDate: birth,
+        lastVaccinationDate: null,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 3);
+      // Dose 1 (49d) è passata
+      expect(records[0]['isCompleted'], isTrue);
+      expect(records[0]['nextDueDate'], isNull);
+      expect(records[0]['reminderEnabled'], isFalse);
+
+      // Dose 2 (70d) è passata
+      expect(records[1]['isCompleted'], isTrue);
+      expect(records[1]['nextDueDate'], isNull);
+      expect(records[1]['reminderEnabled'], isFalse);
+
+      // Dose 3 (98d) è futura (tra 21 giorni)
+      expect(records[2]['isCompleted'], isFalse);
+      expect(records[2]['nextDueDate'], Timestamp.fromDate(birth.add(const Duration(days: 98))));
+      expect(records[2]['reminderEnabled'], isTrue);
+    });
+
+    test('Adult with valid lastVaccinationDate calculates annual (365d) and triennial (1095d)', () {
+      // Ultimo vaccino 60 giorni fa
+      final lastVac = refDate.subtract(const Duration(days: 60));
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-adult',
+        age: 3,
+        birthDate: null,
+        lastVaccinationDate: lastVac,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 2);
+      expect(records.any((r) => r['type'] == HealthRecordType.treatment.name), isFalse);
+
+      // Annuale
+      final annual = records[0];
+      final expectedAnnual = lastVac.add(const Duration(days: 365));
+      expect(annual['title'], contains('Annuale'));
+      expect(annual['date'], Timestamp.fromDate(lastVac));
+      expect(annual['nextDueDate'], Timestamp.fromDate(expectedAnnual));
+      expect(annual['reminderEnabled'], isTrue);
+      expect(annual['isCompleted'], isFalse);
+
+      // Triennale Core
+      final triennial = records[1];
+      final expectedTriennial = lastVac.add(const Duration(days: 1095));
+      expect(triennial['title'], contains('Triennale Core'));
+      expect(triennial['date'], Timestamp.fromDate(lastVac));
+      expect(triennial['nextDueDate'], Timestamp.fromDate(expectedTriennial));
+      expect(triennial['reminderEnabled'], isTrue);
+      expect(triennial['isCompleted'], isFalse);
+    });
+
+    test('Adult with expired lastVaccinationDate (>365d): annual has no future nextDueDate', () {
+      // Ultimo vaccino 400 giorni fa
+      final lastVac = refDate.subtract(const Duration(days: 400));
+      final records = HealthService.calculateRecommendedProtocol(
+        petId: 'pet-expired',
+        age: 4,
+        birthDate: null,
+        lastVaccinationDate: lastVac,
+        referenceDate: refDate,
+      );
+
+      expect(records.length, 2);
+      final annual = records[0];
+      expect(annual['nextDueDate'], isNull, reason: 'Scadenza passata non deve programmare promemoria futuri');
+      expect(annual['reminderEnabled'], isFalse);
+      expect(annual['isCompleted'], isTrue);
+
+      final triennial = records[1];
+      // Triennale (1095 - 400 = 695 giorni futuri)
+      expect(triennial['nextDueDate'], isNotNull);
+      expect(triennial['reminderEnabled'], isTrue);
+      expect(triennial['isCompleted'], isFalse);
     });
   });
 

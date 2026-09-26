@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../shared/data/breeds_data.dart'; // Added
@@ -37,6 +38,9 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
   late double _energyLevel;
   late List<String> _selectedCharacter;
   
+  DateTime? _birthDate;
+  DateTime? _lastVaccinationDate;
+
   File? _imageFile;
   final _picker = ImagePicker();
 
@@ -71,6 +75,58 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
     _energyLevel = widget.dogToEdit?.energyLevel.toDouble() ?? 3.0;
     _selectedCharacter = List.from(widget.dogToEdit?.character ?? []);
     _selectedMediaUrls = List.from(widget.dogToEdit?.mediaUrls ?? []);
+
+    _birthDate = widget.dogToEdit?.birthDate;
+    _lastVaccinationDate = widget.dogToEdit?.lastVaccinationDate;
+  }
+
+  Future<void> _selectBirthDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _birthDate ?? now,
+      firstDate: DateTime(2000),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        _birthDate = picked;
+        final ageYears = now.difference(picked).inDays ~/ 365;
+        _ageController.text = ageYears.toString();
+      });
+    }
+  }
+
+  Future<void> _selectLastVaccinationDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _lastVaccinationDate ?? now,
+      firstDate: DateTime(2010),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        _lastVaccinationDate = picked;
+      });
+    }
+  }
+
+  String get _formattedSelectedAge {
+    if (_birthDate == null) return '';
+    final days = DateTime.now().difference(_birthDate!).inDays;
+    if (days < 0) return 'Età calcolata: 0 settimane';
+    if (days < 16 * 7) {
+      final weeks = days ~/ 7;
+      return 'Età calcolata: $weeks ${weeks == 1 ? "settimana" : "settimane"} (Cucciolo)';
+    }
+    if (days < 365) {
+      final months = (days / 30.4375).floor();
+      final safeMonths = months < 1 ? 1 : months;
+      return 'Età calcolata: $safeMonths ${safeMonths == 1 ? "mese" : "mesi"}';
+    }
+    final years = days ~/ 365;
+    return 'Età calcolata: $years ${years == 1 ? "anno" : "anni"}';
   }
 
   @override
@@ -83,15 +139,6 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
     _microchipController.dispose();
     _bloodTypeController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
   }
 
   Future<void> _openPhotoPicker() async {
@@ -162,6 +209,8 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           existingMediaUrls: _selectedMediaUrls,
           newMediaFiles: _newMediaFiles,
           isSterilized: _isSterilized,
+          birthDate: _birthDate,
+          lastVaccinationDate: _lastVaccinationDate,
         );
       } else {
         await controller.createDog(
@@ -181,6 +230,8 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
           existingMediaUrls: _selectedMediaUrls,
           newMediaFiles: _newMediaFiles,
           isSterilized: _isSterilized,
+          birthDate: _birthDate,
+          lastVaccinationDate: _lastVaccinationDate,
         );
       }
           
@@ -370,6 +421,45 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
               ),
               const SizedBox(height: 16),
 
+              // Data di Nascita
+              InkWell(
+                onTap: _selectBirthDate,
+                borderRadius: BorderRadius.circular(12),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Data di nascita (suggerita per il libretto)',
+                    prefixIcon: const Icon(Icons.cake_outlined),
+                    helperText: _birthDate != null
+                        ? _formattedSelectedAge
+                        : 'Calcola in automatico l\'età e il protocollo vaccinale',
+                    helperStyle: TextStyle(
+                      color: _birthDate != null ? AppColors.primary : Colors.grey.shade600,
+                      fontWeight: _birthDate != null ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    suffixIcon: _birthDate != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _birthDate = null;
+                              });
+                            },
+                          )
+                        : const Icon(Icons.calendar_today, size: 20),
+                  ),
+                  child: Text(
+                    _birthDate != null
+                        ? DateFormat('dd/MM/yyyy').format(_birthDate!)
+                        : 'Seleziona data di nascita',
+                    style: TextStyle(
+                      color: _birthDate != null ? Colors.black87 : Colors.grey.shade500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Age
               TextFormField(
                 controller: _ageController,
@@ -377,12 +467,46 @@ class _CreateDogProfileScreenState extends ConsumerState<CreateDogProfileScreen>
                 decoration: const InputDecoration(
                   labelText: 'Età (anni)',
                   prefixIcon: Icon(Icons.cake),
+                  helperText: 'Calcolata dalla data di nascita, o inserisci direttamente gli anni',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Inserisci l\'età';
                   if (int.tryParse(value) == null) return 'Inserisci un numero valido';
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+
+              // Data Ultimo Vaccino (facoltativa)
+              InkWell(
+                onTap: _selectLastVaccinationDate,
+                borderRadius: BorderRadius.circular(12),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Data ultimo vaccino (facoltativa)',
+                    prefixIcon: const Icon(Icons.vaccines_outlined),
+                    helperText: 'Per calcolare i richiami annuali o triennali nel libretto',
+                    suffixIcon: _lastVaccinationDate != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _lastVaccinationDate = null;
+                              });
+                            },
+                          )
+                        : const Icon(Icons.calendar_today, size: 20),
+                  ),
+                  child: Text(
+                    _lastVaccinationDate != null
+                        ? DateFormat('dd/MM/yyyy').format(_lastVaccinationDate!)
+                        : 'Nessuna data registrata (da concordare col veterinario)',
+                    style: TextStyle(
+                      color: _lastVaccinationDate != null ? Colors.black87 : Colors.grey.shade500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               

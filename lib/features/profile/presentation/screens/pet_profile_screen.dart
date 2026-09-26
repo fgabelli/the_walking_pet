@@ -638,7 +638,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       ),
       child: Row(
         children: [
-          _InfoTile(icon: Icons.cake, label: 'Età', value: '${dog.age} anni'),
+          _InfoTile(icon: Icons.cake, label: 'Età', value: dog.formattedAge),
           _divider(),
           _InfoTile(
             icon: dog.gender == DogGender.male ? Icons.male : Icons.female,

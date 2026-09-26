@@ -147,7 +147,7 @@ class HealthRecordListScreen extends ConsumerWidget {
                     children: [
                       Text(dog.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
-                      Text('${dog.breed} • ${dog.age} anni', style: TextStyle(color: Colors.grey.shade600)),
+                      Text('${dog.breed} • ${dog.formattedAge}', style: TextStyle(color: Colors.grey.shade600)),
                     ],
                   ),
                 ),
@@ -427,22 +427,48 @@ class _HealthRecordCard extends ConsumerWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                 const SizedBox(width: 4),
-                 Text('Fatto il: ${dateFormat.format(record.date)}', style: const TextStyle(fontSize: 13)),
-                 if (record.nextDueDate != null) ...[
-                   const SizedBox(width: 16),
-                   Icon(Icons.event_repeat, size: 16, color: isOverdue ? Colors.red : Colors.green),
-                   const SizedBox(width: 4),
-                   Text(
-                     'Scade: ${dateFormat.format(record.nextDueDate!)}',
-                     style: TextStyle(
-                       color: isOverdue ? Colors.red : Colors.green,
-                       fontWeight: FontWeight.bold,
-                       fontSize: 13,
-                     ),
-                   ),
-                 ],
+                if (record.isCompleted) ...[
+                  const Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+                  const SizedBox(width: 4),
+                  Text('Fatto il: ${dateFormat.format(record.date)}', style: const TextStyle(fontSize: 13)),
+                  if (record.nextDueDate != null) ...[
+                    const SizedBox(width: 16),
+                    Icon(Icons.event_repeat, size: 16, color: isOverdue ? Colors.red : Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Scade: ${dateFormat.format(record.nextDueDate!)}',
+                      style: TextStyle(
+                        color: isOverdue ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ] else ...[
+                  if (record.nextDueDate != null) ...[
+                    Icon(Icons.event_repeat, size: 16, color: isOverdue ? Colors.red : Colors.orange.shade800),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Previsto per il: ${dateFormat.format(record.nextDueDate!)}',
+                      style: TextStyle(
+                        color: isOverdue ? Colors.red : Colors.orange.shade800,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ] else ...[
+                    Icon(Icons.edit_calendar, size: 16, color: Colors.blueGrey.shade600),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Da programmare col veterinario',
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade700,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ],
               ],
             ),
             if (record.veterinarianName != null && record.veterinarianName!.isNotEmpty) ...[

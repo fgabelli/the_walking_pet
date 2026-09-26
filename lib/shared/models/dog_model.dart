@@ -43,6 +43,32 @@ class DogModel {
   final List<String> intolerances;
   final List<String> pathologies;
   final bool isSterilized;
+  final DateTime? birthDate;
+  final DateTime? lastVaccinationDate;
+
+  /// Formatta l'età del cane: se cucciolo (< 16 settimane) in settimane,
+  /// se minore di 1 anno in mesi, altrimenti in anni.
+  String get formattedAge {
+    if (birthDate != null) {
+      final now = DateTime.now();
+      final diff = now.difference(birthDate!);
+      final totalDays = diff.inDays;
+      if (totalDays < 0) return '0 settimane';
+      if (totalDays < 16 * 7) {
+        final weeks = totalDays ~/ 7;
+        return '$weeks ${weeks == 1 ? "settimana" : "settimane"}';
+      }
+      if (totalDays < 365) {
+        final months = (totalDays / 30.4375).floor();
+        final safeMonths = months < 1 ? 1 : months;
+        return '$safeMonths ${safeMonths == 1 ? "mese" : "mesi"}';
+      }
+      final years = totalDays ~/ 365;
+      return '$years ${years == 1 ? "anno" : "anni"}';
+    }
+    if (age == 0) return '< 1 anno';
+    return '$age ${age == 1 ? "anno" : "anni"}';
+  }
 
   DogModel({
     required this.id,
@@ -65,6 +91,8 @@ class DogModel {
     this.intolerances = const [],
     this.pathologies = const [],
     this.isSterilized = false,
+    this.birthDate,
+    this.lastVaccinationDate,
   });
 
   factory DogModel.fromFirestore(DocumentSnapshot doc) {
@@ -106,6 +134,8 @@ class DogModel {
       intolerances: List<String>.from(data['intolerances'] ?? []),
       pathologies: List<String>.from(data['pathologies'] ?? []),
       isSterilized: data['isSterilized'] ?? false,
+      birthDate: (data['birthDate'] as Timestamp?)?.toDate(),
+      lastVaccinationDate: (data['lastVaccinationDate'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -131,6 +161,8 @@ class DogModel {
       'intolerances': intolerances,
       'pathologies': pathologies,
       'isSterilized': isSterilized,
+      'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
+      'lastVaccinationDate': lastVaccinationDate != null ? Timestamp.fromDate(lastVaccinationDate!) : null,
     };
   }
 
@@ -155,6 +187,8 @@ class DogModel {
     List<String>? intolerances,
     List<String>? pathologies,
     bool? isSterilized,
+    DateTime? birthDate,
+    DateTime? lastVaccinationDate,
   }) {
     return DogModel(
       id: id ?? this.id,
@@ -177,6 +211,8 @@ class DogModel {
       intolerances: intolerances ?? this.intolerances,
       pathologies: pathologies ?? this.pathologies,
       isSterilized: isSterilized ?? this.isSterilized,
+      birthDate: birthDate ?? this.birthDate,
+      lastVaccinationDate: lastVaccinationDate ?? this.lastVaccinationDate,
     );
   }
 }

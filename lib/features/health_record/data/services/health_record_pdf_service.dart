@@ -98,7 +98,7 @@ class HealthRecordPdfService {
                   pw.SizedBox(height: 6),
                   pw.Row(
                     children: [
-                      pw.Expanded(child: _buildInfoItem('Età stimata:', '${dog.age} ${dog.age == 1 ? "anno" : "anni"}')),
+                      pw.Expanded(child: _buildInfoItem('Età:', dog.formattedAge)),
                       pw.Expanded(child: _buildInfoItem('Microchip:', dog.microchipNumber?.isNotEmpty == true ? dog.microchipNumber! : 'Non registrato')),
                       pw.Expanded(child: _buildInfoItem('Sterilizzato:', dog.isSterilized ? 'Sì' : 'No')),
                     ],

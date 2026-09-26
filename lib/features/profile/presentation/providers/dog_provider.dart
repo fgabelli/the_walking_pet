@@ -45,6 +45,8 @@ class DogController extends StateNotifier<DogState> {
     String? microchipNumber,
     String? bloodType,
     bool isSterilized = false,
+    DateTime? birthDate,
+    DateTime? lastVaccinationDate,
     List<String> existingMediaUrls = const [],
     List<File> newMediaFiles = const [],
   }) async {
@@ -71,6 +73,8 @@ class DogController extends StateNotifier<DogState> {
         microchipNumber: microchipNumber,
         bloodType: bloodType,
         isSterilized: isSterilized,
+        birthDate: birthDate,
+        lastVaccinationDate: lastVaccinationDate,
       );
 
       // 2. Crea il documento in Firestore per ottenere l'ID
@@ -130,6 +134,8 @@ class DogController extends StateNotifier<DogState> {
     String? microchipNumber,
     String? bloodType,
     bool isSterilized = false,
+    DateTime? birthDate,
+    DateTime? lastVaccinationDate,
     List<String> existingMediaUrls = const [],
     List<File> newMediaFiles = const [],
   }) async {
@@ -184,6 +190,8 @@ class DogController extends StateNotifier<DogState> {
         microchipNumber: microchipNumber,
         bloodType: bloodType,
         isSterilized: isSterilized,
+        birthDate: birthDate,
+        lastVaccinationDate: lastVaccinationDate,
       );
 
       // 4. Aggiorna in Firestore
