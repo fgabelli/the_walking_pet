@@ -318,14 +318,14 @@ class NotificationService with WidgetsBindingObserver {
     );
 
     try {
-      // 7 days before
-      final reminderDate = nextDueDate.subtract(const Duration(days: 7));
+      // 14 days before
+      final reminderDate = nextDueDate.subtract(const Duration(days: 14));
       if (reminderDate.isAfter(DateTime.now())) {
         final tzReminderDate = tz.TZDateTime.from(reminderDate, tz.local);
         await _localNotifications.zonedSchedule(
           reminderId,
           '💉 Richiamo in arrivo',
-          'Richiamo $vaccineName per $petName tra 7 giorni',
+          'Richiamo $vaccineName per $petName tra 14 giorni',
           tzReminderDate,
           details,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

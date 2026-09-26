@@ -36,6 +36,8 @@ class HealthRecordModel {
   final bool reminderEnabled; // Send push notification for nextDueDate
   final bool isCompleted; // Mark if this record is a historical fact or a planned future task
   final String? veterinarianName;
+  final String? veterinarianBusinessId; // Link to PetBusinessModel / Google Places
+  final bool? reminder14dSent; // Track 14-day server push reminder
   final String? notes;
   final String? attachmentUrl;
 
@@ -50,6 +52,8 @@ class HealthRecordModel {
     this.reminderEnabled = true,
     this.isCompleted = true,
     this.veterinarianName,
+    this.veterinarianBusinessId,
+    this.reminder14dSent,
     this.notes,
     this.attachmentUrl,
   });
@@ -72,6 +76,8 @@ class HealthRecordModel {
       reminderEnabled: data['reminderEnabled'] ?? true,
       isCompleted: data['isCompleted'] ?? true,
       veterinarianName: data['veterinarianName'],
+      veterinarianBusinessId: data['veterinarianBusinessId'],
+      reminder14dSent: data['reminder14dSent'],
       notes: data['notes'],
       attachmentUrl: data['attachmentUrl'],
     );
@@ -88,6 +94,8 @@ class HealthRecordModel {
       'reminderEnabled': reminderEnabled,
       'isCompleted': isCompleted,
       'veterinarianName': veterinarianName,
+      'veterinarianBusinessId': veterinarianBusinessId,
+      'reminder14dSent': reminder14dSent,
       'notes': notes,
       'attachmentUrl': attachmentUrl,
     };
@@ -104,6 +112,8 @@ class HealthRecordModel {
     bool? reminderEnabled,
     bool? isCompleted,
     String? veterinarianName,
+    String? veterinarianBusinessId,
+    bool? reminder14dSent,
     String? notes,
     String? attachmentUrl,
   }) {
@@ -118,6 +128,8 @@ class HealthRecordModel {
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       isCompleted: isCompleted ?? this.isCompleted,
       veterinarianName: veterinarianName ?? this.veterinarianName,
+      veterinarianBusinessId: veterinarianBusinessId ?? this.veterinarianBusinessId,
+      reminder14dSent: reminder14dSent ?? this.reminder14dSent,
       notes: notes ?? this.notes,
       attachmentUrl: attachmentUrl ?? this.attachmentUrl,
     );

@@ -397,20 +397,22 @@ class MapStateController extends StateNotifier<MapState> {
     try {
       final isEnabled = await _locationService.isLocationServiceEnabled();
       if (!isEnabled) {
+        await _applyFallbackPosition();
         state = state.copyWith(
           isLoading: false,
           isLocationEnabled: false,
-          error: 'Servizi di localizzazione disabilitati',
+          error: null,
         );
         return;
       }
 
       final hasPermission = await _locationService.requestPermission();
       if (!hasPermission) {
+        await _applyFallbackPosition();
         state = state.copyWith(
           isLoading: false,
           isLocationEnabled: false,
-          error: 'Permessi di localizzazione negati',
+          error: null,
         );
         return;
       }

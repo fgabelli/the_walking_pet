@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/dog_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/health_service.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'profile_provider.dart'; // Import for storageServiceProvider
@@ -97,6 +99,13 @@ class DogController extends StateNotifier<DogState> {
         mediaUrls: allMediaUrls,
       );
       await _dogService.updateDog(updatedDog);
+
+      // 5. Precompila il protocollo sanitario iniziale raccomandato (idempotente)
+      try {
+        await _ref.read(healthServiceProvider).precompileHealthProtocol(updatedDog);
+      } catch (e) {
+        debugPrint('Errore precompilazione libretto per ${updatedDog.name}: $e');
+      }
 
       state = DogState(isLoading: false);
     } catch (e) {
@@ -211,4 +220,11 @@ final dogControllerProvider = StateNotifierProvider<DogController, DogState>((re
 final dogByIdProvider = FutureProvider.family<DogModel?, String>((ref, dogId) async {
   if (dogId.isEmpty) return null;
   return ref.watch(dogServiceProvider).getDogById(dogId);
+});
+
+/// Stream of current user's dogs
+final currentUserDogsProvider = StreamProvider<List<DogModel>>((ref) {
+  final user = ref.watch(authServiceProvider).currentUser;
+  if (user == null) return Stream.value([]);
+  return ref.watch(dogServiceProvider).getDogsStreamByOwnerId(user.uid);
 });

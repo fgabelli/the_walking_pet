@@ -27,7 +27,7 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   /// Le tab vivono dentro un IndexedStack e non passano dal Navigator:
   /// l'observer in app.dart non le vedrebbe mai, vanno inviate a mano.
@@ -101,6 +101,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       TutorialService.startOnboarding(
         context: context,
         datingEnabled: datingEnabled,
+        initialTab: _selectedIndex,
         tabSwitcher: (index) {
           if (mounted) {
             setState(() => _selectedIndex = index);

@@ -24,11 +24,12 @@ class TutorialService {
     required BuildContext context,
     required void Function(int tabIndex) tabSwitcher,
     bool datingEnabled = false,
+    int initialTab = 0,
   }) {
     final targets = _buildTargets(tabSwitcher, datingEnabled: datingEnabled);
 
     // Track the current tab so we know when a switch is needed
-    int currentTab = 0;
+    int currentTab = initialTab;
 
     final tutorial = TutorialCoachMark(
       targets: targets,

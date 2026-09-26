@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../shared/models/pet_business_model.dart';
 import '../../../../core/services/pet_business_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -44,6 +46,21 @@ class _PetBusinessDetailSheetState extends State<_PetBusinessDetailSheet> {
         _loadingDetails = false;
       });
     }
+  }
+
+  void _logVetContact(PetBusinessModel biz, String contactType) {
+    if (biz.category != PetBusinessCategory.vetClinic) return;
+    final user = FirebaseAuth.instance.currentUser;
+    FirebaseFirestore.instance.collection('vet_engagements').add({
+      'type': 'vet_contacted',
+      'userId': user?.uid,
+      'businessId': biz.id,
+      'businessName': biz.name,
+      'contactType': contactType,
+      'timestamp': FieldValue.serverTimestamp(),
+    }).catchError((e) {
+      debugPrint('Error logging vet_contacted: $e');
+    });
   }
 
   @override
@@ -361,6 +378,7 @@ class _PetBusinessDetailSheetState extends State<_PetBusinessDetailSheet> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
+                          _logVetContact(biz, 'phone');
                           launchUrl(Uri.parse('tel:$phone'));
                         },
                         style: ElevatedButton.styleFrom(
@@ -382,6 +400,7 @@ class _PetBusinessDetailSheetState extends State<_PetBusinessDetailSheet> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
+                          _logVetContact(biz, 'directions');
                           launchUrl(Uri.parse(mapsUrl));
                         },
                         style: ElevatedButton.styleFrom(

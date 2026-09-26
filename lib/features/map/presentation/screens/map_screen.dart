@@ -36,6 +36,8 @@ import '../../../profile/data/visitor_service.dart'; // Added Visitor Service
 import '../../../../shared/constants/map_markers.dart';
 import '../../../../features/profile/presentation/screens/privacy_settings_screen.dart'; // Added
 import '../../../chatbot/presentation/screens/chatbot_screen.dart'; // Chatbot
+import '../../../health_record/presentation/screens/health_record_list_screen.dart';
+import '../../../profile/presentation/screens/create_dog_profile_screen.dart';
 
 
 import '../../../../core/constants/tutorial_keys.dart';
@@ -592,8 +594,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           if (mapState.isLoading)
              const Center(child: CircularProgressIndicator()),
              
-          if (mapState.error != null)
-             Center(
+          if (mapState.error != null && mapState.currentPosition == null)
+            Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -608,7 +610,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Retry logic
+                      ref.read(mapControllerProvider.notifier).retryLocation();
                     },
                     child: const Text('Riprova'),
                   ),
@@ -781,6 +783,136 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                      ),
                    ),
                   
+                  // --- POSIZIONE NON ATTIVA (Non-blocking fallback chip) ---
+                  if (!mapState.isLocationEnabled)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          ref.read(mapControllerProvider.notifier).retryLocation();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade800.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.12),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.location_off, color: Colors.white, size: 16),
+                              SizedBox(width: 6),
+                              Text(
+                                'Posizione non attiva • Tocca per abilitare',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // --- 1-TAP LIBRETTO SANITARIO ---
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final dogsAsync = ref.watch(currentUserDogsProvider);
+                      final dogs = dogsAsync.valueOrNull ?? [];
+                      final firstDog = dogs.isNotEmpty ? dogs.first : null;
+                      final label = dogs.isEmpty
+                          ? 'Libretto Sanitario'
+                          : (dogs.length == 1 ? 'Libretto di ${firstDog!.name}' : 'Libretti Sanitari (${dogs.length})');
+
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () {
+                              if (dogs.isEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    settings: const RouteSettings(name: 'create_dog_profile'),
+                                    builder: (context) => const CreateDogProfileScreen(),
+                                  ),
+                                );
+                              } else if (dogs.length == 1) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    settings: const RouteSettings(name: 'health_record_list'),
+                                    builder: (context) => HealthRecordListScreen(dog: firstDog!),
+                                  ),
+                                );
+                              } else {
+                                _showDogHealthSelectorSheet(context, dogs);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.92),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.medical_services_rounded,
+                                      color: AppColors.primary,
+                                      size: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    label,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 11,
+                                    color: Colors.black45,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
                   // --- RADAR INDICATOR (Added) ---
                   if (mapState.radarMatchCount > 0)
                     Padding(
@@ -941,6 +1073,71 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             )
           : null,
+    );
+  }
+
+  void _showDogHealthSelectorSheet(BuildContext context, List<DogModel> dogs) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Seleziona il cane',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                ...dogs.map((dog) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundImage: dog.photoUrl != null && dog.photoUrl!.isNotEmpty
+                          ? NetworkImage(dog.photoUrl!)
+                          : null,
+                      child: dog.photoUrl == null || dog.photoUrl!.isEmpty
+                          ? const Icon(Icons.pets, color: AppColors.primary)
+                          : null,
+                    ),
+                    title: Text(dog.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(dog.breed),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          settings: const RouteSettings(name: 'health_record_list'),
+                          builder: (context) => HealthRecordListScreen(dog: dog),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

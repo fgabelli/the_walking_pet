@@ -6,7 +6,7 @@ final adMobReadyProvider = StateProvider<bool>((ref) => false);
 
 /// The currently active tab index in MainScreen (0-4).
 /// Used by UnifiedAdCard to defer ad loading until the owning tab is visible.
-final activeTabProvider = StateProvider<int>((ref) => 0);
+final activeTabProvider = StateProvider<int>((ref) => 1);
 
 /// The currently active sub-tab index in CommunityScreen (0-2).
 /// 0: Per te (Feed), 1: Reels, 2: Bacheca.

@@ -6,6 +6,7 @@ import '../../../../shared/models/health_record_model.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'add_health_record_screen.dart';
+import '../../data/services/health_record_pdf_service.dart';
 
 class HealthRecordListScreen extends ConsumerWidget {
   final DogModel dog;
@@ -26,6 +27,25 @@ class HealthRecordListScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Libretto Sanitario'),
+          actions: [
+            StreamBuilder<List<HealthRecordModel>>(
+              stream: healthService.getHealthRecordsStream(dog.id),
+              builder: (context, snapshot) {
+                final records = snapshot.data ?? [];
+                return IconButton(
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  tooltip: 'Esporta PDF',
+                  onPressed: () {
+                    HealthRecordPdfService.exportAndShare(
+                      context,
+                      dog,
+                      records,
+                    );
+                  },
+                );
+              },
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Vaccini'),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/models/health_record_model.dart';
+import '../../shared/models/dog_model.dart';
 import 'notification_service.dart';
 
 final healthServiceProvider = Provider<HealthService>((ref) {
@@ -12,22 +13,6 @@ class HealthService {
   final NotificationService _notificationService;
 
   HealthService(this._notificationService);
-
-  // Collection reference: users/{ownerId}/dogs/{dogId}/health_records/{recordId}
-  // WAIT: Ideally we should store this either under the dog document or a top level collection.
-  // Given we query by petId, top level 'health_records' or subcollection of dog is fine.
-  // Subcollection of dog is better for hierarchy: users/{uid}/dogs/{dogId}/health_records
-  
-  // BUT: fetching dogs is currently done via users/{uid}/dogs collection.
-  // Let's stick to: users/{ownerId}/dogs/{petId}/health_records
-  // Problem: We need ownerId to build the path. 
-  // If we only have petId, we might need a trusted way to find owner.
-  // However, usually we have the dog object which has ownerId.
-  
-  // Alternative: Top-level `health_records` collection with `petId` field.
-  // This is easier for querying specific pet records without knowing owner path.
-  // Let's go with Top-Level `health_records` indexed by `petId`. 
-  // Easier for "Transfering ownership" (if that ever happens) and querying.
 
   CollectionReference get _healthRef => _firestore.collection('health_records');
 
@@ -56,16 +41,132 @@ class HealthService {
   Stream<List<HealthRecordModel>> getHealthRecordsStream(String petId) {
     return _healthRef
         .where('petId', isEqualTo: petId)
-        .limit(100) // Force query change and limit results
+        .limit(100)
         .snapshots()
         .map((snapshot) {
       final records = snapshot.docs
           .map((doc) => HealthRecordModel.fromFirestore(doc))
           .toList();
       
-      // Sort client-side
       records.sort((a, b) => b.date.compareTo(a.date));
       return records;
     });
+  }
+
+  /// Generates initial recommended health protocol records for a newly created dog.
+  /// Strictly idempotent: if any record already exists for [dog.id], does nothing.
+  Future<void> precompileHealthProtocol(DogModel dog) async {
+    if (dog.id.isEmpty) return;
+
+    try {
+      // Strict idempotency check: check if any records exist for this pet
+      final existing = await _healthRef.where('petId', isEqualTo: dog.id).limit(1).get();
+      if (existing.docs.isNotEmpty) {
+        return;
+      }
+
+      final now = DateTime.now();
+      final batch = _firestore.batch();
+      const recommendedNote = 'Protocollo raccomandato • Da confermare con il veterinario';
+
+      if (dog.age == 0) {
+        // Cucciolo: protocollo primovaccinale
+        // 1. Prima dose Core CEP + Lepto (~7-8 settimane)
+        final doc1 = _healthRef.doc();
+        final date1 = now.add(const Duration(days: 14));
+        batch.set(doc1, {
+          'petId': dog.id,
+          'type': HealthRecordType.vaccine.name,
+          'title': '1° Vaccino Core (CEP + Lepto)',
+          'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
+          'date': Timestamp.fromDate(date1),
+          'nextDueDate': Timestamp.fromDate(date1),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+
+        // 2. Secondo richiamo Core CEP + Lepto (~10-11 settimane, 21 giorni dopo)
+        final doc2 = _healthRef.doc();
+        final date2 = date1.add(const Duration(days: 21));
+        batch.set(doc2, {
+          'petId': dog.id,
+          'type': HealthRecordType.vaccine.name,
+          'title': '2° Richiamo Core (CEP + Lepto)',
+          'specificName': 'Cimurro, Epatite, Parvovirosi, Leptospirosi',
+          'date': Timestamp.fromDate(date2),
+          'nextDueDate': Timestamp.fromDate(date2),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+
+        // 3. Terzo richiamo Core CEP + Lepto + Tosse canili (~14-16 settimane, 28 giorni dopo)
+        final doc3 = _healthRef.doc();
+        final date3 = date2.add(const Duration(days: 28));
+        batch.set(doc3, {
+          'petId': dog.id,
+          'type': HealthRecordType.vaccine.name,
+          'title': '3° Richiamo Core + Tosse dei Canili',
+          'specificName': 'CEP + Lepto + Bordetella bronchiseptica',
+          'date': Timestamp.fromDate(date3),
+          'nextDueDate': Timestamp.fromDate(date3),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+      } else {
+        // Adulto: protocollo di mantenimento annuale e triennale
+        // 1. Richiamo annuale Leptospirosi e Tosse dei canili (+365 giorni)
+        final doc1 = _healthRef.doc();
+        final date1 = now.add(const Duration(days: 365));
+        batch.set(doc1, {
+          'petId': dog.id,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Annuale (Leptospirosi + Tosse Canili)',
+          'specificName': 'Leptospirosi e Bordetella',
+          'date': Timestamp.fromDate(date1),
+          'nextDueDate': Timestamp.fromDate(date1),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+
+        // 2. Richiamo triennale Core CEP (+1095 giorni / 3 anni)
+        final doc2 = _healthRef.doc();
+        final date2 = now.add(const Duration(days: 1095));
+        batch.set(doc2, {
+          'petId': dog.id,
+          'type': HealthRecordType.vaccine.name,
+          'title': 'Richiamo Triennale Core (CEP)',
+          'specificName': 'Cimurro, Epatite, Parvovirosi',
+          'date': Timestamp.fromDate(date2),
+          'nextDueDate': Timestamp.fromDate(date2),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+
+        // 3. Profilassi stagionale Leishmaniosi / Antiparassitari (+180 giorni)
+        final doc3 = _healthRef.doc();
+        final date3 = now.add(const Duration(days: 180));
+        batch.set(doc3, {
+          'petId': dog.id,
+          'type': HealthRecordType.treatment.name,
+          'title': 'Profilassi Antiparassitaria / Leishmaniosi',
+          'specificName': 'Collare o spot-on repellente e test annuale',
+          'date': Timestamp.fromDate(date3),
+          'nextDueDate': Timestamp.fromDate(date3),
+          'reminderEnabled': true,
+          'isCompleted': false,
+          'notes': recommendedNote,
+        });
+      }
+
+      await batch.commit();
+    } catch (e) {
+      // Non-blocking: fail gracefully without crashing dog creation
+      print('Errore durante la precompilazione del protocollo sanitario: $e');
+    }
   }
 }

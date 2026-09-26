@@ -6,6 +6,10 @@ import '../../../../shared/models/health_record_model.dart';
 import '../../../../shared/models/dog_model.dart';
 import '../../../../shared/data/vaccination_protocols.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../shared/models/pet_business_model.dart';
+import '../../../map/presentation/providers/map_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class AddHealthRecordScreen extends ConsumerStatefulWidget {
   final String petId;
@@ -31,6 +35,126 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
   VaccinationProtocol? _selectedProtocol;
   bool _isCustomVaccine = false;
   bool _nextDueDateManuallySet = false;
+  String? _selectedVetBusinessId;
+
+  void _openVetPicker(BuildContext context) {
+    final mapState = ref.read(mapControllerProvider);
+    final nearbyVets = mapState.allPetBusinesses
+        .where((b) => b.category == PetBusinessCategory.vetClinic)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_hospital_outlined, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Seleziona Clinica Veterinaria',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                if (nearbyVets.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text(
+                          'Nessuna clinica caricata sulla mappa nelle vicinanze.\nPuoi digitare il nome del veterinario manualmente.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      itemCount: nearbyVets.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final vet = nearbyVets[index];
+                        return ListTile(
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(
+                              child: Text('🏥', style: TextStyle(fontSize: 20)),
+                            ),
+                          ),
+                          title: Text(vet.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text(
+                            vet.address,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                          ),
+                          trailing: vet.rating != null
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      vet.rating!.toStringAsFixed(1),
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                    ),
+                                  ],
+                                )
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedVetBusinessId = vet.id;
+                              _vetController.text = vet.name;
+                            });
+                            Navigator.pop(ctx);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -119,14 +243,33 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
           nextDueDate: _nextDueDate,
           reminderEnabled: _nextDueDate != null,
           isCompleted: _selectedDate.isBefore(DateTime.now()) || _selectedDate.isAtSameMomentAs(DateTime.now()),
-          veterinarianName: _vetController.text,
-          notes: _notesController.text,
+          veterinarianName: _vetController.text.trim().isNotEmpty ? _vetController.text.trim() : null,
+          veterinarianBusinessId: _selectedVetBusinessId,
+          notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
         );
 
         await ref.read(healthServiceProvider).addHealthRecord(
           newRecord,
           petName: widget.pet?.name,
         );
+
+        // Se è stata selezionata una clinica, traccia l'evento in vet_engagements
+        if (_selectedVetBusinessId != null && _selectedVetBusinessId!.isNotEmpty) {
+          final currentUser = ref.read(authServiceProvider).currentUser;
+          if (currentUser != null) {
+            FirebaseFirestore.instance.collection('vet_engagements').add({
+              'type': 'vet_connected',
+              'userId': currentUser.uid,
+              'dogId': widget.petId,
+              'businessId': _selectedVetBusinessId,
+              'businessName': _vetController.text.trim(),
+              'timestamp': FieldValue.serverTimestamp(),
+            }).catchError((e) {
+              debugPrint('Error logging vet_connected event: $e');
+            });
+          }
+        }
+
         if (mounted) {
           Navigator.pop(context);
         }
@@ -270,11 +413,21 @@ class _AddHealthRecordScreenState extends ConsumerState<AddHealthRecordScreen> {
               // Veterinarian
               TextFormField(
                 controller: _vetController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Veterinario / Clinica',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.local_hospital_outlined),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.map_outlined, color: AppColors.primary),
+                    tooltip: 'Seleziona dalla mappa',
+                    onPressed: () => _openVetPicker(context),
+                  ),
                 ),
+                onChanged: (val) {
+                  if (_selectedVetBusinessId != null) {
+                    setState(() => _selectedVetBusinessId = null);
+                  }
+                },
               ),
               const SizedBox(height: 16),
 

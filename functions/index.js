@@ -2559,3 +2559,7 @@ exports.cleanupInvalidFcmTokens = functions
 
     return null;
   });
+
+// ── Health Record Reminders (14 days push) ──
+const healthReminders = require("./healthReminders");
+exports.checkHealthRecordReminders = healthReminders.checkHealthRecordReminders;
