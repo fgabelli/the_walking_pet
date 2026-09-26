@@ -136,7 +136,7 @@ class HealthRecordListScreen extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: AppColors.primary.withOpacity(0.2),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                   backgroundImage: dog.photoUrl != null ? NetworkImage(dog.photoUrl!) : null,
                   child: dog.photoUrl == null ? const Icon(Icons.pets, size: 30, color: AppColors.primary) : null,
                 ),
@@ -199,9 +199,9 @@ class HealthRecordListScreen extends ConsumerWidget {
             children: tags.map((t) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: color.withOpacity(0.5)),
+                border: Border.all(color: color.withValues(alpha: 0.5)),
               ),
               child: Text(t, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
             )).toList(),
@@ -273,9 +273,9 @@ class HealthRecordListScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +293,7 @@ class HealthRecordListScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   names.join(', '),
-                  style: TextStyle(fontSize: 13, color: color.withOpacity(0.8)),
+                  style: TextStyle(fontSize: 13, color: color.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -379,7 +379,7 @@ class _HealthRecordCard extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color),
@@ -401,15 +401,37 @@ class _HealthRecordCard extends ConsumerWidget {
                 if (!record.isCompleted)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(8)),
-                    child: const Text('DA FARE', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                    decoration: BoxDecoration(
+                      color: record.nextDueDate != null ? Colors.orange.shade100 : Colors.blueGrey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      record.nextDueDate != null ? 'DA FARE' : 'DA VERIFICARE',
+                      style: TextStyle(
+                        color: record.nextDueDate != null ? Colors.orange.shade900 : Colors.blueGrey.shade800,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 if (isOwner)
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       if (value == 'delete') _confirmDelete(context, ref, record.id);
+                      if (value == 'confirm') _confirmComplete(context, ref, record);
                     },
                     itemBuilder: (context) => [
+                      if (!record.isCompleted)
+                        const PopupMenuItem(
+                          value: 'confirm',
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                              SizedBox(width: 8),
+                              Text('Conferma esecuzione', style: TextStyle(color: Colors.green)),
+                            ],
+                          ),
+                        ),
                       const PopupMenuItem(
                          value: 'delete',
                          child: Row(
@@ -457,10 +479,12 @@ class _HealthRecordCard extends ConsumerWidget {
                       ),
                     ),
                   ] else ...[
-                    Icon(Icons.edit_calendar, size: 16, color: Colors.blueGrey.shade600),
+                    Icon(Icons.pending_actions_outlined, size: 16, color: Colors.blueGrey.shade600),
                     const SizedBox(width: 4),
                     Text(
-                      'Da programmare col veterinario',
+                      record.date.isBefore(DateTime.now())
+                          ? 'Da verificare sul libretto cartaceo'
+                          : 'Da programmare col veterinario',
                       style: TextStyle(
                         color: Colors.blueGrey.shade700,
                         fontStyle: FontStyle.italic,
@@ -526,5 +550,37 @@ class _HealthRecordCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _confirmComplete(BuildContext context, WidgetRef ref, HealthRecordModel record) async {
+    final DateTime initialDate = record.date.isBefore(DateTime.now()) ? record.date : DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2010),
+      lastDate: DateTime.now(),
+      helpText: 'DATA DI EFFETTUAZIONE DEL VACCINO',
+      confirmText: 'CONFERMA',
+    );
+    if (picked != null) {
+      final updated = record.copyWith(
+        isCompleted: true,
+        date: picked,
+        notes: record.notes != null
+            ? (record.notes!.contains('Da verificare')
+                ? 'Confermato dal proprietario'
+                : record.notes)
+            : null,
+      );
+      await ref.read(healthServiceProvider).updateHealthRecord(updated);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vaccino confermato e registrato nel libretto'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 }

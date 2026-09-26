@@ -150,14 +150,19 @@ class HealthRecordPdfService {
                   ),
                   // Rows
                   ...vaccines.map((v) {
-                    final statusText = v.isCompleted ? 'Eseguito' : 'Programmato';
-                    final statusColor = v.isCompleted ? PdfColors.green800 : PdfColors.orange800;
+                    final statusText = v.isCompleted
+                        ? 'Eseguito'
+                        : (v.nextDueDate != null ? 'Programmato' : 'Da verificare');
+                    final statusColor = v.isCompleted
+                        ? PdfColors.green800
+                        : (v.nextDueDate != null ? PdfColors.orange800 : PdfColors.blueGrey700);
+                    final dateText = v.isCompleted ? _dateFormat.format(v.date) : '-';
                     final nextDue = v.nextDueDate != null ? _dateFormat.format(v.nextDueDate!) : '-';
                     final vet = v.veterinarianName?.isNotEmpty == true ? v.veterinarianName! : '-';
 
                     return pw.TableRow(
                       children: [
-                        _buildTableCell(_dateFormat.format(v.date)),
+                        _buildTableCell(dateText),
                         _buildTableCell(v.specificName?.isNotEmpty == true ? '${v.title}\n(${v.specificName})' : v.title, bold: true),
                         _buildTableCell(nextDue),
                         pw.Padding(

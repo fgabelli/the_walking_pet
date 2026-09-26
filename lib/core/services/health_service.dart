@@ -81,9 +81,9 @@ class HealthService {
         'date': Timestamp.fromDate(d1),
         'nextDueDate': d1IsPast ? null : Timestamp.fromDate(d1),
         'reminderEnabled': !d1IsPast,
-        'isCompleted': d1IsPast,
+        'isCompleted': false,
         'notes': d1IsPast
-            ? 'Dose primaria cucciolo eseguita da calendario (7-8 settimane)'
+            ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
             : 'Protocollo raccomandato cucciolo (7-8 settimane) • Da confermare con il veterinario',
       });
 
@@ -98,9 +98,9 @@ class HealthService {
         'date': Timestamp.fromDate(d2),
         'nextDueDate': d2IsPast ? null : Timestamp.fromDate(d2),
         'reminderEnabled': !d2IsPast,
-        'isCompleted': d2IsPast,
+        'isCompleted': false,
         'notes': d2IsPast
-            ? 'Secondo richiamo cucciolo eseguito da calendario (10-11 settimane)'
+            ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
             : 'Protocollo raccomandato cucciolo (10-11 settimane) • Da confermare con il veterinario',
       });
 
@@ -115,9 +115,9 @@ class HealthService {
         'date': Timestamp.fromDate(d3),
         'nextDueDate': d3IsPast ? null : Timestamp.fromDate(d3),
         'reminderEnabled': !d3IsPast,
-        'isCompleted': d3IsPast,
+        'isCompleted': false,
         'notes': d3IsPast
-            ? 'Terzo richiamo cucciolo eseguito da calendario (14-16 settimane)'
+            ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
             : 'Protocollo raccomandato cucciolo (14-16 settimane) • Da confermare con il veterinario',
       });
     } else {
@@ -135,10 +135,10 @@ class HealthService {
           'date': Timestamp.fromDate(lastVaccinationDate),
           'nextDueDate': isAnnualFuture ? Timestamp.fromDate(annualDue) : null,
           'reminderEnabled': isAnnualFuture,
-          'isCompleted': !isAnnualFuture,
+          'isCompleted': false,
           'notes': isAnnualFuture
               ? 'Richiamo annuale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
-              : 'Ultimo vaccino effettuato oltre un anno fa. Prenota il richiamo annuale con il veterinario.',
+              : 'Data ultimo vaccino oltre un anno fa. Richiamo annuale da verificare e concordare col veterinario.',
         });
 
         // 2. Richiamo triennale Core (CEP): lastVaccinationDate + 1095 giorni (3 anni)
@@ -152,10 +152,10 @@ class HealthService {
           'date': Timestamp.fromDate(lastVaccinationDate),
           'nextDueDate': isTriennialFuture ? Timestamp.fromDate(triennialDue) : null,
           'reminderEnabled': isTriennialFuture,
-          'isCompleted': !isTriennialFuture,
+          'isCompleted': false,
           'notes': isTriennialFuture
               ? 'Richiamo triennale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
-              : 'Richiamo triennale Core scaduto. Consulta il veterinario di fiducia.',
+              : 'Data ultimo vaccino oltre 3 anni fa. Richiamo triennale Core da verificare e concordare col veterinario.',
         });
       } else {
         // Nessuna data fornita dall'utente: NESSUNA DATA INVENTATA!

@@ -199,7 +199,7 @@ void main() {
       expect(d3['reminderEnabled'], isTrue);
     });
 
-    test('Puppy of 11 weeks: past doses are marked completed without reminder', () {
+    test('Puppy of 11 weeks: past doses are created with isCompleted: false, nextDueDate: null, da verificare', () {
       // Cucciolo nato 11 settimane fa (77 giorni fa)
       final birth = refDate.subtract(const Duration(days: 77));
       final records = HealthService.calculateRecommendedProtocol(
@@ -211,15 +211,17 @@ void main() {
       );
 
       expect(records.length, 3);
-      // Dose 1 (49d) è passata
-      expect(records[0]['isCompleted'], isTrue);
-      expect(records[0]['nextDueDate'], isNull);
+      // Dose 1 (49d) è passata: NON sappiamo se è stata fatta, isCompleted DEVE essere false!
+      expect(records[0]['isCompleted'], isFalse, reason: 'Nessun record può nascere con isCompleted a true');
+      expect(records[0]['nextDueDate'], isNull, reason: 'Fuori dai promemoria e banner scaduti');
       expect(records[0]['reminderEnabled'], isFalse);
+      expect(records[0]['notes'], contains('Da verificare sul libretto cartaceo'));
 
       // Dose 2 (70d) è passata
-      expect(records[1]['isCompleted'], isTrue);
+      expect(records[1]['isCompleted'], isFalse, reason: 'Nessun record può nascere con isCompleted a true');
       expect(records[1]['nextDueDate'], isNull);
       expect(records[1]['reminderEnabled'], isFalse);
+      expect(records[1]['notes'], contains('Da verificare sul libretto cartaceo'));
 
       // Dose 3 (98d) è futura (tra 21 giorni)
       expect(records[2]['isCompleted'], isFalse);
@@ -260,7 +262,7 @@ void main() {
       expect(triennial['isCompleted'], isFalse);
     });
 
-    test('Adult with expired lastVaccinationDate (>365d): annual has no future nextDueDate', () {
+    test('Adult with expired lastVaccinationDate (>365d): annual has no future nextDueDate and isCompleted is false', () {
       // Ultimo vaccino 400 giorni fa
       final lastVac = refDate.subtract(const Duration(days: 400));
       final records = HealthService.calculateRecommendedProtocol(
@@ -275,13 +277,29 @@ void main() {
       final annual = records[0];
       expect(annual['nextDueDate'], isNull, reason: 'Scadenza passata non deve programmare promemoria futuri');
       expect(annual['reminderEnabled'], isFalse);
-      expect(annual['isCompleted'], isTrue);
+      expect(annual['isCompleted'], isFalse, reason: 'Nessun record può nascere con isCompleted a true');
 
       final triennial = records[1];
       // Triennale (1095 - 400 = 695 giorni futuri)
       expect(triennial['nextDueDate'], isNotNull);
       expect(triennial['reminderEnabled'], isTrue);
       expect(triennial['isCompleted'], isFalse);
+    });
+
+    test('Strict Acceptance Criterion: NO record ever has isCompleted == true from precompilation', () {
+      final scenarios = [
+        HealthService.calculateRecommendedProtocol(petId: '1', age: 0, birthDate: refDate.subtract(const Duration(days: 100)), referenceDate: refDate),
+        HealthService.calculateRecommendedProtocol(petId: '2', age: 0, birthDate: refDate.subtract(const Duration(days: 20)), referenceDate: refDate),
+        HealthService.calculateRecommendedProtocol(petId: '3', age: 2, lastVaccinationDate: refDate.subtract(const Duration(days: 500)), referenceDate: refDate),
+        HealthService.calculateRecommendedProtocol(petId: '4', age: 2, lastVaccinationDate: refDate.subtract(const Duration(days: 30)), referenceDate: refDate),
+        HealthService.calculateRecommendedProtocol(petId: '5', age: 2, birthDate: null, lastVaccinationDate: null, referenceDate: refDate),
+      ];
+
+      for (final recs in scenarios) {
+        for (final r in recs) {
+          expect(r['isCompleted'], isFalse, reason: 'Nessun record può nascere con isCompleted a true');
+        }
+      }
     });
   });
 
