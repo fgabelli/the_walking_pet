@@ -84,7 +84,7 @@ class HealthService {
         'isCompleted': false,
         'notes': d1IsPast
             ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
-            : 'Protocollo raccomandato cucciolo (7-8 settimane) • Da confermare con il veterinario',
+            : 'Protocollo raccomandato cucciolo (7-8 settimane) - Da confermare con il veterinario',
       });
 
       // 2. Secondo richiamo Core CEP + Lepto (~10-11 settimane: birthDate + 70 giorni)
@@ -101,7 +101,7 @@ class HealthService {
         'isCompleted': false,
         'notes': d2IsPast
             ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
-            : 'Protocollo raccomandato cucciolo (10-11 settimane) • Da confermare con il veterinario',
+            : 'Protocollo raccomandato cucciolo (10-11 settimane) - Da confermare con il veterinario',
       });
 
       // 3. Terzo richiamo Core CEP + Lepto + Tosse canili (~14-16 settimane: birthDate + 98 giorni)
@@ -118,7 +118,7 @@ class HealthService {
         'isCompleted': false,
         'notes': d3IsPast
             ? 'Dose prevista da calendario in base alla data di nascita. Da verificare sul libretto cartaceo e confermare.'
-            : 'Protocollo raccomandato cucciolo (14-16 settimane) • Da confermare con il veterinario',
+            : 'Protocollo raccomandato cucciolo (14-16 settimane) - Da confermare con il veterinario',
       });
     } else {
       // Adulto o cucciolo senza birthDate: generare SOLO i due richiami dell'adulto
@@ -137,7 +137,7 @@ class HealthService {
           'reminderEnabled': isAnnualFuture,
           'isCompleted': false,
           'notes': isAnnualFuture
-              ? 'Richiamo annuale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
+              ? 'Richiamo annuale calcolato dall\'ultima vaccinazione - Da confermare con il veterinario'
               : 'Data ultimo vaccino oltre un anno fa. Richiamo annuale da verificare e concordare col veterinario.',
         });
 
@@ -154,7 +154,7 @@ class HealthService {
           'reminderEnabled': isTriennialFuture,
           'isCompleted': false,
           'notes': isTriennialFuture
-              ? 'Richiamo triennale calcolato dall\'ultima vaccinazione • Da confermare con il veterinario'
+              ? 'Richiamo triennale calcolato dall\'ultima vaccinazione - Da confermare con il veterinario'
               : 'Data ultimo vaccino oltre 3 anni fa. Richiamo triennale Core da verificare e concordare col veterinario.',
         });
       } else {

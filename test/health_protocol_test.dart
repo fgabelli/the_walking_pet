@@ -9,6 +9,7 @@ import 'package:the_walking_pet/shared/models/health_record_model.dart';
 import 'package:the_walking_pet/features/health_record/data/services/health_record_pdf_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('DogModel tests', () {
     test('copyWith and defaults include veterinarianBusinessId and reminder14dSent', () {
       final now = DateTime(2026, 9, 26);

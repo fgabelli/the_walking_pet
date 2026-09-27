@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -10,13 +11,31 @@ import '../../../../shared/models/health_record_model.dart';
 class HealthRecordPdfService {
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
 
+  /// Pulisce eventuali caratteri non gestiti (bullet, em-dash) convertendoli in trattini standard
+  static String _clean(String text) => text.replaceAll('•', '-').replaceAll('—', '-');
+
   /// Genera il documento PDF A4 del Libretto Sanitario
   static Future<Uint8List> generatePdf(
     DogModel dog,
     List<HealthRecordModel> records, {
     String? ownerName,
   }) async {
-    final pdf = pw.Document();
+    pw.Font? regularFont;
+    pw.Font? boldFont;
+    try {
+      final regData = await rootBundle.load('assets/fonts/Manrope-Regular.ttf');
+      final boldData = await rootBundle.load('assets/fonts/Manrope-Bold.ttf');
+      regularFont = pw.Font.ttf(regData);
+      boldFont = pw.Font.ttf(boldData);
+    } catch (_) {
+      // Fallback a font Type 1 standard se rootBundle non disponibile
+    }
+
+    final theme = regularFont != null && boldFont != null
+        ? pw.ThemeData.withFont(base: regularFont, bold: boldFont)
+        : null;
+
+    final pdf = pw.Document(theme: theme);
 
     final vaccines = records.where((r) => r.type == HealthRecordType.vaccine).toList();
     final otherRecords = records.where((r) => r.type != HealthRecordType.vaccine).toList();
@@ -259,9 +278,9 @@ class HealthRecordPdfService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+        pw.Text(_clean(label), style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
         pw.SizedBox(height: 2),
-        pw.Text(value, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.black)),
+        pw.Text(_clean(value), style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.black)),
       ],
     );
   }
@@ -270,7 +289,7 @@ class HealthRecordPdfService {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(6),
       child: pw.Text(
-        text,
+        _clean(text),
         style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.grey900),
       ),
     );
@@ -280,7 +299,7 @@ class HealthRecordPdfService {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(6),
       child: pw.Text(
-        text,
+        _clean(text),
         style: pw.TextStyle(
           fontSize: 9,
           fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
